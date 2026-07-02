@@ -1,0 +1,17 @@
+{
+  "name": "Steps unto Heav'n",
+  "short_name": "Steps",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4ead9",
+  "theme_color": "#1f3050",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
