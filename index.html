@@ -23,11 +23,11 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --page:#141925; --card:#222a3d; --ink:#efe6cd; --muted:#9a9077; --faint:#7d7560;
-      --rule:#323b52; --accent:#cf9b4a; --accent2:#e9bc6b; --onaccent:#1b1407;
-      --tagbg:#2e3850; --tagink:#aeb7cd; --edge:#0a0d14;
-      --glow:0 0 10px rgba(233,188,107,.45); --cardshadow:0 2px 6px rgba(0,0,0,.3);
-      --st-concept:#8a93ab; --st-bit:#cf9b4a; --st-ready:#e9bc6b; --st-proven:#efe6cd;
+      --page:#15110d; --card:#241d16; --ink:#e9ddc6; --muted:#96866c; --faint:#7c6d54;
+      --rule:#332a20; --accent:#c69a4e; --accent2:#e0b366; --onaccent:#160f07;
+      --tagbg:#2c2318; --tagink:#c3b393; --edge:#0a0805;
+      --glow:0 0 10px rgba(224,179,102,.4); --cardshadow:0 2px 6px rgba(0,0,0,.35);
+      --st-concept:#9a8a6c; --st-bit:#c69a4e; --st-ready:#e0b366; --st-proven:#e9ddc6;
     }
   }
   * { box-sizing: border-box; }
@@ -38,7 +38,7 @@
     background-color: var(--page);
     box-shadow: inset 0 0 100px rgba(110, 70, 30, .10); }
   @media (prefers-color-scheme: dark) {
-    .wrap { background: radial-gradient(ellipse 90% 300px at 50% -40px, rgba(233,188,107,.13), transparent 70%);
+    .wrap { background: radial-gradient(ellipse 90% 300px at 50% -40px, rgba(224,179,102,.10), transparent 70%);
       box-shadow: none; }
   }
   button { cursor: pointer; font-family: inherit; transition: background .15s, color .15s, border-color .15s, transform .05s; }
@@ -296,14 +296,17 @@
     background-attachment: local;
     background-position: 0 13px;
   }
-  /* habit calendars */
-  #habitBody { padding-top: 4px; }
-  .pray-today { display: block; width: 100%; box-sizing: border-box; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); border-radius: 12px; padding: 13px 0; font-family: var(--mono); font-size: 14px; margin-bottom: 18px; cursor: pointer; }
-  .pray-today.done { background: var(--accent); color: var(--onaccent); }
-  .habit { margin-bottom: 22px; }
-  .habit-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2px; }
-  .habit-title { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink); }
-  .habit-streak { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  /* habit rows */
+  .habit-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 4px; }
+  .habit-row { border-bottom: 1px solid var(--rule); padding: 4px 0; }
+  .habit-top { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .habit-q { flex: 1; display: flex; align-items: center; gap: 8px; background: transparent; border: none; text-align: left; cursor: pointer; padding: 0; min-width: 0; }
+  .habit-caret { font-size: 11px; color: var(--faint); flex: 0 0 auto; }
+  .habit-qtext { font-family: var(--serif); font-size: 17px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .habit-streak { font-family: var(--mono); font-size: 12px; color: var(--muted); flex: 0 0 auto; white-space: nowrap; }
+  .habit-check { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px; border: 1.5px solid var(--accent); background: transparent; color: var(--onaccent); font-size: 17px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .habit-check.done { background: var(--accent); }
+  .habit-cal { padding: 4px 0 14px; }
   .habit-month { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
   .habit-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .habit-dow { text-align: center; font-family: var(--mono); font-size: 10px; color: var(--faint); padding-bottom: 2px; }
@@ -442,7 +445,7 @@
         <h2>Daily</h2>
         <button class="notes-close" id="schedClose">done</button>
       </div>
-      <div id="habitBody"></div>
+      <div id="habitBody" class="habit-scroll"></div>
     </div>
   </div>
   <div class="notes-overlay" id="workbenchOverlay">
@@ -850,22 +853,12 @@
     }
     return count;
   }
-  function buildCalendar(name, title, invert) {
+  function buildCalendarGrid(name, invert) {
     var log = state.habits[name];
-    var wrap = el("div", "habit");
-    var head = el("div", "habit-head");
-    var h = el("span", "habit-title", title);
-    head.appendChild(h);
-    var streak = currentStreak(log, invert);
-    var flame = el("span", "habit-streak", (streak > 0 ? "🔥 " : "") + streak + (invert ? " clean" : " day" + (streak === 1 ? "" : "s")));
-    head.appendChild(flame);
-    wrap.appendChild(head);
-
     var now = new Date();
     var year = now.getFullYear(), month = now.getMonth();
-    var monthLabel = now.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-    wrap.appendChild(el("div", "habit-month", monthLabel));
-
+    var wrap = el("div", "habit-cal");
+    wrap.appendChild(el("div", "habit-month", now.toLocaleDateString("en-US", { month: "long", year: "numeric" })));
     var grid = el("div", "habit-grid");
     ["S","M","T","W","T","F","S"].forEach(function (d) { grid.appendChild(el("span", "habit-dow", d)); });
     var first = new Date(year, month, 1).getDay();
@@ -888,7 +881,6 @@
       grid.appendChild(cell);
     }
     wrap.appendChild(grid);
-
     if (name !== "pray") {
       var rename = el("button", "habit-rename", "rename");
       rename.onclick = function () {
@@ -899,19 +891,45 @@
     }
     return wrap;
   }
+  var habitOpen = { pray: false, good: false, bad: false };
+  function habitRow(name, question, invert) {
+    var todayK = todayKeyStr();
+    var log = state.habits[name];
+    var doneToday = habitHas(log, todayK);
+    var streak = currentStreak(log, invert);
+
+    var row = el("div", "habit-row" + (habitOpen[name] ? " open" : ""));
+    var top = el("div", "habit-top");
+
+    var qWrap = el("button", "habit-q");
+    qWrap.appendChild(el("span", "habit-caret", habitOpen[name] ? "\u25be" : "\u25b8"));
+    qWrap.appendChild(el("span", "habit-qtext", question));
+    qWrap.onclick = function () { habitOpen[name] = !habitOpen[name]; renderHabits(); };
+    top.appendChild(qWrap);
+
+    var streakLabel = invert
+      ? (streak + " clean")
+      : (streak + (streak === 1 ? " day" : " days"));
+    top.appendChild(el("span", "habit-streak", (streak > 0 ? "\uD83D\uDD25 " : "") + streakLabel));
+
+    var check = el("button", "habit-check" + (doneToday ? " done" : ""), doneToday ? "\u2713" : "");
+    check.setAttribute("aria-label", question);
+    check.onclick = function () { toggleHabit(name, todayKeyStr()); };
+    top.appendChild(check);
+
+    row.appendChild(top);
+    if (habitOpen[name]) row.appendChild(buildCalendarGrid(name, invert));
+    return row;
+  }
   function renderHabits() {
     var body = document.getElementById("habitBody");
     if (!body) return;
     body.innerHTML = "";
-    var todayK = todayKeyStr();
-    var prayedToday = habitHas(state.habits.pray, todayK);
-    var prayBtn = el("button", "pray-today" + (prayedToday ? " done" : ""), prayedToday ? "✓ prayed today" : "did you pray today?");
-    prayBtn.onclick = function () { toggleHabit("pray", todayK); };
-    body.appendChild(prayBtn);
-    body.appendChild(buildCalendar("pray", "prayer", false));
-    body.appendChild(buildCalendar("good", state.habitLabels.good || "good habit", false));
-    body.appendChild(buildCalendar("bad", state.habitLabels.bad || "bad habit", true));
+    body.appendChild(habitRow("pray", "Did you pray today?", false));
+    body.appendChild(habitRow("good", capFirst(state.habitLabels.good || "good habit") + " today?", false));
+    body.appendChild(habitRow("bad", capFirst(state.habitLabels.bad || "bad habit") + " today?", true));
   }
+  function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
   // backup
   document.getElementById("exportBtn").onclick = function () {
