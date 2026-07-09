@@ -1634,7 +1634,8 @@
           selectedIds[t.id] = !selectedIds[t.id];
           render();
         } else {
-          openWorkbench(t.id, "truth");
+          expandedTruth = expandedTruth === t.id ? null : t.id;
+          render();
         }
       };
       card.appendChild(p);
@@ -1653,6 +1654,11 @@
       card.appendChild(copyCorner(function () { return t.text; }));
       if (expandedTruth !== t.id) { list.appendChild(card); return; }
       var actions = el("div", "bone-actions truth-actions");
+      var pad = el("button", "bone-digup wb-btn", "📝");
+      pad.title = "Open the ponder pad";
+      pad.setAttribute("aria-label", "ponder pad");
+      pad.onclick = function (e) { e.stopPropagation(); openWorkbench(t.id, "truth"); };
+      actions.appendChild(pad);
       var promote = el("button", "bone-digup", "+ question");
       promote.title = "Copy this into questions — it stays here too";
       promote.onclick = function (e) {
@@ -1896,31 +1902,54 @@
       document.getElementById("flockDoneWrap").style.display = "none";
       return;
     }
-    // open/scheduled first (by created desc), done sink to bottom
-    var live = state.todos.filter(function (t) { return t.stage < 2; });
-    var done = state.todos.filter(function (t) { return t.stage >= 2; });
-    var ordered = live.concat(done);
-    var anyDone = done.length > 0;
-    ordered.forEach(function (t) {
+    function flockRow(t) {
       var row = el("div", "flock-item" + (t.stage >= 2 ? " done" : ""));
       var chk = el("button", "flock-check" + (t.stage === 1 ? " stage1" : t.stage >= 2 ? " stage2" : ""), FLOCK_STAGE[t.stage] || "○");
       var labels = ["open — tap when it's scheduled", "scheduled — tap when it's done", "done — tap to reopen"];
       chk.title = labels[t.stage] || "";
-      chk.onclick = function () {
-        t.stage = (t.stage + 1) % 3;
-        save(); renderFlock();
-      };
+      chk.onclick = function () { t.stage = (t.stage + 1) % 3; save(); renderFlock(); };
       row.appendChild(chk);
       row.appendChild(el("div", "flock-text", t.text));
       var x = el("button", "flock-x", "✕");
       x.title = "Remove";
-      x.onclick = function () {
-        state.todos = state.todos.filter(function (z) { return z.id !== t.id; });
-        save(); renderFlock();
-      };
+      x.onclick = function () { state.todos = state.todos.filter(function (z) { return z.id !== t.id; }); save(); renderFlock(); };
       row.appendChild(x);
-      host.appendChild(row);
+      return row;
+    }
+
+    var live = state.todos.filter(function (t) { return t.stage < 2; });
+    var done = state.todos.filter(function (t) { return t.stage >= 2; });
+
+    // group live items by capture date, newest day first
+    live.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+    var todayKey = truthDayKey(Date.now());
+    var groups = [];
+    live.forEach(function (t) {
+      var k = truthDayKey(t.created);
+      if (!groups.length || groups[groups.length - 1].key !== k) groups.push({ key: k, at: t.created || 0, items: [] });
+      groups[groups.length - 1].items.push(t);
     });
+    groups.forEach(function (g) {
+      var fk = "flock:" + g.key;
+      var isOpen = (fk in openDays) ? openDays[fk] : true;
+      var hdr = el("button", "day-fold" + (isOpen ? " open" : ""), truthDayLabel(g.at) + " · " + g.items.length);
+      hdr.onclick = function () { openDays[fk] = !isOpen; renderFlock(); };
+      host.appendChild(hdr);
+      if (isOpen) g.items.forEach(function (t) { host.appendChild(flockRow(t)); });
+    });
+
+    // done items collapse into their own group at the bottom
+    var anyDone = done.length > 0;
+    if (anyDone) {
+      var dOpen = ("flock:done" in openDays) ? openDays["flock:done"] : false;
+      var dHdr = el("button", "day-fold" + (dOpen ? " open" : ""), "done · " + done.length);
+      dHdr.onclick = function () { openDays["flock:done"] = !dOpen; renderFlock(); };
+      host.appendChild(dHdr);
+      if (dOpen) {
+        done.sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+        done.forEach(function (t) { host.appendChild(flockRow(t)); });
+      }
+    }
     document.getElementById("flockDoneWrap").style.display = anyDone ? "block" : "none";
   }
   document.getElementById("flockOpen").onclick = function () {
@@ -1960,6 +1989,7 @@
     }
     function hits(x) {
       if ((x.text || "").toLowerCase().indexOf(q) !== -1) return true;
+      if ((x.workshop || "").toLowerCase().indexOf(q) !== -1) return true;
       return (x.tags || []).some(function (t) { return t.toLowerCase().indexOf(q) !== -1; });
     }
     var results = [];
