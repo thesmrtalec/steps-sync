@@ -132,6 +132,7 @@
   .copy-corner:hover, .copy-corner:active { opacity: 1; color: var(--accent); }
   .axe-corner { background: transparent; border: none; font-size: 15px; line-height: 1; padding: 2px 4px; cursor: pointer; opacity: .6; }
   .axe-corner:hover, .axe-corner:active, .axe-corner.armed { opacity: 1; }
+  .axe-corner.armed { font-family: var(--mono); font-size: 11px; }
   .tag-input-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
   .tag-input-row .tag-input { flex: 1; }
   .tag-add-btn { flex: 0 0 auto; background: var(--accent); color: var(--onaccent, #fff); border: none; border-radius: 8px; padding: 6px 12px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
@@ -202,6 +203,8 @@
   .i-mined { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
   .react-btn { background: transparent; border: 1px dashed var(--rule); border-radius: 7px; padding: 1px 7px; font-size: 13px; line-height: 1.5; filter: grayscale(1); opacity: .55; }
   .react-btn.has-react { border-style: solid; filter: none; opacity: 1; }
+  .arc-btn { background: transparent; border: 1px dashed var(--rule); border-radius: 999px; width: 26px; height: 26px; padding: 0; font-size: 14px; line-height: 1; color: var(--muted); opacity: .7; cursor: pointer; }
+  .arc-btn.has-arc { border-style: solid; border-color: var(--accent); color: var(--accent); opacity: 1; }
   .set-back { background: transparent; border: none; color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 0; margin-bottom: 10px; display: block; }
   .set-name { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--rule); font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); padding: 2px 0 6px; margin-bottom: 8px; }
   .set-total { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 0 0 12px; }
@@ -900,17 +903,21 @@
       meta.appendChild(toPoolBtn);
 
       {
-        var REACTS = ["", "😒", "😆", "😂"];
-        var rBtn = el("button", "react-btn" + (b.react ? " has-react" : ""), b.react || "😶");
-        rBtn.title = "How'd it land? Tap to cycle";
-        rBtn.onclick = function () {
-          var ri = REACTS.indexOf(b.react || "");
-          var next = REACTS[(ri + 1) % REACTS.length];
+        // question arc: open ○  →  light coming ◐  →  answered ●
+        var ARC = ["", "◐", "●"];
+        var ARC_LABEL = { "": "open", "◐": "light coming", "●": "answered" };
+        var cur = b.react || "";
+        var aBtn = el("button", "arc-btn" + (cur ? " has-arc" : ""), cur || "○");
+        aBtn.title = ARC_LABEL[cur] + " — tap to move it along";
+        aBtn.setAttribute("aria-label", "question status: " + ARC_LABEL[cur]);
+        aBtn.onclick = function () {
+          var ri = ARC.indexOf(b.react || "");
+          var next = ARC[(ri + 1) % ARC.length];
           if (next) b.react = next; else delete b.react;
           b.touched = Date.now();
           save(); render();
         };
-        meta.appendChild(rBtn);
+        meta.appendChild(aBtn);
       }
 
       var sd = staleDays(b);
