@@ -145,6 +145,27 @@
   .lock-btns { margin-top: 14px; }
   .lock-go { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; cursor: pointer; }
   .lock-manage { margin-top: 18px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; text-decoration: underline; cursor: pointer; }
+  .select-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .select-toggle { background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 8px; padding: 6px 12px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+  .select-toggle.on { border-color: var(--accent); color: var(--accent); }
+  .select-move { background: var(--accent); color: var(--onaccent); border: none; border-radius: 8px; padding: 6px 14px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+  .select-move:disabled { opacity: .4; cursor: default; }
+  .truth-card.selectable { padding-left: 40px; cursor: pointer; }
+  .truth-card.picked { border-color: var(--accent); }
+  .sel-box { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--rule); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--onaccent); background: transparent; }
+  .sel-box.on { background: var(--accent); border-color: var(--accent); }
+  .flock-sub { font-family: var(--serif); font-style: italic; color: var(--faint); font-size: 14px; margin: -4px 0 16px; }
+  .flock-item { display: flex; align-items: flex-start; gap: 11px; padding: 11px 0; border-bottom: 1px solid var(--rule); }
+  .flock-check { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 999px; border: 1.5px solid var(--rule); background: transparent; color: var(--accent); font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; margin-top: 1px; }
+  .flock-check.stage1 { border-color: var(--accent); color: var(--accent); }
+  .flock-check.stage2 { background: var(--accent); border-color: var(--accent); color: var(--onaccent); }
+  .flock-text { flex: 1; font-family: 'Caveat', cursive; font-size: 20px; line-height: 1.3; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
+  .flock-item.done .flock-text { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .flock-x { flex: 0 0 auto; background: transparent; border: none; color: var(--faint); font-size: 14px; cursor: pointer; opacity: .5; padding: 2px 4px; }
+  .flock-x:hover { opacity: 1; }
+  .flock-empty { font-family: var(--serif); font-style: italic; color: var(--faint); padding: 20px 0; }
+  .flock-done-wrap { text-align: center; margin-top: 18px; }
+  .flock-clear { background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 8px; padding: 6px 16px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
   .theme-picker { display: flex; gap: 10px; align-items: center; padding: 6px 4px 10px; flex-wrap: wrap; }
   .theme-dot { width: 24px; height: 24px; border-radius: 999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
   .theme-dot.on { border-color: var(--ink); }
@@ -388,6 +409,7 @@
     <button class="notes-tab" id="notesOpen">🗒 notes</button>
     <button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">📊</button>
     <button class="notes-tab bone-key" id="shuffleBtn" aria-label="shuffle: deal a stale line" title="Shuffle — deal a stale line">🎲</button>
+    <button class="notes-tab bone-key" id="flockOpen" aria-label="the ninety and nine" title="The ninety &amp; nine">🐑</button>
     <button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">🗝️</button>
     <button class="notes-tab" id="utilBtn" title="More">⚙ more</button>
     <span class="sync-chip" id="syncStatus"></span>
@@ -493,6 +515,19 @@
       <div class="wb-meta" id="wbMeta"></div>
     </div>
   </div>
+  <div class="notes-overlay" id="flockOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>The ninety &amp; nine</h2>
+        <button class="notes-close" id="flockClose">done</button>
+      </div>
+      <p class="flock-sub">the ones you can't let wander off</p>
+      <div id="flockList"></div>
+      <div class="flock-done-wrap" id="flockDoneWrap" style="display:none">
+        <button class="flock-clear" id="flockClear">clear done</button>
+      </div>
+    </div>
+  </div>
   <div class="notes-overlay" id="notesOverlay">
     <div class="notes-inner">
       <div class="notes-head">
@@ -551,10 +586,12 @@
     "What's on your mind to pray about?"
   ];
 
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" }, theme: "walnut", notesPin: null };
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" }, theme: "walnut", notesPin: null, todos: [] };
   var stageFilter = "home";
   var tagEditing = null;
   var pendingRemote = null;
+  var selectMode = false;
+  var selectedIds = {};
   var textEditing = null;
 
   function hydrate(data) {
@@ -578,6 +615,7 @@
     state.habitLabels = data.habitLabels || { good: "good habit", bad: "bad habit" };
     state.theme = data.theme || "walnut";
     state.notesPin = data.notesPin || null;
+    state.todos = data.todos || [];
     state.buried = data.buried || [];
     state.truths = data.truths || [];
     toPool.forEach(function (b) {
@@ -665,6 +703,14 @@
     catch (e) { try { window.matchMedia("(prefers-color-scheme: dark)").addListener(applyTheme); } catch (e2) {} }
   }
   // ——— copy engine (execCommand-first for iOS reliability) ———
+  function flashToast(msg) {
+    var t = document.getElementById("copyToast");
+    if (!t) return;
+    var prev = t.textContent;
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function () { t.classList.remove("show"); setTimeout(function () { t.textContent = "copied"; }, 300); }, 1400);
+  }
   function flashCopied() {
     var t = document.getElementById("copyToast");
     if (!t) return;
@@ -1527,6 +1573,35 @@
       list.appendChild(el("p", "empty", "Nothing true yet. Suspicious."));
       return;
     }
+    // select-mode toggle
+    var bar = el("div", "select-bar");
+    var toggle = el("button", "select-toggle" + (selectMode ? " on" : ""), selectMode ? "cancel" : "⛖ sweep to 🐑");
+    toggle.onclick = function () {
+      selectMode = !selectMode;
+      if (!selectMode) selectedIds = {};
+      render();
+    };
+    bar.appendChild(toggle);
+    if (selectMode) {
+      var count = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; }).length;
+      var move = el("button", "select-move", "→ 🐑 move (" + count + ")");
+      move.disabled = count === 0;
+      move.onclick = function () {
+        if (!state.todos) state.todos = [];
+        var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
+        var picked = state.truths.filter(function (t) { return selectedIds[t.id]; });
+        // preserve visual order (newest first already in list); unshift in reverse so newest ends up on top
+        picked.forEach(function (t) {
+          state.todos.unshift({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), text: t.text, stage: 0, created: Date.now() });
+        });
+        state.truths = state.truths.filter(function (t) { return !selectedIds[t.id]; });
+        selectMode = false; selectedIds = {};
+        save(); render();
+        flashToast(ids.length + " sent to the flock");
+      };
+      bar.appendChild(move);
+    }
+    list.appendChild(bar);
     truths = truths.slice().sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
     var todayKey = truthDayKey(Date.now());
     var groups = [];
@@ -1547,11 +1622,23 @@
     });
   }
   function renderTruthCard(t, list) {
-      var card = el("div", "bone-card truth-card");
+      var card = el("div", "bone-card truth-card" + (selectMode ? " selectable" : "") + (selectMode && selectedIds[t.id] ? " picked" : ""));
+      if (selectMode) {
+        var box = el("span", "sel-box" + (selectedIds[t.id] ? " on" : ""), selectedIds[t.id] ? "✓" : "");
+        card.appendChild(box);
+      }
       var p = el("p", null, t.text);
       p.style.cursor = "pointer";
-      p.onclick = function () { openWorkbench(t.id, "truth"); };
+      p.onclick = function () {
+        if (selectMode) {
+          selectedIds[t.id] = !selectedIds[t.id];
+          render();
+        } else {
+          openWorkbench(t.id, "truth");
+        }
+      };
       card.appendChild(p);
+      if (selectMode) { list.appendChild(card); return; }
       var corner = el("div", "truth-corner");
       if (t.workshop && t.workshop.trim()) {
         var noted = el("span", "truth-noted", "✎");
@@ -1582,6 +1669,18 @@
         save(); render();
       };
       actions.appendChild(promote);
+      var toFlock = el("button", "bone-digup", "→ 🐑");
+      toFlock.title = "Move this to The ninety & nine (your to-do list)";
+      toFlock.onclick = function (e) {
+        e.stopPropagation();
+        if (!state.todos) state.todos = [];
+        state.todos.unshift({ id: Date.now().toString(36), text: t.text, stage: 0, created: Date.now() });
+        state.truths = state.truths.filter(function (x) { return x.id !== t.id; });
+        expandedTruth = null;
+        save(); render();
+        flashToast("→ sent to the flock");
+      };
+      actions.appendChild(toFlock);
       (t.tags || []).forEach(function (tg) {
         var tag = el("button", "bit-tag", tg + " ✕");
         tag.title = "Tap to remove tag";
@@ -1784,6 +1883,57 @@
   document.getElementById("wisdom").onclick = dealWisdom;
   dealWisdom();
 
+
+  // ——— the ninety & nine (to-do nook) ———
+  var FLOCK_STAGE = ["○", "◐", "●"];
+  function renderFlock() {
+    var host = document.getElementById("flockList");
+    if (!host) return;
+    host.innerHTML = "";
+    if (!state.todos) state.todos = [];
+    if (!state.todos.length) {
+      host.appendChild(el("p", "flock-empty", "Nothing wandering off just yet. Send stuff here with → 🐑."));
+      document.getElementById("flockDoneWrap").style.display = "none";
+      return;
+    }
+    // open/scheduled first (by created desc), done sink to bottom
+    var live = state.todos.filter(function (t) { return t.stage < 2; });
+    var done = state.todos.filter(function (t) { return t.stage >= 2; });
+    var ordered = live.concat(done);
+    var anyDone = done.length > 0;
+    ordered.forEach(function (t) {
+      var row = el("div", "flock-item" + (t.stage >= 2 ? " done" : ""));
+      var chk = el("button", "flock-check" + (t.stage === 1 ? " stage1" : t.stage >= 2 ? " stage2" : ""), FLOCK_STAGE[t.stage] || "○");
+      var labels = ["open — tap when it's scheduled", "scheduled — tap when it's done", "done — tap to reopen"];
+      chk.title = labels[t.stage] || "";
+      chk.onclick = function () {
+        t.stage = (t.stage + 1) % 3;
+        save(); renderFlock();
+      };
+      row.appendChild(chk);
+      row.appendChild(el("div", "flock-text", t.text));
+      var x = el("button", "flock-x", "✕");
+      x.title = "Remove";
+      x.onclick = function () {
+        state.todos = state.todos.filter(function (z) { return z.id !== t.id; });
+        save(); renderFlock();
+      };
+      row.appendChild(x);
+      host.appendChild(row);
+    });
+    document.getElementById("flockDoneWrap").style.display = anyDone ? "block" : "none";
+  }
+  document.getElementById("flockOpen").onclick = function () {
+    renderFlock();
+    document.getElementById("flockOverlay").classList.add("open");
+  };
+  document.getElementById("flockClose").onclick = function () {
+    document.getElementById("flockOverlay").classList.remove("open");
+  };
+  document.getElementById("flockClear").onclick = function () {
+    state.todos = state.todos.filter(function (t) { return t.stage < 2; });
+    save(); renderFlock();
+  };
 
   // ——— search (home) ———
   var searchFocused = false;
