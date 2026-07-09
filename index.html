@@ -127,6 +127,28 @@
   .day-fold.open::before { content: "▾"; }
   .day-fold::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
   .bit { padding: 13px 15px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; margin-bottom: 9px; box-shadow: var(--cardshadow); }
+  .bit.has-corners { position: relative; padding-right: 44px; padding-bottom: 34px; }
+  .copy-corner { position: absolute; right: 8px; bottom: 8px; background: transparent; border: none; color: var(--faint); font-size: 16px; line-height: 1; padding: 4px 6px; cursor: pointer; opacity: .65; }
+  .copy-corner:hover, .copy-corner:active { opacity: 1; color: var(--accent); }
+  .axe-corner { background: transparent; border: none; font-size: 15px; line-height: 1; padding: 2px 4px; cursor: pointer; opacity: .6; }
+  .axe-corner:hover, .axe-corner:active, .axe-corner.armed { opacity: 1; }
+  .tag-input-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .tag-input-row .tag-input { flex: 1; }
+  .tag-add-btn { flex: 0 0 auto; background: var(--accent); color: var(--onaccent, #fff); border: none; border-radius: 8px; padding: 6px 12px; font-family: var(--mono); font-size: 12px; cursor: pointer; }
+  .notes-lock { display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; }
+  .lock-face { text-align: center; width: 100%; max-width: 280px; }
+  .lock-emoji { font-size: 34px; margin-bottom: 10px; }
+  .lock-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 0 0 16px; letter-spacing: .04em; }
+  .lock-input { width: 100%; box-sizing: border-box; text-align: center; letter-spacing: .5em; font-size: 22px; font-family: var(--mono); padding: 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); color: var(--ink); outline: none; }
+  .lock-input:focus { border-color: var(--accent); }
+  .lock-btns { margin-top: 14px; }
+  .lock-go { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; cursor: pointer; }
+  .lock-manage { margin-top: 18px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; text-decoration: underline; cursor: pointer; }
+  .theme-picker { display: flex; gap: 10px; align-items: center; padding: 6px 4px 10px; flex-wrap: wrap; }
+  .theme-dot { width: 24px; height: 24px; border-radius: 999px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+  .theme-dot.on { border-color: var(--ink); }
+  .copy-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--page); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 60; }
+  .copy-toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
   .bit-text { margin: 0 0 9px; font-size: 16px; line-height: 1.6; white-space: pre-wrap; cursor: pointer; }
   .edit-area { width: 100%; border: 1px solid var(--accent); border-radius: 7px; padding: 9px 10px; font-size: 16px; font-family: var(--serif); line-height: 1.6; margin: 0 0 9px; background: var(--card); color: var(--ink); min-height: 64px; resize: vertical; }
   .bit-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
@@ -137,8 +159,8 @@
   .st-proven { color: var(--st-proven); border-color: var(--st-proven); }
   .stale { color: var(--accent2); font-size: 11.5px; font-weight: 700; font-style: italic; font-family: var(--mono); }
   .bit-tag { background: var(--tagbg); border: none; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; color: var(--tagink); font-family: var(--mono); }
-  .add-tag-btn { background: transparent; border: 1px dashed var(--faint); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; color: var(--faint); font-family: var(--mono); }
-  .add-tag-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .add-tag-btn { background: transparent; border: none; border-radius: 999px; padding: 2px 6px; font-size: 15px; color: var(--faint); font-family: var(--mono); opacity: .8; cursor: pointer; }
+  .add-tag-btn:hover { opacity: 1; }
   .tag-input { width: 90px; border: 1px solid var(--rule); border-radius: 5px; padding: 3px 7px; font-size: 13px; font-family: var(--mono); background: var(--card); color: var(--ink); }
   .delete-btn { background: transparent; border: none; color: var(--faint); font-size: 13px; margin-left: auto; padding: 2px 6px; opacity: .7; }
   .delete-btn:hover { color: var(--accent2); opacity: 1; }
@@ -171,7 +193,9 @@
   .wisdom-q { margin: 0; font-family: 'Caveat', 'Bradley Hand', 'Comic Sans MS', cursive; font-weight: 500; font-size: 21px; line-height: 1.4; color: var(--faint); opacity: .85; }
   .wisdom-by { margin: 5px 0 0; font-family: 'Caveat', 'Bradley Hand', cursive; font-weight: 600; font-size: 15.5px; color: var(--faint); opacity: .6; }
   .bone-card p, .bit-text, .set-row p { white-space: pre-wrap; }
-  .bone-digup { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: 4px 12px; font-family: var(--mono); font-size: 11px; }
+  .bone-digup { background: transparent; color: var(--muted); border: 1px solid var(--rule); border-radius: 7px; padding: 4px 12px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+  .bone-digup:hover { color: var(--accent); border-color: var(--accent); }
+  .bone-digup.wb-btn { font-size: 14px; padding: 3px 10px; }
   .bone-when { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
   .bone-del { margin-left: auto; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 2px 4px; }
   .bone-del:hover { color: var(--accent2); }
@@ -366,6 +390,8 @@
     <span class="sync-chip" id="syncStatus"></span>
     <span class="backup-note" id="authWho"></span>
     <div class="util-menu" id="utilMenu" style="display:none">
+      <div class="theme-picker" id="themePicker"></div>
+      <button id="notesLockBtn">Notes lock</button>
       <button id="tourReplay">Replay tutorial</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
@@ -407,6 +433,7 @@
       <button class="modal-skip" id="introSkip">Skip — I'll figure it out</button>
     </div>
   </div>
+  <div id="copyToast" class="copy-toast">copied</div>
   <div class="modal-gate" id="buryPop">
     <div class="modal-box">
       <h2>Buried, not gone</h2>
@@ -469,11 +496,22 @@
         <h2 id="notesTitle">Notes &amp; ideas</h2>
         <button class="notes-close" id="notesClose">done</button>
       </div>
+      <div id="notesLock" class="notes-lock" style="display:none">
+        <div class="lock-face">
+          <div class="lock-emoji">🔒</div>
+          <p class="lock-msg" id="lockMsg">Enter your PIN</p>
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" id="lockInput" class="lock-input" autocomplete="off" />
+          <div class="lock-btns"><button id="lockGo" class="lock-go">Open</button></div>
+          <button id="lockManage" class="lock-manage"></button>
+        </div>
+      </div>
+      <div id="notesBody">
       <textarea class="notes-canvas" id="notesCanvas" placeholder="Free journaling, brain-dumps, whatever…"></textarea>
       <button class="notes-save" id="notesSave">Save note</button>
       <div class="notes-index">
         <div class="notes-index-label">earlier notes</div>
         <div id="notesList"></div>
+      </div>
       </div>
     </div>
   </div>
@@ -510,9 +548,10 @@
     "What's on your mind to pray about?"
   ];
 
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" }, theme: "walnut", notesPin: null };
   var stageFilter = "home";
   var tagEditing = null;
+  var pendingRemote = null;
   var textEditing = null;
 
   function hydrate(data) {
@@ -534,6 +573,8 @@
     if (!state.habits.good) state.habits.good = [];
     if (!state.habits.bad) state.habits.bad = [];
     state.habitLabels = data.habitLabels || { good: "good habit", bad: "bad habit" };
+    state.theme = data.theme || "walnut";
+    state.notesPin = data.notesPin || null;
     state.buried = data.buried || [];
     state.truths = data.truths || [];
     toPool.forEach(function (b) {
@@ -579,8 +620,147 @@
     if (text != null) e.textContent = text;
     return e;
   }
+  // ——— themes: accent only; each has a dark + light variant ———
+  var THEMES = {
+    walnut: { label: "Walnut", dot: "#c69a4e",
+              dark:  { a: "#c69a4e", a2: "#e0b366", on: "#160f07" },
+              light: { a: "#9a7420", a2: "#7c5c14", on: "#fbf6ea" } },
+    olive:  { label: "Olive",  dot: "#8a9a6b",
+              dark:  { a: "#8a9a6b", a2: "#a3b283", on: "#14180d" },
+              light: { a: "#5f7043", a2: "#4a5834", on: "#f4f1e6" } },
+    clay:   { label: "Clay",   dot: "#c67b4e",
+              dark:  { a: "#c67b4e", a2: "#dd9468", on: "#1a1206" },
+              light: { a: "#a85c30", a2: "#864620", on: "#f6ede0" } },
+    slate:  { label: "Slate",  dot: "#6f8ca0",
+              dark:  { a: "#6f8ca0", a2: "#8aa6b8", on: "#101619" },
+              light: { a: "#4f6f84", a2: "#3d5768", on: "#eef2f4" } },
+    plum:   { label: "Plum",   dot: "#9a6b86",
+              dark:  { a: "#9a6b86", a2: "#b585a0", on: "#160d12" },
+              light: { a: "#754862", a2: "#5c374d", on: "#f3ecef" } },
+    sage:   { label: "Ink",    dot: "#8f8578",
+              dark:  { a: "#a89a86", a2: "#c3b393", on: "#14110c" },
+              light: { a: "#6b6152", a2: "#544c40", on: "#f4f1e9" } }
+  };
+  function hexA(hex, a) {
+    var h = hex.replace("#", ""), n = parseInt(h, 16);
+    return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+  }
+  function applyTheme() {
+    var t = THEMES[state.theme] || THEMES.walnut;
+    var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var v = dark ? t.dark : t.light;
+    var r = document.documentElement.style;
+    r.setProperty("--accent", v.a);
+    r.setProperty("--accent2", v.a2);
+    r.setProperty("--onaccent", v.on);
+    r.setProperty("--glow", "0 0 10px " + hexA(v.a, .4));
+    r.setProperty("--st-bit", v.a);
+    r.setProperty("--st-ready", v.a2);
+  }
+  if (window.matchMedia) {
+    try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme); }
+    catch (e) { try { window.matchMedia("(prefers-color-scheme: dark)").addListener(applyTheme); } catch (e2) {} }
+  }
+  // ——— copy engine (execCommand-first for iOS reliability) ———
+  function flashCopied() {
+    var t = document.getElementById("copyToast");
+    if (!t) return;
+    t.classList.add("show");
+    clearTimeout(flashCopied._t);
+    flashCopied._t = setTimeout(function () { t.classList.remove("show"); }, 1100);
+  }
+  function buzz() { try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {} }
+  function legacyCopy(str) {
+    var ta = document.createElement("textarea");
+    ta.value = str; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.top = "0"; ta.style.left = "0"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.setSelectionRange(0, str.length);
+    var ok = false; try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta); return ok;
+  }
+  function copyText(str) {
+    if (!str) return;
+    if (legacyCopy(str)) { flashCopied(); buzz(); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(str).then(function () { flashCopied(); buzz(); }, function () {});
+    }
+  }
+  function copyCorner(getText) {
+    var b = el("button", "copy-corner", "\u29c9");
+    b.title = "Copy"; b.setAttribute("aria-label", "copy entry");
+    b.onclick = function (e) { e.stopPropagation(); copyText(getText()); };
+    return b;
+  }
+  function axeCorner(onKill) {
+    var b = el("button", "axe-corner", "\uD83E\uDE93");
+    b.title = "Remove"; b.setAttribute("aria-label", "remove entry");
+    b.onclick = function (e) {
+      e.stopPropagation();
+      if (b.dataset.armed === "1") { onKill(); return; }
+      b.dataset.armed = "1"; b.textContent = "\uD83E\uDE93?"; b.classList.add("armed");
+      setTimeout(function () { if (b) { b.dataset.armed = "0"; b.textContent = "\uD83E\uDE93"; b.classList.remove("armed"); } }, 2500);
+    };
+    return b;
+  }
+  // ——— shared tag picker with visible + add ———
+  function buildTagPicker(container, entry, onDone) {
+    if (!entry.tags) entry.tags = [];
+    var wrap = el("div", "tag-picker");
+    wrap.onclick = function (e) { e.stopPropagation(); };
+    var inp = el("input", "tag-input");
+    inp.placeholder = "tag\u2026";
+    var addVal = function (raw) {
+      var v = (raw || "").trim().toLowerCase();
+      if (v && entry.tags.indexOf(v) === -1) { entry.tags.push(v); save(); }
+    };
+    function commit() {
+      inp.value.split(/[,\n]/).forEach(function (p) { addVal(p); });
+      inp.value = ""; refreshChips(); inp.focus();
+    }
+    inp.onkeydown = function (ev) {
+      if (ev.key === "Enter" || ev.key === ",") { ev.preventDefault(); commit(); }
+      else if (ev.key === "Escape") { onDone(); render(); }
+      else if (ev.key === "Backspace" && !inp.value && entry.tags.length) { entry.tags.pop(); save(); refreshChips(); }
+    };
+    var inputRow = el("div", "tag-input-row");
+    inputRow.appendChild(inp);
+    var addBtn = el("button", "tag-add-btn", "+ add");
+    addBtn.onclick = function (e) { e.stopPropagation(); commit(); };
+    inputRow.appendChild(addBtn);
+    wrap.appendChild(inputRow);
+    var chipRow = el("div", "tag-suggest");
+    wrap.appendChild(chipRow);
+    function refreshChips() {
+      chipRow.innerHTML = "";
+      entry.tags.forEach(function (tg) {
+        var on = el("button", "tag-pick on", tg + " \u2715");
+        on.onclick = function (e) { e.stopPropagation(); entry.tags = entry.tags.filter(function (x) { return x !== tg; }); save(); refreshChips(); };
+        chipRow.appendChild(on);
+      });
+      allTagCounts().forEach(function (x) {
+        if (entry.tags.indexOf(x.tag) !== -1) return;
+        var chip = el("button", "tag-pick", x.tag);
+        chip.onclick = function (e) { e.stopPropagation(); addVal(x.tag); refreshChips(); inp.focus(); };
+        chipRow.appendChild(chip);
+      });
+      var done = el("button", "tag-pick tag-pick-done", "done");
+      done.onclick = function (e) { e.stopPropagation(); onDone(); render(); };
+      chipRow.appendChild(done);
+    }
+    refreshChips();
+    container.appendChild(wrap);
+    setTimeout(function () { inp.focus(); }, 0);
+  }
 
   function render() {
+    if (pendingRemote && tagEditing == null && workbenchId == null) {
+      var pr = pendingRemote; pendingRemote = null;
+      if ((pr.updatedAt || 0) > (state.updatedAt || 0)) {
+        hydrate(pr);
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      }
+    }
+    applyTheme();
     document.body.classList.toggle("home-view", stageFilter === "home");
 
     // section row
@@ -663,7 +843,7 @@
     });
 
     function renderCard(b, list) {
-      var card = el("div", "bit");
+      var card = el("div", "bit has-corners");
 
       if (textEditing === b.id) {
         var editArea = document.createElement("textarea");
@@ -690,6 +870,21 @@
         p.title = "Tap to open workbench";
         p.onclick = function () { openWorkbench(b.id); };
         card.appendChild(p);
+        var bcorner = el("div", "truth-corner");
+        bcorner.appendChild(axeCorner(function () {
+          b.buriedAt = Date.now();
+          state.buried.unshift(b);
+          state.bits = state.bits.filter(function (x) { return x.id !== b.id; });
+          save(); render();
+          try {
+            if (!localStorage.getItem("gp-buried-once")) {
+              localStorage.setItem("gp-buried-once", "1");
+              document.getElementById("buryPop").classList.add("open");
+            }
+          } catch (e) {}
+        }));
+        card.appendChild(bcorner);
+        card.appendChild(copyCorner(function () { return b.text; }));
       }
 
       var meta = el("div", "bit-meta");
@@ -736,20 +931,10 @@
       });
 
       if (tagEditing === b.id) {
-        var input = el("input", "tag-input");
-        input.placeholder = "tag";
-        function commit() {
-          var v = input.value.trim().toLowerCase();
-          if (v && b.tags.indexOf(v) === -1) b.tags.push(v);
-          tagEditing = null;
-          save(); render();
-        }
-        input.onkeydown = function (e) { if (e.key === "Enter") commit(); };
-        input.onblur = commit;
-        meta.appendChild(input);
-        setTimeout(function () { input.focus(); }, 0);
+        buildTagPicker(meta, b, function () { tagEditing = null; });
       } else {
-        var addTag = el("button", "add-tag-btn", "+ tag");
+        var addTag = el("button", "add-tag-btn", "\uD83C\uDFF7\uFE0F");
+        addTag.title = "Add tags"; addTag.setAttribute("aria-label", "add tags");
         addTag.onclick = function () { tagEditing = b.id; render(); };
         meta.appendChild(addTag);
       }
@@ -759,23 +944,6 @@
         notesMark.title = "Has workbench notes";
         meta.appendChild(notesMark);
       }
-
-      var del = el("button", "delete-btn", "✕");
-      del.setAttribute("aria-label", "bury entry");
-      del.title = "Bury to the vault";
-      del.onclick = function () {
-        b.buriedAt = Date.now();
-        state.buried.unshift(b);
-        state.bits = state.bits.filter(function (x) { return x.id !== b.id; });
-        save(); render();
-        try {
-          if (!localStorage.getItem("gp-buried-once")) {
-            localStorage.setItem("gp-buried-once", "1");
-            document.getElementById("buryPop").classList.add("open");
-          }
-        } catch (e) {}
-      };
-      meta.appendChild(del);
 
       card.appendChild(meta);
       list.appendChild(card);
@@ -934,6 +1102,45 @@
   function capFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
   // backup
+  function renderThemePicker() {
+    var host = document.getElementById("themePicker");
+    if (!host) return;
+    host.innerHTML = "";
+    Object.keys(THEMES).forEach(function (key) {
+      var t = THEMES[key];
+      var dot = el("button", "theme-dot" + (state.theme === key ? " on" : ""));
+      dot.style.background = t.dot;
+      dot.title = t.label;
+      dot.setAttribute("aria-label", "theme: " + t.label);
+      dot.onclick = function () { state.theme = key; save(); applyTheme(); renderThemePicker(); };
+      host.appendChild(dot);
+    });
+  }
+  renderThemePicker();
+
+  document.getElementById("notesLockBtn").onclick = function () {
+    if (state.notesPin) {
+      var choice = prompt("Notes lock is ON.\nType a NEW pin to change it, or type REMOVE to turn the lock off.\n(Cancel to keep it as-is.)");
+      if (choice === null) return;
+      choice = choice.trim();
+      if (choice.toUpperCase() === "REMOVE") {
+        var cur = prompt("Enter your current PIN to remove the lock:");
+        if (cur !== null && cur.trim() === state.notesPin) {
+          state.notesPin = null; notesUnlocked = false; save(); alert("Notes lock removed.");
+        } else if (cur !== null) { alert("PIN didn't match. Lock unchanged."); }
+        return;
+      }
+      if (choice.length < 3 || /\D/.test(choice)) { alert("PIN must be at least 3 digits, numbers only."); return; }
+      state.notesPin = choice; notesUnlocked = false; save(); alert("PIN updated.");
+    } else {
+      var np = prompt("Set a PIN for your notes drawer (at least 3 digits):");
+      if (np === null) return;
+      np = np.trim();
+      if (np.length < 3 || /\D/.test(np)) { alert("PIN must be at least 3 digits, numbers only."); return; }
+      state.notesPin = np; notesUnlocked = false; save(); alert("Notes are now locked with your PIN.");
+    }
+  };
+
   document.getElementById("exportBtn").onclick = function () {
     var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     var a = document.createElement("a");
@@ -1013,6 +1220,7 @@
           if (payload.new && payload.new.data) {
             var remote = payload.new.data;
             if ((remote.updatedAt || 0) > (state.updatedAt || 0)) {
+              if (tagEditing != null || workbenchId != null) { pendingRemote = remote; return; }
               hydrate(remote);
               try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
               render();
@@ -1156,13 +1364,62 @@
     document.getElementById("notesCanvas").value = "";
     document.getElementById("notesSave").textContent = "Save note";
   }
-  document.getElementById("notesOpen").onclick = function () {
+  var notesUnlocked = false;
+  function showNotesBody() {
+    document.getElementById("notesLock").style.display = "none";
+    document.getElementById("notesBody").style.display = "";
     if (!state.notes) state.notes = [];
     resetNoteEditor(); renderNotes();
+  }
+  function showNotesLock(mode) {
+    var lock = document.getElementById("notesLock");
+    var body = document.getElementById("notesBody");
+    var msg = document.getElementById("lockMsg");
+    var inp = document.getElementById("lockInput");
+    var go = document.getElementById("lockGo");
+    var manage = document.getElementById("lockManage");
+    body.style.display = "none";
+    lock.style.display = "flex";
+    inp.value = ""; inp.dataset.mode = mode; inp.dataset.stage = ""; inp.dataset.first = "";
+    if (mode === "set") {
+      msg.textContent = "Set a PIN for your notes (or skip)";
+      go.textContent = "Set PIN"; manage.textContent = "skip — no lock"; manage.style.display = "";
+    } else {
+      msg.textContent = "Enter your PIN"; go.textContent = "Open"; manage.textContent = ""; manage.style.display = "none";
+    }
+    setTimeout(function () { inp.focus(); }, 60);
+  }
+  function lockSubmit() {
+    var inp = document.getElementById("lockInput");
+    var msg = document.getElementById("lockMsg");
+    var val = (inp.value || "").trim();
+    var mode = inp.dataset.mode;
+    if (mode === "set") {
+      if (inp.dataset.stage === "confirm") {
+        if (val === inp.dataset.first) { state.notesPin = val; save(); notesUnlocked = true; showNotesBody(); }
+        else { msg.textContent = "Didn't match. Pick a PIN again."; inp.dataset.stage = ""; inp.dataset.first = ""; inp.value = ""; }
+        return;
+      }
+      if (val.length < 3) { msg.textContent = "Use at least 3 digits."; return; }
+      inp.dataset.first = val; inp.dataset.stage = "confirm"; msg.textContent = "Enter it again to confirm"; inp.value = "";
+      return;
+    }
+    if (val === state.notesPin) { notesUnlocked = true; showNotesBody(); }
+    else { msg.textContent = "Nope. Try again."; inp.value = ""; }
+  }
+  document.getElementById("lockGo").onclick = lockSubmit;
+  document.getElementById("lockInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); lockSubmit(); }
+  });
+  document.getElementById("lockManage").onclick = function () { notesUnlocked = true; showNotesBody(); };
+  document.getElementById("notesOpen").onclick = function () {
     document.getElementById("notesOverlay").classList.add("open");
+    if (state.notesPin) { if (notesUnlocked) showNotesBody(); else showNotesLock("enter"); }
+    else { showNotesLock("set"); }
   };
   document.getElementById("notesClose").onclick = function () {
     document.getElementById("notesOverlay").classList.remove("open");
+    if (state.notesPin) notesUnlocked = false;
   };
   document.getElementById("notesSave").onclick = function () {
     var t = document.getElementById("notesCanvas").value.trim();
@@ -1294,11 +1551,12 @@
         noted.title = "Has workbench notes";
         corner.appendChild(noted);
       }
-      var more = el("button", "truth-more", "⋯");
-      more.setAttribute("aria-label", "show actions");
-      more.onclick = function () { expandedTruth = expandedTruth === t.id ? null : t.id; render(); };
-      corner.appendChild(more);
+      corner.appendChild(axeCorner(function () {
+        state.truths = state.truths.filter(function (x) { return x.id !== t.id; });
+        save(); render();
+      }));
       card.appendChild(corner);
+      card.appendChild(copyCorner(function () { return t.text; }));
       if (expandedTruth !== t.id) { list.appendChild(card); return; }
       var actions = el("div", "bone-actions truth-actions");
       var promote = el("button", "bone-digup", "+ question");
@@ -1328,32 +1586,13 @@
         actions.appendChild(tag);
       });
       if (tagEditing === t.id) {
-        var tinput = el("input", "tag-input");
-        tinput.placeholder = "tag";
-        var commitT = function () {
-          var v = tinput.value.trim().toLowerCase();
-          if (!t.tags) t.tags = [];
-          if (v && t.tags.indexOf(v) === -1) t.tags.push(v);
-          tagEditing = null;
-          save(); render();
-        };
-        tinput.onkeydown = function (e) { if (e.key === "Enter") commitT(); };
-        tinput.onblur = commitT;
-        actions.appendChild(tinput);
-        setTimeout(function () { tinput.focus(); }, 0);
+        buildTagPicker(actions, t, function () { tagEditing = null; });
       } else {
-        var addTag = el("button", "add-tag-btn", "+ tag");
+        var addTag = el("button", "add-tag-btn", "\uD83C\uDFF7\uFE0F");
+        addTag.title = "Add tags"; addTag.setAttribute("aria-label", "add tags");
         addTag.onclick = function (e) { e.stopPropagation(); tagEditing = t.id; render(); };
         actions.appendChild(addTag);
       }
-      var del = el("button", "bone-del", "delete");
-      del.onclick = function (e) {
-        e.stopPropagation();
-        if (del.textContent === "delete") { del.textContent = "sure?"; setTimeout(function () { if (del) del.textContent = "delete"; }, 2500); return; }
-        state.truths = state.truths.filter(function (x) { return x.id !== t.id; });
-        save(); render();
-      };
-      actions.appendChild(del);
       card.appendChild(actions);
       list.appendChild(card);
   }
@@ -1783,6 +2022,7 @@
   }
 
   load();
+  applyTheme();
   render();
   initSupabase();
 
