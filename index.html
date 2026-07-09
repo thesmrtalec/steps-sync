@@ -695,13 +695,13 @@
     return b;
   }
   function axeCorner(onKill) {
-    var b = el("button", "axe-corner", "\uD83E\uDE93");
+    var b = el("button", "axe-corner", "\u2715");
     b.title = "Remove"; b.setAttribute("aria-label", "remove entry");
     b.onclick = function (e) {
       e.stopPropagation();
       if (b.dataset.armed === "1") { onKill(); return; }
-      b.dataset.armed = "1"; b.textContent = "\uD83E\uDE93?"; b.classList.add("armed");
-      setTimeout(function () { if (b) { b.dataset.armed = "0"; b.textContent = "\uD83E\uDE93"; b.classList.remove("armed"); } }, 2500);
+      b.dataset.armed = "1"; b.textContent = "sure?"; b.classList.add("armed");
+      setTimeout(function () { if (b) { b.dataset.armed = "0"; b.textContent = "\u2715"; b.classList.remove("armed"); } }, 2500);
     };
     return b;
   }
