@@ -395,13 +395,13 @@
   </div>
   <div id="searchOut"></div>
 
+  <div class="wisdom" id="wisdom" style="display:none"></div>
+
   <span class="cap-dest" id="capDest">capture → stuff</span>
   <div class="capture">
     <textarea id="draft" rows="3"></textarea>
-    <button class="add-btn" id="addBtn">Add</button>
+    <button class="add-btn" id="addBtn">keep</button>
   </div>
-
-  <div class="wisdom" id="wisdom" style="display:none"></div>
 
   <div id="list"></div>
   <p class="empty" id="empty" style="display:none"></p>
@@ -1039,6 +1039,12 @@
     save(); render();
   }
   document.getElementById("addBtn").onclick = addBit;
+  document.getElementById("draft").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      addBit();
+    }
+  });
   document.getElementById("utilBtn").onclick = function () {
     var m = document.getElementById("utilMenu");
     m.style.display = m.style.display === "none" ? "flex" : "none";
