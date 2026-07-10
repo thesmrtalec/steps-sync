@@ -162,6 +162,7 @@
   .flock-check.stage2 { background: var(--accent); border-color: var(--accent); color: var(--onaccent); }
   .flock-text { flex: 1; font-family: 'Caveat', cursive; font-size: 20px; line-height: 1.3; color: var(--ink); white-space: pre-wrap; word-break: break-word; }
   .flock-item.done .flock-text { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .flock-noted { flex: 0 0 auto; color: var(--faint); font-size: 12px; align-self: center; }
   .flock-x { flex: 0 0 auto; background: transparent; border: none; color: var(--faint); font-size: 14px; cursor: pointer; opacity: .5; padding: 2px 4px; }
   .flock-x:hover { opacity: 1; }
   .flock-empty { font-family: var(--serif); font-style: italic; color: var(--faint); padding: 20px 0; }
@@ -1348,7 +1349,9 @@
   // ——— bit workbench ———
   var workbenchId = null, workbenchKind = "bit";
   function benchFind() {
-    var pool = workbenchKind === "truth" ? (state.truths || []) : state.bits;
+    var pool = workbenchKind === "truth" ? (state.truths || [])
+             : workbenchKind === "todo" ? (state.todos || [])
+             : state.bits;
     return pool.find(function (x) { return x.id === workbenchId; });
   }
   function openWorkbench(id, kind) {
@@ -1361,6 +1364,8 @@
     var m = document.getElementById("wbMeta");
     if (workbenchKind === "truth") {
       m.textContent = b.mined ? "used ×" + b.mined : "";
+    } else if (workbenchKind === "todo") {
+      m.textContent = b.workshop ? "" : "Notes on this one — who to talk to, what's left, where it stands.";
     } else {
       m.textContent = b.workshop ? "" : "This bit’s working notes live here — separate from the line itself.";
     }
@@ -1381,10 +1386,12 @@
   document.getElementById("wbBit").oninput = saveWorkbench;
   document.getElementById("wbPad").oninput = saveWorkbench;
   document.getElementById("wbClose").onclick = function () {
+    var wasTodo = workbenchKind === "todo";
     saveWorkbench();
     workbenchId = null;
     workbenchKind = "bit";
     document.getElementById("workbenchOverlay").classList.remove("open");
+    if (wasTodo && typeof renderFlock === "function") renderFlock();
     render();
   };
 
@@ -1916,7 +1923,15 @@
       chk.title = labels[t.stage] || "";
       chk.onclick = function () { t.stage = (t.stage + 1) % 3; save(); renderFlock(); };
       row.appendChild(chk);
-      row.appendChild(el("div", "flock-text", t.text));
+      var txt = el("div", "flock-text", t.text);
+      txt.style.cursor = "pointer";
+      txt.onclick = function () { openWorkbench(t.id, "todo"); };
+      row.appendChild(txt);
+      if (t.workshop && t.workshop.trim()) {
+        var noted = el("span", "flock-noted", "✎");
+        noted.title = "Has notes";
+        row.appendChild(noted);
+      }
       var x = el("button", "flock-x", "✕");
       x.title = "Remove";
       x.onclick = function () { state.todos = state.todos.filter(function (z) { return z.id !== t.id; }); save(); renderFlock(); };
