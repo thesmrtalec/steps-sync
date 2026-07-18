@@ -178,11 +178,19 @@
   .ref-add:hover { color: var(--accent); border-color: var(--accent); }
   .ref-input { width: 130px; border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; background: var(--card); color: var(--ink); }
   .ref-input.ref-bad { border-color: var(--accent2); }
-  .cap-refs { margin: -4px 0 12px; }
-  .cap-refs.voice-line { margin-top: -8px; }
+  /* the two attach buttons sit side by side, wrapping only if they must */
+  .cap-attach { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin: -4px 0 12px; }
+  .cap-refs { margin: 0; width: auto; }
+  .cap-refs.voice-line { margin-top: 0; }
   .voice-chip { color: var(--muted); font-style: italic; }
   .voice-chip:hover { color: var(--accent); }
   .voice-line { margin-top: 6px; }
+  .grat-line { margin-top: 6px; }
+  .grat-btn.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
+  .lens-row { display: flex; gap: 7px; flex-wrap: wrap; margin: 0 0 12px; }
+  .lens { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 12px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .lens:hover { border-color: var(--accent); color: var(--accent); }
+  .lens.on { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
   .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   .voice-pick { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 11px; font-family: var(--mono); font-size: 11px; color: var(--ink); cursor: pointer; white-space: nowrap; }
   .voice-pick:hover { border-color: var(--accent); color: var(--accent); }
@@ -399,8 +407,11 @@
     <textarea id="draft" rows="3"></textarea>
     <button class="add-btn" id="addBtn">Add</button>
   </div>
-  <div class="ref-line cap-refs" id="capRefs"></div>
-  <div class="ref-line cap-refs voice-line" id="capVoices"></div>
+  <div class="cap-attach">
+    <div class="ref-line cap-refs" id="capRefs"></div>
+    <div class="ref-line cap-refs voice-line" id="capVoices"></div>
+    <div class="ref-line cap-refs" id="capGrat"></div>
+  </div>
 
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
@@ -623,7 +634,7 @@
     state.buried = data.buried || [];
     state.truths = data.truths || [];
     toPool.forEach(function (b) {
-      state.truths.push({ id: b.id, text: b.text, created: b.created, workshop: b.workshop, mined: b.mined, tags: b.tags });
+      state.truths.push(b);   // keep the whole entry, not a lossy copy
     });
     state.poolMigrated = true;
     state.sets = data.sets || [];
@@ -1027,6 +1038,21 @@
     paint();
   }
 
+  // A gratitude stamp for an existing entry — same toggle, retroactive.
+  function buildGratLine(x) {
+    var row = el("div", "ref-line grat-line");
+    var btn = el("button", "ref-add grat-btn" + (x.grateful ? " on" : ""), x.grateful ? "❦ gratitude" : "+ gratitude");
+    btn.title = x.grateful ? "Tap to unmark" : "Mark this as a gratitude";
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      if (x.grateful) delete x.grateful; else x.grateful = true;
+      x.touched = Date.now();
+      save(); render();
+    };
+    row.appendChild(btn);
+    return row;
+  }
+
   // The speaker row, sitting under the scripture row on an open card.
   var voiceEditing = null;
   function buildVoiceLine(x) {
@@ -1368,6 +1394,7 @@
     var capDest = document.getElementById("capDest");
     var capRefsRow = document.getElementById("capRefs");
     var capVoicesRow = document.getElementById("capVoices");
+    var capGratRow = document.getElementById("capGrat");
     if (typeof syncAutoRefsLabel === "function") syncAutoRefsLabel();
     var searchRow = document.getElementById("searchRow");
     var searchOut = document.getElementById("searchOut");
@@ -1378,7 +1405,7 @@
     if (stageFilter === "home") {
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
-      capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
+      capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex"; capGratRow.style.display = "flex";
       capDest.style.display = "";
       capDest.textContent = "capture → stuff";
       renderSearch();
@@ -1388,18 +1415,18 @@
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
       if (stageFilter === "pool") {
-        capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
+        capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex"; capGratRow.style.display = "flex";
         capDest.style.display = "";
         capDest.textContent = "capture → stuff";
         renderTruths();
       } else {
-        capWrap.style.display = "none"; capRefsRow.style.display = "none"; capVoicesRow.style.display = "none";
+        capWrap.style.display = "none"; capRefsRow.style.display = "none"; capVoicesRow.style.display = "none"; capGratRow.style.display = "none";
         capDest.style.display = "none";
         renderSets();
       }
       return;
     }
-    capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
+    capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex"; capGratRow.style.display = "flex";
     capDest.style.display = "";
     capDest.textContent = "capture → questions";
 
@@ -1434,7 +1461,18 @@
       function moveToStuff() {
         state.bits = state.bits.filter(function (x) { return x.id !== b.id; });
         if (!state.truths) state.truths = [];
-        state.truths.unshift({ id: b.id, text: b.text, created: b.created, workshop: b.workshop, mined: b.mined, tags: (b.tags || []).slice(), touched: Date.now() });
+        // carry everything across — refs, speakers, gratitude and the
+        // occurred date were being dropped by this hand-built copy
+        var moved = {
+          id: b.id, text: b.text, created: b.created, workshop: b.workshop,
+          mined: b.mined, tags: (b.tags || []).slice(),
+          refs: (b.refs || []).slice(), voices: (b.voices || []).slice(),
+          touched: Date.now()
+        };
+        if (b.occurred) moved.occurred = b.occurred;
+        if (b.grateful) moved.grateful = true;
+        if (b.refsDropped) moved.refsDropped = b.refsDropped.slice();
+        state.truths.unshift(moved);
         closeSwipe(); save(); render();
       }
       function buryEntry() {
@@ -1510,6 +1548,7 @@
         if ((b.tags || []).length) flags.push("🏷");
         if (syncRefs(b).length) flags.push("✝");
         if (entryVoices(b).length) flags.push("❝");
+        if (b.grateful) flags.push("❦");
         if (b.workshop && b.workshop.trim()) flags.push("✎");
         if (b.react) flags.push(b.react);
         if (revisitDays(b) > 0) flags.push("🕮");
@@ -1601,6 +1640,7 @@
       wrapFoot.appendChild(foot);
       wrapFoot.appendChild(buildRefLine(b));
       wrapFoot.appendChild(buildVoiceLine(b));
+      wrapFoot.appendChild(buildGratLine(b));
       return wrapFoot;
     }
 
@@ -1670,6 +1710,17 @@
 
   var pendingVoices = [];
   var capVoiceEditing = false;
+  // Gratitude is a stamp, not a field — no value, no typing. Tap it on, tap
+  // it off; it just rides along with the entry.
+  var pendingGrateful = false;
+  function renderCapGrat() {
+    var row = document.getElementById("capGrat");
+    row.innerHTML = "";
+    var btn = el("button", "ref-add grat-btn" + (pendingGrateful ? " on" : ""), pendingGrateful ? "❦ gratitude" : "+ gratitude");
+    btn.title = "Mark this as a gratitude";
+    btn.onclick = function () { pendingGrateful = !pendingGrateful; renderCapGrat(); };
+    row.appendChild(btn);
+  }
   function renderCapVoices() {
     var row = document.getElementById("capVoices");
     row.innerHTML = "";
@@ -1725,16 +1776,20 @@
     if (!text) return;
     var refs = pendingRefs.slice();
     var voices = pendingVoices.slice();
+    var grateful = pendingGrateful;
     if (stageFilter === "pool" || stageFilter === "home") {
       if (!state.truths) state.truths = [];
-      state.truths.unshift({ id: Date.now().toString(36), text: text, created: Date.now(), refs: refs, voices: voices });
+      var t0 = { id: Date.now().toString(36), text: text, created: Date.now(), refs: refs, voices: voices };
+      if (grateful) t0.grateful = true;
+      state.truths.unshift(t0);
       draft.value = "";
       pendingRefs = []; capRefEditing = false; renderCapRefs();
       pendingVoices = []; capVoiceEditing = false; renderCapVoices();
+      pendingGrateful = false; renderCapGrat();
       save(); render();
       return;
     }
-    state.bits.unshift({
+    var b0 = {
       id: Date.now().toString(36),
       text: text,
       tags: [],
@@ -1742,16 +1797,20 @@
       voices: voices,
       created: Date.now(),
       statusAt: Date.now()
-    });
+    };
+    if (grateful) b0.grateful = true;
+    state.bits.unshift(b0);
     draft.value = "";
     pendingRefs = []; capRefEditing = false; renderCapRefs();
     pendingVoices = []; capVoiceEditing = false; renderCapVoices();
+    pendingGrateful = false; renderCapGrat();
     draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
     save(); render();
   }
   document.getElementById("addBtn").onclick = addBit;
   renderCapRefs();
   renderCapVoices();
+  renderCapGrat();
 
   function syncAutoRefsLabel() {
     document.getElementById("autoRefsToggle").textContent =
@@ -2233,6 +2292,36 @@
   // ——— stuff ———
   var expandedTruth = null;
   var openDays = {};
+  // Lenses over the stuff list — not filters you have to clear, just a way to
+  // look at one kind of thing. Tap the active one again to see everything.
+  var stuffLens = null;   // null | "ref" | "voice" | "grateful"
+  function lensMatch(x) {
+    if (stuffLens === "ref") return syncRefs(x).length > 0;
+    if (stuffLens === "voice") return entryVoices(x).length > 0;
+    if (stuffLens === "grateful") return !!x.grateful;
+    return true;
+  }
+  function buildLensRow(pool) {
+    var row = el("div", "lens-row");
+    function count(fn) { return (pool || []).filter(fn).length; }
+    var defs = [
+      { key: null, label: "all", n: (pool || []).length },
+      { key: "ref", label: "✝ scripture", n: count(function (x) { return syncRefs(x).length > 0; }) },
+      { key: "voice", label: "❝ quotes", n: count(function (x) { return entryVoices(x).length > 0; }) },
+      { key: "grateful", label: "❦ gratitude", n: count(function (x) { return !!x.grateful; }) }
+    ];
+    defs.forEach(function (d) {
+      // a lens with nothing behind it is just noise — hide it
+      if (d.key !== null && d.n === 0) return;
+      var b = el("button", "lens" + (stuffLens === d.key ? " on" : ""), d.label + " · " + d.n);
+      b.onclick = function () {
+        stuffLens = (stuffLens === d.key) ? null : d.key;
+        render();
+      };
+      row.appendChild(b);
+    });
+    return row;
+  }
   function truthDayKey(ts) {
     var d = new Date(ts || 0);
     return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
@@ -2249,9 +2338,18 @@
   function renderTruths() {
     var list = document.getElementById("list");
     list.innerHTML = "";
-    var truths = state.truths || [];
-    if (truths.length === 0) {
+    var all = state.truths || [];
+    if (all.length === 0) {
       list.appendChild(el("p", "empty", "Nothing true yet. Suspicious."));
+      return;
+    }
+    list.appendChild(buildLensRow(all));
+    var truths = all.filter(lensMatch);
+    if (truths.length === 0) {
+      list.appendChild(el("p", "empty",
+        stuffLens === "grateful" ? "Nothing marked as gratitude yet." :
+        stuffLens === "ref" ? "Nothing with a scripture yet." :
+        "Nothing with a speaker yet."));
       return;
     }
     truths = truths.slice().sort(function (a, b) { return entryDate(b) - entryDate(a); });
@@ -2295,14 +2393,19 @@
       actQ.title = "Copy into questions — it stays here too";
       actQ.onclick = function (e) {
         e.stopPropagation();
-        state.bits.unshift({
+        var promoted = {
           id: Date.now().toString(36),
           text: t.text,
           tags: (t.tags || []).slice(),
+          refs: (t.refs || []).slice(),
+          voices: (t.voices || []).slice(),
           workshop: t.workshop || "",
           created: Date.now(),
           statusAt: Date.now()
-        });
+        };
+        if (t.occurred) promoted.occurred = t.occurred;
+        if (t.grateful) promoted.grateful = true;
+        state.bits.unshift(promoted);
         t.mined = (t.mined || 0) + 1;
         t.touched = Date.now();
         closeSwipe(); save(); render();
@@ -2314,14 +2417,19 @@
         // sermons hold entries by id — mirror it into questions so the
         // lineup can find it, then open the picker on that new copy
         var nid = Date.now().toString(36);
-        state.bits.unshift({
+        var mirrored = {
           id: nid,
           text: t.text,
           tags: (t.tags || []).slice(),
+          refs: (t.refs || []).slice(),
+          voices: (t.voices || []).slice(),
           workshop: t.workshop || "",
           created: Date.now(),
           statusAt: Date.now()
-        });
+        };
+        if (t.occurred) mirrored.occurred = t.occurred;
+        if (t.grateful) mirrored.grateful = true;
+        state.bits.unshift(mirrored);
         t.mined = (t.mined || 0) + 1;
         t.touched = Date.now();
         save();
@@ -2349,6 +2457,7 @@
         if ((t.tags || []).length) flags.push("🏷");
         if (syncRefs(t).length) flags.push("✝");
         if (entryVoices(t).length) flags.push("❝");
+        if (t.grateful) flags.push("❦");
         if (t.workshop && t.workshop.trim()) flags.push("✎");
         if (t.mined) flags.push("⛏");
         if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
@@ -2411,6 +2520,7 @@
       card.appendChild(foot);
       card.appendChild(buildRefLine(t));
       card.appendChild(buildVoiceLine(t));
+      card.appendChild(buildGratLine(t));
       shell.appendChild(card);
       attachSwipe(shell, card);
       list.appendChild(shell);
