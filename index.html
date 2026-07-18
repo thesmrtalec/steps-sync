@@ -179,6 +179,13 @@
   .ref-input { width: 130px; border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; background: var(--card); color: var(--ink); }
   .ref-input.ref-bad { border-color: var(--accent2); }
   .cap-refs { margin: -4px 0 12px; }
+  .cap-refs.voice-line { margin-top: -8px; }
+  .voice-chip { color: var(--muted); font-style: italic; }
+  .voice-chip:hover { color: var(--accent); }
+  .voice-line { margin-top: 6px; }
+  .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .voice-pick { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 11px; font-family: var(--mono); font-size: 11px; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .voice-pick:hover { border-color: var(--accent); color: var(--accent); }
   .ref-readings { margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); }
   .ref-readings-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
   .ref-readings .ref-chip { margin: 0 5px 5px 0; }
@@ -393,6 +400,7 @@
     <button class="add-btn" id="addBtn">Add</button>
   </div>
   <div class="ref-line cap-refs" id="capRefs"></div>
+  <div class="ref-line cap-refs voice-line" id="capVoices"></div>
 
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
@@ -525,6 +533,15 @@
         <div class="notes-index-label">earlier notes</div>
         <div id="notesList"></div>
       </div>
+    </div>
+  </div>
+  <div class="notes-overlay" id="voiceOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2 id="voiceTitle">Speaker</h2>
+        <button class="notes-close" id="voiceClose">done</button>
+      </div>
+      <div id="voiceList"></div>
     </div>
   </div>
   <div class="notes-overlay" id="refOverlay">
@@ -860,6 +877,242 @@
     return row;
   }
 
+  // ——— speakers ———
+  // No canon here, so this roster is only a spelling table: it collapses
+  // "Elder Holland" and "Jeffrey R. Holland" onto one person. Anyone not on
+  // it — C.S. Lewis, someone in the ward — is kept exactly as you typed it.
+  var SPEAKERS = [
+    "Russell M. Nelson","Dallin H. Oaks","Henry B. Eyring","Jeffrey R. Holland","Dieter F. Uchtdorf",
+    "David A. Bednar","Quentin L. Cook","D. Todd Christofferson","Neil L. Andersen","Ronald A. Rasband",
+    "Gary E. Stevenson","Dale G. Renlund","Gerrit W. Gong","Ulisses Soares","Patrick Kearon",
+    "Thomas S. Monson","Gordon B. Hinckley","Howard W. Hunter","Ezra Taft Benson","Spencer W. Kimball",
+    "Harold B. Lee","David O. McKay","Heber J. Grant","Lorenzo Snow","Wilford Woodruff","John Taylor",
+    "Brigham Young","Neal A. Maxwell","Boyd K. Packer","M. Russell Ballard","L. Tom Perry",
+    "Richard G. Scott","Robert D. Hales","James E. Faust","Bruce R. McConkie","Marion G. Romney",
+    "Hugh B. Brown","Gérald Caussé","Bonnie H. Cordon","Sharon Eubank","Jean B. Bingham",
+    "Camille N. Johnson","Emily Belle Freeman","Susan H. Porter","Amy A. Wright","Tracy Y. Browning",
+    "Michelle D. Craig","Kristen M. Yee","Reyna I. Aburto","Joy D. Jones","Becky Craven","Lisa L. Harkness"
+  ];
+  var HONORIFICS = /^(elder|president|pres|prest|sister|sis|brother|bro|br|bishop|dr|doctor|rev|reverend|apostle|prophet)\.?\s+/i;
+
+  function stripHonorific(s) {
+    var out = (s || "").trim();
+    // "President Russell M. Nelson" and "Pres. Nelson" both shed the title
+    while (HONORIFICS.test(out)) out = out.replace(HONORIFICS, "").trim();
+    return out;
+  }
+  function lastName(full) {
+    var w = full.trim().split(/\s+/);
+    return w[w.length - 1].toLowerCase();
+  }
+  function firstName(full) {
+    return full.trim().split(/\s+/)[0].toLowerCase();
+  }
+  function titleCaseLoose(s) {
+    // Only touch it if they typed all-lowercase — "C.S. Lewis" stays put.
+    if (/[A-Z]/.test(s)) return s;
+    return s.replace(/\b([a-z])/g, function (m0, c) { return c.toUpperCase(); });
+  }
+  function normalizeSpeaker(raw) {
+    var s = stripHonorific(raw).replace(/\s+/g, " ").trim();
+    if (!s) return null;
+    var low = s.toLowerCase();
+    // exact full name
+    for (var i = 0; i < SPEAKERS.length; i++) {
+      if (SPEAKERS[i].toLowerCase() === low) return SPEAKERS[i];
+    }
+    // surname alone — only when it points at exactly one person, so "Smith"
+    // stays as typed rather than guessing between four of them
+    var bySur = SPEAKERS.filter(function (n) { return lastName(n) === low; });
+    if (bySur.length === 1) return bySur[0];
+    // first + last, skipping middle initials: "Jeffrey Holland"
+    var w = s.split(" ");
+    if (w.length === 2) {
+      var f = w[0].toLowerCase().replace(/\./g, ""), l = w[1].toLowerCase();
+      var byFL = SPEAKERS.filter(function (n) {
+        return lastName(n) === l && firstName(n).replace(/\./g, "") === f;
+      });
+      if (byFL.length === 1) return byFL[0];
+    }
+    return titleCaseLoose(s);
+  }
+  function entryVoices(x) { return (x && x.voices) ? x.voices : []; }
+  function addVoiceFromInput(x, raw) {
+    var name = normalizeSpeaker(raw);
+    if (!name) return false;
+    if (!x.voices) x.voices = [];
+    if (x.voices.indexOf(name) !== -1) return true;
+    x.voices.push(name);
+    x.voices.sort(function (a, b) { return lastName(a).localeCompare(lastName(b)); });
+    return true;
+  }
+  function dropVoice(x, name) {
+    x.voices = (x.voices || []).filter(function (v) { return v !== name; });
+  }
+  function entriesByVoice(name) {
+    var out = [];
+    function scan(arr, label) {
+      (arr || []).forEach(function (x) {
+        if (entryVoices(x).indexOf(name) !== -1) out.push({ entry: x, label: label });
+      });
+    }
+    scan(state.truths, "stuff");
+    scan(state.bits, "question");
+    return out;
+  }
+  function sermonVoices(s) {
+    var seen = {}, out = [];
+    (s.bitIds || []).forEach(function (id) {
+      var f = findBitAnywhere(id);
+      if (!f) return;
+      entryVoices(f.bit).forEach(function (v) {
+        if (seen[v]) return;
+        seen[v] = 1; out.push(v);
+      });
+    });
+    out.sort(function (a, b) { return lastName(a).localeCompare(lastName(b)); });
+    return out;
+  }
+
+  // Names you've used before, most-used first — so the second time you quote
+  // someone you just tap them.
+  function usedVoices() {
+    var counts = {};
+    function tally(arr) {
+      (arr || []).forEach(function (x) {
+        entryVoices(x).forEach(function (v) { counts[v] = (counts[v] || 0) + 1; });
+      });
+    }
+    tally(state.truths); tally(state.bits); tally(state.buried);
+    var names = Object.keys(counts);
+    names.sort(function (a, b) {
+      if (counts[b] !== counts[a]) return counts[b] - counts[a];
+      return lastName(a).localeCompare(lastName(b));
+    });
+    return names;
+  }
+  // Yours first, then the roster. Matches on any part of the name, so typing
+  // "lew" finds C.S. Lewis and "holl" finds Jeffrey R. Holland.
+  function voiceSuggestions(q, exclude) {
+    var out = [], seen = {};
+    (exclude || []).forEach(function (v) { seen[v] = 1; });
+    var ql = (q || "").trim().toLowerCase();
+    function consider(name) {
+      if (seen[name]) return;
+      if (ql && name.toLowerCase().indexOf(ql) === -1 && lastName(name).indexOf(ql) !== 0) return;
+      seen[name] = 1;
+      out.push(name);
+    }
+    usedVoices().forEach(consider);
+    if (ql) SPEAKERS.forEach(consider);
+    return out.slice(0, 6);
+  }
+  // A live suggestion row under a speaker input. mousedown-preventDefault so
+  // tapping a chip doesn't blur-commit the half-typed text first.
+  function attachVoiceSuggest(input, row, getExclude, onPick) {
+    function paint() {
+      row.innerHTML = "";
+      var picks = voiceSuggestions(input.value, getExclude());
+      picks.forEach(function (name) {
+        var chip = el("button", "voice-pick", name);
+        chip.onmousedown = function (e) { e.preventDefault(); };
+        chip.onclick = function (e) {
+          e.preventDefault(); e.stopPropagation();
+          onPick(name);
+        };
+        row.appendChild(chip);
+      });
+    }
+    input.addEventListener("input", paint);
+    paint();
+  }
+
+  // The speaker row, sitting under the scripture row on an open card.
+  var voiceEditing = null;
+  function buildVoiceLine(x) {
+    var row = el("div", "ref-line voice-line");
+    var voices = entryVoices(x);
+    voices.forEach(function (v) {
+      var chip = el("button", "ref-chip voice-chip", v);
+      chip.title = "Everything you've written quoting " + v;
+      chip.onclick = function (e) { e.stopPropagation(); openVoiceView(v); };
+      row.appendChild(chip);
+      if (voiceEditing === x.id) {
+        var drop = el("button", "ref-drop", "✕");
+        drop.title = "Remove this speaker";
+        drop.onclick = function (e) {
+          e.stopPropagation();
+          dropVoice(x, v);
+          save(); render();
+        };
+        row.appendChild(drop);
+      }
+    });
+    if (voiceEditing === x.id) {
+      var input = el("input", "ref-input voice-input");
+      input.placeholder = "Elder Holland";
+      var commitVoice = function () {
+        var val = input.value.trim();
+        if (val) addVoiceFromInput(x, val);
+        voiceEditing = null;
+        save(); render();
+      };
+      input.onkeydown = function (e) {
+        if (e.key === "Enter") commitVoice();
+        if (e.key === "Escape") { voiceEditing = null; render(); }
+      };
+      input.onblur = commitVoice;
+      row.appendChild(input);
+      var sug = el("div", "voice-suggest");
+      row.appendChild(sug);
+      attachVoiceSuggest(input, sug,
+        function () { return entryVoices(x); },
+        function (name) {
+          addVoiceFromInput(x, name);
+          voiceEditing = null;
+          save(); render();
+        });
+      setTimeout(function () { input.focus(); }, 0);
+    } else {
+      var add = el("button", "ref-add", voices.length ? "+" : "+ speaker");
+      add.title = "Attach who said it";
+      add.onclick = function (e) { e.stopPropagation(); voiceEditing = x.id; render(); };
+      row.appendChild(add);
+    }
+    return row;
+  }
+
+  var voiceViewing = null;
+  function openVoiceView(name) {
+    voiceViewing = name;
+    closeSwipe();
+    renderVoiceView();
+    document.getElementById("voiceOverlay").classList.add("open");
+  }
+  function renderVoiceView() {
+    if (!voiceViewing) return;
+    document.getElementById("voiceTitle").textContent = voiceViewing;
+    var list = document.getElementById("voiceList");
+    list.innerHTML = "";
+    var found = entriesByVoice(voiceViewing);
+    if (!found.length) { list.appendChild(el("p", "empty", "Nothing else yet.")); return; }
+    found.forEach(function (f) {
+      var card = el("div", "bone-card");
+      card.style.cursor = "pointer";
+      card.appendChild(el("p", null, f.entry.text));
+      var meta = el("div", "bone-actions");
+      var refs = entryRefs(f.entry).map(refLabel).join(", ");
+      meta.appendChild(el("span", "bone-when", f.label + (refs ? " · " + refs : "")));
+      card.appendChild(meta);
+      card.onclick = function () {
+        document.getElementById("voiceOverlay").classList.remove("open");
+        voiceViewing = null;
+        openWorkbench(f.entry.id, f.label === "stuff" ? "truth" : "bit");
+      };
+      list.appendChild(card);
+    });
+  }
+
   // Tap a reference → everything you've ever written touching that chapter.
   var refViewing = null;
   function openRefView(r) {
@@ -1074,6 +1327,10 @@
       list.appendChild(row);
     });
   }
+  document.getElementById("voiceClose").onclick = function () {
+    document.getElementById("voiceOverlay").classList.remove("open");
+    voiceViewing = null;
+  };
   document.getElementById("refClose").onclick = function () {
     document.getElementById("refOverlay").classList.remove("open");
     refViewing = null;
@@ -1110,6 +1367,7 @@
     var capWrap = document.querySelector(".capture");
     var capDest = document.getElementById("capDest");
     var capRefsRow = document.getElementById("capRefs");
+    var capVoicesRow = document.getElementById("capVoices");
     if (typeof syncAutoRefsLabel === "function") syncAutoRefsLabel();
     var searchRow = document.getElementById("searchRow");
     var searchOut = document.getElementById("searchOut");
@@ -1120,7 +1378,7 @@
     if (stageFilter === "home") {
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
-      capWrap.style.display = ""; capRefsRow.style.display = "flex";
+      capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
       capDest.style.display = "";
       capDest.textContent = "capture → stuff";
       renderSearch();
@@ -1130,18 +1388,18 @@
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
       if (stageFilter === "pool") {
-        capWrap.style.display = ""; capRefsRow.style.display = "flex";
+        capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
         capDest.style.display = "";
         capDest.textContent = "capture → stuff";
         renderTruths();
       } else {
-        capWrap.style.display = "none"; capRefsRow.style.display = "none";
+        capWrap.style.display = "none"; capRefsRow.style.display = "none"; capVoicesRow.style.display = "none";
         capDest.style.display = "none";
         renderSets();
       }
       return;
     }
-    capWrap.style.display = ""; capRefsRow.style.display = "flex";
+    capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex";
     capDest.style.display = "";
     capDest.textContent = "capture → questions";
 
@@ -1251,6 +1509,7 @@
         var flags = [];
         if ((b.tags || []).length) flags.push("🏷");
         if (syncRefs(b).length) flags.push("✝");
+        if (entryVoices(b).length) flags.push("❝");
         if (b.workshop && b.workshop.trim()) flags.push("✎");
         if (b.react) flags.push(b.react);
         if (revisitDays(b) > 0) flags.push("🕮");
@@ -1341,6 +1600,7 @@
       var wrapFoot = el("div", "foot-stack");
       wrapFoot.appendChild(foot);
       wrapFoot.appendChild(buildRefLine(b));
+      wrapFoot.appendChild(buildVoiceLine(b));
       return wrapFoot;
     }
 
@@ -1408,15 +1668,69 @@
     }
   }
 
+  var pendingVoices = [];
+  var capVoiceEditing = false;
+  function renderCapVoices() {
+    var row = document.getElementById("capVoices");
+    row.innerHTML = "";
+    pendingVoices.forEach(function (v, i) {
+      var chip = el("span", "ref-chip voice-chip", v);
+      row.appendChild(chip);
+      var drop = el("button", "ref-drop", "✕");
+      drop.title = "Remove";
+      drop.onclick = function () { pendingVoices.splice(i, 1); renderCapVoices(); };
+      row.appendChild(drop);
+    });
+    if (capVoiceEditing) {
+      var input = el("input", "ref-input voice-input");
+      input.placeholder = "Elder Holland";
+      var commitCapV = function () {
+        var val = input.value.trim();
+        if (val) {
+          var holder = { voices: pendingVoices.slice() };
+          addVoiceFromInput(holder, val);
+          pendingVoices = holder.voices;
+        }
+        capVoiceEditing = false;
+        renderCapVoices();
+      };
+      input.onkeydown = function (e) {
+        if (e.key === "Enter") { e.preventDefault(); commitCapV(); }
+        if (e.key === "Escape") { capVoiceEditing = false; renderCapVoices(); }
+      };
+      input.onblur = commitCapV;
+      row.appendChild(input);
+      var sugC = el("div", "voice-suggest");
+      row.appendChild(sugC);
+      attachVoiceSuggest(input, sugC,
+        function () { return pendingVoices; },
+        function (name) {
+          var holder = { voices: pendingVoices.slice() };
+          addVoiceFromInput(holder, name);
+          pendingVoices = holder.voices;
+          capVoiceEditing = false;
+          renderCapVoices();
+        });
+      setTimeout(function () { input.focus(); }, 0);
+    } else {
+      var add = el("button", "ref-add", pendingVoices.length ? "+" : "+ speaker");
+      add.title = "Attach who said it — it won't be added to your text";
+      add.onclick = function () { capVoiceEditing = true; renderCapVoices(); };
+      row.appendChild(add);
+    }
+  }
+
   function addBit() {
     var text = draft.value.trim();
     if (!text) return;
     var refs = pendingRefs.slice();
+    var voices = pendingVoices.slice();
     if (stageFilter === "pool" || stageFilter === "home") {
       if (!state.truths) state.truths = [];
-      state.truths.unshift({ id: Date.now().toString(36), text: text, created: Date.now(), refs: refs });
+      state.truths.unshift({ id: Date.now().toString(36), text: text, created: Date.now(), refs: refs, voices: voices });
       draft.value = "";
       pendingRefs = []; capRefEditing = false; renderCapRefs();
+      pendingVoices = []; capVoiceEditing = false; renderCapVoices();
       save(); render();
       return;
     }
@@ -1425,16 +1739,19 @@
       text: text,
       tags: [],
       refs: refs,
+      voices: voices,
       created: Date.now(),
       statusAt: Date.now()
     });
     draft.value = "";
     pendingRefs = []; capRefEditing = false; renderCapRefs();
+    pendingVoices = []; capVoiceEditing = false; renderCapVoices();
     draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
     save(); render();
   }
   document.getElementById("addBtn").onclick = addBit;
   renderCapRefs();
+  renderCapVoices();
 
   function syncAutoRefsLabel() {
     document.getElementById("autoRefsToggle").textContent =
@@ -2031,6 +2348,7 @@
         var flags = [];
         if ((t.tags || []).length) flags.push("🏷");
         if (syncRefs(t).length) flags.push("✝");
+        if (entryVoices(t).length) flags.push("❝");
         if (t.workshop && t.workshop.trim()) flags.push("✎");
         if (t.mined) flags.push("⛏");
         if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
@@ -2092,6 +2410,7 @@
 
       card.appendChild(foot);
       card.appendChild(buildRefLine(t));
+      card.appendChild(buildVoiceLine(t));
       shell.appendChild(card);
       attachSwipe(shell, card);
       list.appendChild(shell);
@@ -2311,6 +2630,8 @@
       // and searching a bare book name finds every chapter of it
       var qb = normalizeBook(q);
       if (qb && refs.some(function (r) { return r.book === qb; })) return true;
+      // speakers match on any part of the name — "holland" finds the chip
+      if (entryVoices(x).some(function (v) { return v.toLowerCase().indexOf(q) !== -1; })) return true;
       return false;
     }
     var results = [];
@@ -2454,6 +2775,18 @@
         });
         body.appendChild(rl);
       }
+      var voices = sermonVoices(s);
+      if (voices.length) {
+        var vl = el("div", "ref-readings");
+        vl.appendChild(el("div", "ref-readings-label", "voices"));
+        voices.forEach(function (v) {
+          var chip = el("button", "ref-chip voice-chip", v);
+          chip.title = "Everything you've written quoting " + v;
+          chip.onclick = function (e) { e.stopPropagation(); openVoiceView(v); };
+          vl.appendChild(chip);
+        });
+        body.appendChild(vl);
+      }
       s.bitIds.forEach(function (id, idx) {
         var f = findBitAnywhere(id);
         var row = el("div", "set-row");
@@ -2519,6 +2852,8 @@
         row.appendChild(el("p", null, x.text));
         var refs = syncRefs(x);
         if (refs.length) row.appendChild(el("span", "time-chip", refLabel(refs[0]) + (refs.length > 1 ? " +" + (refs.length - 1) : "")));
+        var vs = entryVoices(x);
+        if (vs.length) row.appendChild(el("span", "time-chip voice-chip", vs[0] + (vs.length > 1 ? " +" + (vs.length - 1) : "")));
         if (x.react) row.appendChild(el("span", null, x.react));
         row.onclick = function () {
           s.bitIds.push(x.id);
