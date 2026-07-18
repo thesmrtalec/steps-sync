@@ -167,8 +167,23 @@
   .foot-mark.stale { color: var(--accent2); }
   .foot-btn { background: transparent; border: 1px solid var(--rule); border-radius: 7px;
     padding: 3px 8px; font-size: 13px; line-height: 1.4; cursor: pointer; }
-  .foot-btn.react-btn { filter: grayscale(1); opacity: .55; border-style: dashed; }
-  .foot-btn.react-btn.has-react { filter: none; opacity: 1; border-style: solid; }
+  .foot-mark.revisit { color: var(--muted); }
+  .foot-stack { display: block; }
+  .ref-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+  .ref-chip { background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; color: var(--accent2); cursor: pointer; white-space: nowrap; }
+  .ref-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .ref-drop { background: transparent; border: none; color: var(--faint); font-size: 11px; padding: 0 2px; margin-left: -4px; cursor: pointer; }
+  .ref-drop:hover { color: var(--accent2); }
+  .ref-add { background: transparent; border: 1px dashed var(--rule); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; color: var(--faint); cursor: pointer; }
+  .ref-add:hover { color: var(--accent); border-color: var(--accent); }
+  .ref-input { width: 130px; border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; background: var(--card); color: var(--ink); }
+  .ref-input.ref-bad { border-color: var(--accent2); }
+  .cap-refs { margin: -4px 0 12px; }
+  .ref-readings { margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); }
+  .ref-readings-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .ref-readings .ref-chip { margin: 0 5px 5px 0; }
+  .foot-btn.react-btn { filter: none; opacity: .55; border-style: dashed; font-family: var(--mono); }
+  .foot-btn.react-btn.has-react { opacity: 1; border-style: solid; color: var(--accent); }
 
   .truth-card { position: relative; }
   .truth-card:not(.open) p { max-height: 3.1em; overflow: hidden; margin: 0; line-height: 1.3; }
@@ -250,6 +265,11 @@
   .wb-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 7px; }
   .wb-bit { min-height: 4.6em; flex: 0 0 auto; font-weight: 600; margin-bottom: 20px; }
   .wb-pad { flex: 1 1 auto; min-height: 200px; }
+  .wb-when { display: flex; align-items: center; gap: 10px; margin: 0 0 20px; flex-wrap: wrap; }
+  .wb-when .wb-label { margin: 0; }
+  .wb-date { border: 1px solid var(--rule); border-radius: 7px; padding: 5px 9px; font-family: var(--mono); font-size: 12px; background: var(--card); color: var(--ink); }
+  .wb-when-clear { background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 2px 4px; cursor: pointer; }
+  .wb-when-clear:hover { color: var(--accent2); }
   .wb-meta { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin: 14px 0 0; }
   .has-notes { font-family: var(--mono); font-size: 10px; color: var(--accent); opacity: .8; margin-left: 7px; }
 
@@ -372,6 +392,7 @@
     <textarea id="draft" rows="3"></textarea>
     <button class="add-btn" id="addBtn">Add</button>
   </div>
+  <div class="ref-line cap-refs" id="capRefs"></div>
 
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
@@ -390,6 +411,7 @@
     <span class="backup-note" id="authWho"></span>
     <div class="util-menu" id="utilMenu" style="display:none">
       <button id="tourReplay">Replay tutorial</button>
+      <button id="autoRefsToggle">Auto-detect scriptures: off</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
       <input type="file" id="importFile" accept=".json" style="display:none" />
@@ -479,8 +501,13 @@
         <h2>Workbench</h2>
         <button class="notes-close" id="wbClose">done</button>
       </div>
-      <div class="wb-label">the bit</div>
+      <div class="wb-label">the entry</div>
       <textarea class="notes-canvas wb-bit" id="wbBit" placeholder="the entry as it stands…"></textarea>
+      <div class="wb-when">
+        <label class="wb-label" for="wbWhen">when it happened</label>
+        <input type="date" id="wbWhen" class="wb-date">
+        <button class="wb-when-clear" id="wbWhenClear" title="Clear — fall back to the day you wrote it">clear</button>
+      </div>
       <div class="wb-label">working it out</div>
       <textarea class="notes-canvas wb-pad" id="wbPad" placeholder="scriptures, thoughts, where it leads…"></textarea>
       <div class="wb-meta" id="wbMeta"></div>
@@ -498,6 +525,15 @@
         <div class="notes-index-label">earlier notes</div>
         <div id="notesList"></div>
       </div>
+    </div>
+  </div>
+  <div class="notes-overlay" id="refOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2 id="refTitle">Reference</h2>
+        <button class="notes-close" id="refClose">done</button>
+      </div>
+      <div id="refList"></div>
     </div>
   </div>
   <div class="notes-overlay" id="sermonPickOverlay">
@@ -523,7 +559,6 @@
   var SYNC_READY = SUPABASE_URL.indexOf("PASTE_") === -1 && SUPABASE_ANON_KEY.indexOf("PASTE_") === -1;
   var sb = null, sbUser = null, syncChan = null, pushTimer = null;
   var DAY = 86400000;
-  var STALE_DAYS = 14;
 
   var PLACEHOLDERS = [
     "One small mercy from today…",
@@ -543,7 +578,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var tagEditing = null;
   var textEditing = null;
@@ -575,6 +610,7 @@
     });
     state.poolMigrated = true;
     state.sets = data.sets || [];
+    state.autoRefs = data.autoRefs === true;
     state.updatedAt = data.updatedAt || 0;
   }
   function load() {
@@ -602,9 +638,263 @@
     return d.getTime() - diff * DAY;
   }
 
-  function staleDays(b) {
-    var days = Math.floor((Date.now() - (b.statusAt || b.created)) / DAY);
-    return days >= STALE_DAYS ? days : 0;
+  // Nothing here expires. A mercy recorded once and never touched isn't
+  // decaying — it's settled. The only time-based nudge is a gentle "worth
+  // rereading" after a long while.
+  var REVISIT_DAYS = 365;
+
+  // ——— scripture references ———
+  // Stored structured (vol/book index/chapter/verse) so they sort in canonical
+  // order, group by book, and match across "Alma 32" vs "Alma 32:21".
+  var CANON = [
+    { vol: "ot", books: ["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi"] },
+    { vol: "nt", books: ["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"] },
+    { vol: "bm", books: ["1 Nephi","2 Nephi","Jacob","Enos","Jarom","Omni","Words of Mormon","Mosiah","Alma","Helaman","3 Nephi","4 Nephi","Mormon","Ether","Moroni"] },
+    { vol: "dc", books: ["Doctrine and Covenants"] },
+    { vol: "pgp", books: ["Moses","Abraham","Joseph Smith—Matthew","Joseph Smith—History","Articles of Faith"] }
+  ];
+  // flat canonical order: index = sort key
+  var BOOKS = [];
+  CANON.forEach(function (v) { v.books.forEach(function (b) { BOOKS.push({ name: b, vol: v.vol }); }); });
+
+  // Aliases people actually type. Ambiguous stems (Mo-, Je-, Ja-) are spelled
+  // out deliberately rather than guessed at.
+  var BOOK_ALIASES = {
+    "gen":"Genesis","ex":"Exodus","exod":"Exodus","lev":"Leviticus","num":"Numbers","deut":"Deuteronomy","dt":"Deuteronomy",
+    "josh":"Joshua","judg":"Judges","1 sam":"1 Samuel","2 sam":"2 Samuel","1 kgs":"1 Kings","2 kgs":"2 Kings",
+    "ps":"Psalms","psalm":"Psalms","prov":"Proverbs","eccl":"Ecclesiastes","isa":"Isaiah","jer":"Jeremiah",
+    "ezek":"Ezekiel","dan":"Daniel","mal":"Malachi",
+    "matt":"Matthew","mt":"Matthew","mk":"Mark","lk":"Luke","jn":"John","rom":"Romans",
+    "1 cor":"1 Corinthians","2 cor":"2 Corinthians","gal":"Galatians","eph":"Ephesians","philip":"Philippians",
+    "col":"Colossians","heb":"Hebrews","jas":"James","1 pet":"1 Peter","2 pet":"2 Peter","rev":"Revelation",
+    "1 ne":"1 Nephi","1ne":"1 Nephi","2 ne":"2 Nephi","2ne":"2 Nephi","3 ne":"3 Nephi","3ne":"3 Nephi",
+    "4 ne":"4 Nephi","4ne":"4 Nephi","jac":"Jacob","w of m":"Words of Mormon","mos":"Mosiah","al":"Alma",
+    "hel":"Helaman","morm":"Mormon","moro":"Moroni","eth":"Ether",
+    "d&c":"Doctrine and Covenants","dc":"Doctrine and Covenants","d and c":"Doctrine and Covenants",
+    "abr":"Abraham","js-h":"Joseph Smith—History","jsh":"Joseph Smith—History",
+    "js-m":"Joseph Smith—Matthew","a of f":"Articles of Faith","aof":"Articles of Faith"
+  };
+
+  function normalizeBook(raw) {
+    var s = (raw || "").toLowerCase().trim().replace(/\./g, "").replace(/\s+/g, " ");
+    if (!s) return null;
+    if (BOOK_ALIASES[s]) return BOOK_ALIASES[s];
+    for (var i = 0; i < BOOKS.length; i++) {
+      if (BOOKS[i].name.toLowerCase() === s) return BOOKS[i].name;
+    }
+    // Loose prefix match — "alm" → Alma. Needs 3+ characters, or ordinary
+    // words poison it ("she is 7 years old" must not become Isaiah 7).
+    if (s.length < 3) return null;
+    var hits = BOOKS.filter(function (b) { return b.name.toLowerCase().indexOf(s) === 0; });
+    if (hits.length === 1) return hits[0].name;
+    return null;
+  }
+  function bookIndex(name) {
+    for (var i = 0; i < BOOKS.length; i++) if (BOOKS[i].name === name) return i;
+    return 999;
+  }
+  // Anchored on the chapter number, capturing up to four preceding words —
+  // then we try progressively shorter suffixes of that phrase, longest first,
+  // so "Reading Words of Mormon 1" resolves to the book and "and Genesis 1"
+  // doesn't get poisoned by the leading "and".
+  var REF_RX = /((?:[A-Za-z&][A-Za-z&.\u2014'-]*\s+){0,3}(?:[1-4]\s*)?[A-Za-z&][A-Za-z&.\u2014'-]*)\s+(\d{1,3})(?!\s*\d)(?::\s*(\d{1,3})(?:\s*[-\u2013\u2014]\s*(\d{1,3}))?)?/g;
+
+  function resolveBookPhrase(phrase) {
+    var words = (phrase || "").trim().split(/\s+/);
+    // longest suffix first — prefer "Words of Mormon" over "Mormon"
+    for (var n = Math.min(words.length, 4); n >= 1; n--) {
+      var cand = words.slice(words.length - n).join(" ");
+      var book = normalizeBook(cand);
+      if (book) return book;
+    }
+    return null;
+  }
+
+  function parseRefs(text) {
+    var out = [], seen = {};
+    if (!text) return out;
+    REF_RX.lastIndex = 0;
+    var m;
+    while ((m = REF_RX.exec(text)) !== null) {
+      var book = resolveBookPhrase(m[1]);
+      if (!book) continue;
+      var ref = {
+        book: book,
+        bi: bookIndex(book),
+        ch: parseInt(m[2], 10),
+        v: m[3] ? parseInt(m[3], 10) : null,
+        vEnd: m[4] ? parseInt(m[4], 10) : null
+      };
+      var k = refKey(ref);
+      if (seen[k]) continue;
+      seen[k] = 1;
+      out.push(ref);
+    }
+    return out;
+  }
+  function refKey(r) { return r.book + "|" + r.ch + "|" + (r.v || "") + "|" + (r.vEnd || ""); }
+  function refLabel(r) {
+    var s = r.book + " " + r.ch;
+    if (r.v) { s += ":" + r.v; if (r.vEnd) s += "–" + r.vEnd; }
+    return s;
+  }
+  function refSort(a, b) {
+    if (a.bi !== b.bi) return a.bi - b.bi;
+    if (a.ch !== b.ch) return a.ch - b.ch;
+    return (a.v || 0) - (b.v || 0);
+  }
+  function entryRefs(x) { return (x && x.refs) ? x.refs : []; }
+  // Refs are yours to attach. Nothing gets pulled out of your prose unless
+  // you turn auto-detect on — writing the reference into the entry itself is
+  // a choice, not a requirement.
+  function syncRefs(x) {
+    if (!x.refs) x.refs = [];
+    if (!state.autoRefs) { x.refs.sort(refSort); return x.refs; }
+    var have = {};
+    x.refs.forEach(function (r) { have[refKey(r)] = 1; });
+    // don't re-add one the user explicitly removed
+    var dropped = {};
+    (x.refsDropped || []).forEach(function (k) { dropped[k] = 1; });
+    parseRefs(x.text).forEach(function (r) {
+      var k = refKey(r);
+      if (!have[k] && !dropped[k]) { x.refs.push(r); have[k] = 1; }
+    });
+    x.refs.sort(refSort);
+    return x.refs;
+  }
+  function addRefFromInput(x, raw) {
+    var parsed = parseRefs(raw);
+    if (!parsed.length) return false;
+    if (!x.refs) x.refs = [];
+    var have = {};
+    x.refs.forEach(function (r) { have[refKey(r)] = 1; });
+    var added = false;
+    parsed.forEach(function (r) {
+      var k = refKey(r);
+      if (!have[k]) {
+        x.refs.push(r); have[k] = 1; added = true;
+        if (x.refsDropped) x.refsDropped = x.refsDropped.filter(function (d) { return d !== k; });
+      }
+    });
+    x.refs.sort(refSort);
+    return added;
+  }
+  function dropRef(x, r) {
+    var k = refKey(r);
+    x.refs = (x.refs || []).filter(function (q) { return refKey(q) !== k; });
+    if (!x.refsDropped) x.refsDropped = [];
+    if (x.refsDropped.indexOf(k) === -1) x.refsDropped.push(k);
+  }
+  // every entry that touches a chapter, whether it cited a verse or not
+  function entriesTouchingRef(r) {
+    var out = [];
+    function scan(arr, label) {
+      (arr || []).forEach(function (x) {
+        var hit = entryRefs(x).some(function (q) { return q.book === r.book && q.ch === r.ch; });
+        if (hit) out.push({ entry: x, label: label });
+      });
+    }
+    scan(state.truths, "stuff");
+    scan(state.bits, "question");
+    return out;
+  }
+
+  // Group and sort by when it happened, falling back to when it was written.
+  function entryDate(x) { return x.occurred || x.created || 0; }
+
+  function revisitDays(x) {
+    var days = Math.floor((Date.now() - (x.touched || x.created || Date.now())) / DAY);
+    return days >= REVISIT_DAYS ? days : 0;
+  }
+
+  // The ref row that sits under the tag line on an open card. Auto-detected
+  // refs show the moment you type them into the entry; you can add or drop
+  // by hand and the choice sticks.
+  var refEditing = null;
+  function buildRefLine(x) {
+    syncRefs(x);
+    var row = el("div", "ref-line");
+    var refs = entryRefs(x);
+
+    refs.forEach(function (r) {
+      var chip = el("button", "ref-chip", refLabel(r));
+      chip.title = "Everything you've written touching " + r.book + " " + r.ch;
+      chip.onclick = function (e) { e.stopPropagation(); openRefView(r); };
+      row.appendChild(chip);
+      if (refEditing === x.id) {
+        var drop = el("button", "ref-drop", "✕");
+        drop.title = "Remove this reference";
+        drop.onclick = function (e) {
+          e.stopPropagation();
+          dropRef(x, r);
+          save(); render();
+        };
+        row.appendChild(drop);
+      }
+    });
+
+    if (refEditing === x.id) {
+      var input = el("input", "ref-input");
+      input.placeholder = "Alma 32:21";
+      var commitRef = function () {
+        var v = input.value.trim();
+        if (v && !addRefFromInput(x, v)) {
+          input.classList.add("ref-bad");
+          input.placeholder = "couldn't read that reference";
+          input.value = "";
+          return;
+        }
+        refEditing = null;
+        save(); render();
+      };
+      input.onkeydown = function (e) { if (e.key === "Enter") commitRef(); };
+      input.onblur = commitRef;
+      row.appendChild(input);
+      setTimeout(function () { input.focus(); }, 0);
+    } else {
+      var add = el("button", "ref-add", refs.length ? "+" : "+ scripture");
+      add.title = "Add a scripture reference";
+      add.onclick = function (e) { e.stopPropagation(); refEditing = x.id; render(); };
+      row.appendChild(add);
+    }
+    return row;
+  }
+
+  // Tap a reference → everything you've ever written touching that chapter.
+  var refViewing = null;
+  function openRefView(r) {
+    refViewing = { book: r.book, ch: r.ch, bi: r.bi };
+    closeSwipe();
+    renderRefView();
+    document.getElementById("refOverlay").classList.add("open");
+  }
+  function renderRefView() {
+    if (!refViewing) return;
+    document.getElementById("refTitle").textContent = refViewing.book + " " + refViewing.ch;
+    var list = document.getElementById("refList");
+    list.innerHTML = "";
+    var found = entriesTouchingRef(refViewing);
+    if (!found.length) {
+      list.appendChild(el("p", "empty", "Nothing else yet."));
+      return;
+    }
+    found.forEach(function (f) {
+      var card = el("div", "bone-card");
+      card.style.cursor = "pointer";
+      card.appendChild(el("p", null, f.entry.text));
+      var meta = el("div", "bone-actions");
+      var cited = entryRefs(f.entry)
+        .filter(function (q) { return q.book === refViewing.book && q.ch === refViewing.ch; })
+        .map(refLabel).join(", ");
+      meta.appendChild(el("span", "bone-when", f.label + " · " + cited));
+      card.appendChild(meta);
+      card.onclick = function () {
+        document.getElementById("refOverlay").classList.remove("open");
+        refViewing = null;
+        openWorkbench(f.entry.id, f.label === "stuff" ? "truth" : "bit");
+      };
+      list.appendChild(card);
+    });
   }
 
   // A collapsed card only gets the fade if its text is genuinely cut off.
@@ -784,6 +1074,10 @@
       list.appendChild(row);
     });
   }
+  document.getElementById("refClose").onclick = function () {
+    document.getElementById("refOverlay").classList.remove("open");
+    refViewing = null;
+  };
   document.getElementById("sermonPickClose").onclick = closeSermonPicker;
   document.getElementById("sermonPickNew").onclick = function () {
     var id = Date.now().toString(36);
@@ -815,6 +1109,8 @@
 
     var capWrap = document.querySelector(".capture");
     var capDest = document.getElementById("capDest");
+    var capRefsRow = document.getElementById("capRefs");
+    if (typeof syncAutoRefsLabel === "function") syncAutoRefsLabel();
     var searchRow = document.getElementById("searchRow");
     var searchOut = document.getElementById("searchOut");
     searchRow.style.display = stageFilter === "home" ? "" : "none";
@@ -824,7 +1120,7 @@
     if (stageFilter === "home") {
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
-      capWrap.style.display = "";
+      capWrap.style.display = ""; capRefsRow.style.display = "flex";
       capDest.style.display = "";
       capDest.textContent = "capture → stuff";
       renderSearch();
@@ -834,18 +1130,18 @@
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
       if (stageFilter === "pool") {
-        capWrap.style.display = "";
+        capWrap.style.display = ""; capRefsRow.style.display = "flex";
         capDest.style.display = "";
         capDest.textContent = "capture → stuff";
         renderTruths();
       } else {
-        capWrap.style.display = "none";
+        capWrap.style.display = "none"; capRefsRow.style.display = "none";
         capDest.style.display = "none";
         renderSets();
       }
       return;
     }
-    capWrap.style.display = "";
+    capWrap.style.display = ""; capRefsRow.style.display = "flex";
     capDest.style.display = "";
     capDest.textContent = "capture → questions";
 
@@ -853,14 +1149,14 @@
     var list = document.getElementById("list");
     list.innerHTML = "";
     var visible = state.bits.slice();
-    visible.sort(function (a, b2) { return b2.created - a.created; });
+    visible.sort(function (a, b2) { return entryDate(b2) - entryDate(a); });
 
     var todayK = truthDayKey(Date.now());
     var bGroups = [];
     visible.forEach(function (b) {
-      var k = truthDayKey(b.created);
+      var k = truthDayKey(entryDate(b));
       if (!bGroups.length || bGroups[bGroups.length - 1].key !== k) {
-        bGroups.push({ key: k, at: b.created, items: [] });
+        bGroups.push({ key: k, at: entryDate(b), items: [] });
       }
       bGroups[bGroups.length - 1].items.push(b);
     });
@@ -954,9 +1250,10 @@
         markIfClipped(p);
         var flags = [];
         if ((b.tags || []).length) flags.push("🏷");
+        if (syncRefs(b).length) flags.push("✝");
         if (b.workshop && b.workshop.trim()) flags.push("✎");
         if (b.react) flags.push(b.react);
-        if (staleDays(b) > 0) flags.push("⏳");
+        if (revisitDays(b) > 0) flags.push("🕮");
         if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
         shell.appendChild(card);
         attachSwipe(shell, card);
@@ -970,7 +1267,7 @@
       list.appendChild(shell);
     }
 
-    // Open-card footer: tags as a light line, react + stale on the right.
+    // Open-card footer: tags as a light line, refs beneath, state + bench right.
     function buildBitMeta(b) {
       var foot = el("div", "card-foot");
 
@@ -1009,19 +1306,26 @@
       }
 
       var footR = el("div", "foot-right");
-      var sd = staleDays(b);
-      if (sd > 0) {
-        var st = el("span", "foot-mark stale", "⏳ " + sd + "d");
-        st.title = "Stale — advance it or bury it";
+      var rv = revisitDays(b);
+      if (rv > 0) {
+        var st = el("span", "foot-mark revisit", "🕮");
+        st.title = "Not revisited in " + Math.floor(rv / 30) + " months — worth rereading";
         footR.appendChild(st);
       }
-      var REACTS = ["", "😒", "😆", "😂"];
-      var rBtn = el("button", "foot-btn react-btn" + (b.react ? " has-react" : ""), b.react || "😶");
-      rBtn.title = "How'd it land? Tap to cycle";
+      // where the question sits, not how a crowd took it
+      var STATES = ["", "○", "◐", "●"];
+      var STATE_TITLES = {
+        "": "Unmarked — tap to cycle",
+        "○": "Open question",
+        "◐": "Sitting with it",
+        "●": "Answered — it settled"
+      };
+      var rBtn = el("button", "foot-btn react-btn" + (b.react ? " has-react" : ""), b.react || "○");
+      rBtn.title = STATE_TITLES[b.react || ""];
       rBtn.onclick = function (e) {
         e.stopPropagation();
-        var ri = REACTS.indexOf(b.react || "");
-        var next = REACTS[(ri + 1) % REACTS.length];
+        var ri = STATES.indexOf(b.react || "");
+        var next = STATES[(ri + 1) % STATES.length];
         if (next) b.react = next; else delete b.react;
         b.touched = Date.now();
         save(); render();
@@ -1034,7 +1338,10 @@
       footR.appendChild(wbBtn);
       foot.appendChild(footR);
 
-      return foot;
+      var wrapFoot = el("div", "foot-stack");
+      wrapFoot.appendChild(foot);
+      wrapFoot.appendChild(buildRefLine(b));
+      return wrapFoot;
     }
 
     var empty = document.getElementById("empty");
@@ -1051,13 +1358,65 @@
   var draft = document.getElementById("draft");
   draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
 
+  // Scriptures you attach while writing, before the entry exists. Kept
+  // alongside the draft so the reference never has to go in the prose.
+  var pendingRefs = [];
+  var capRefEditing = false;
+  function renderCapRefs() {
+    var row = document.getElementById("capRefs");
+    row.innerHTML = "";
+    pendingRefs.sort(refSort);
+    pendingRefs.forEach(function (r, i) {
+      var chip = el("span", "ref-chip", refLabel(r));
+      row.appendChild(chip);
+      var drop = el("button", "ref-drop", "✕");
+      drop.title = "Remove";
+      drop.onclick = function () { pendingRefs.splice(i, 1); renderCapRefs(); };
+      row.appendChild(drop);
+    });
+    if (capRefEditing) {
+      var input = el("input", "ref-input");
+      input.placeholder = "Alma 32:21";
+      var commitCap = function () {
+        var v = input.value.trim();
+        if (v) {
+          var holder = { refs: pendingRefs.slice() };
+          if (addRefFromInput(holder, v)) {
+            pendingRefs = holder.refs;
+          } else {
+            input.classList.add("ref-bad");
+            input.placeholder = "couldn't read that reference";
+            input.value = "";
+            return;
+          }
+        }
+        capRefEditing = false;
+        renderCapRefs();
+      };
+      input.onkeydown = function (e) {
+        if (e.key === "Enter") { e.preventDefault(); commitCap(); }
+        if (e.key === "Escape") { capRefEditing = false; renderCapRefs(); }
+      };
+      input.onblur = commitCap;
+      row.appendChild(input);
+      setTimeout(function () { input.focus(); }, 0);
+    } else {
+      var add = el("button", "ref-add", pendingRefs.length ? "+" : "+ scripture");
+      add.title = "Attach a scripture — it won't be added to your text";
+      add.onclick = function () { capRefEditing = true; renderCapRefs(); };
+      row.appendChild(add);
+    }
+  }
+
   function addBit() {
     var text = draft.value.trim();
     if (!text) return;
+    var refs = pendingRefs.slice();
     if (stageFilter === "pool" || stageFilter === "home") {
       if (!state.truths) state.truths = [];
-      state.truths.unshift({ id: Date.now().toString(36), text: text, created: Date.now() });
+      state.truths.unshift({ id: Date.now().toString(36), text: text, created: Date.now(), refs: refs });
       draft.value = "";
+      pendingRefs = []; capRefEditing = false; renderCapRefs();
       save(); render();
       return;
     }
@@ -1065,14 +1424,28 @@
       id: Date.now().toString(36),
       text: text,
       tags: [],
+      refs: refs,
       created: Date.now(),
       statusAt: Date.now()
     });
     draft.value = "";
+    pendingRefs = []; capRefEditing = false; renderCapRefs();
     draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
     save(); render();
   }
   document.getElementById("addBtn").onclick = addBit;
+  renderCapRefs();
+
+  function syncAutoRefsLabel() {
+    document.getElementById("autoRefsToggle").textContent =
+      "Auto-detect scriptures: " + (state.autoRefs ? "on" : "off");
+  }
+  document.getElementById("autoRefsToggle").onclick = function () {
+    state.autoRefs = !state.autoRefs;
+    syncAutoRefsLabel();
+    save(); render();
+  };
+  syncAutoRefsLabel();
   document.getElementById("utilBtn").onclick = function () {
     var m = document.getElementById("utilMenu");
     m.style.display = m.style.display === "none" ? "flex" : "none";
@@ -1331,11 +1704,12 @@
     if (!b) { workbenchId = null; workbenchKind = "bit"; return; }
     document.getElementById("wbBit").value = b.text;
     document.getElementById("wbPad").value = b.workshop || "";
+    document.getElementById("wbWhen").value = b.occurred ? isoDay(b.occurred) : "";
     var m = document.getElementById("wbMeta");
     if (workbenchKind === "truth") {
       m.textContent = b.mined ? "used ×" + b.mined : "";
     } else {
-      m.textContent = b.workshop ? "" : "This bit’s working notes live here — separate from the line itself.";
+      m.textContent = b.workshop ? "" : "Working notes live here — separate from the entry itself.";
     }
     document.getElementById("workbenchOverlay").classList.add("open");
     setTimeout(function () { document.getElementById("wbBit").focus(); }, 0);
@@ -1349,10 +1723,30 @@
     if ((v && v !== b.text) || pad !== (b.workshop || "")) b.touched = Date.now();
     if (v) b.text = v;
     b.workshop = pad;
+    var w = document.getElementById("wbWhen").value;
+    if (w) {
+      var parts = w.split("-");
+      b.occurred = new Date(+parts[0], +parts[1] - 1, +parts[2], 12).getTime();
+    } else {
+      delete b.occurred;
+    }
     save();
+  }
+  // A mercy is often written down days after it happened. When it happened is
+  // what a talk wants; when you wrote it is just bookkeeping.
+  function isoDay(ts) {
+    var d = new Date(ts);
+    var mm = ("0" + (d.getMonth() + 1)).slice(-2);
+    var dd = ("0" + d.getDate()).slice(-2);
+    return d.getFullYear() + "-" + mm + "-" + dd;
   }
   document.getElementById("wbBit").oninput = saveWorkbench;
   document.getElementById("wbPad").oninput = saveWorkbench;
+  document.getElementById("wbWhen").onchange = saveWorkbench;
+  document.getElementById("wbWhenClear").onclick = function () {
+    document.getElementById("wbWhen").value = "";
+    saveWorkbench();
+  };
   document.getElementById("wbClose").onclick = function () {
     saveWorkbench();
     workbenchId = null;
@@ -1466,7 +1860,7 @@
       note.textContent = "The vault is empty. Buried entries rest here — dig one up to bring it back.";
       return;
     }
-    note.textContent = "Buried bits rest here. Dig one up to restore it, or lay it to rest for good.";
+    note.textContent = "Buried entries rest here. Dig one up to restore it, or lay it to rest for good.";
     buried.forEach(function (b) {
       var card = el("div", "bone-card");
       card.appendChild(el("p", null, b.text));
@@ -1543,13 +1937,13 @@
       list.appendChild(el("p", "empty", "Nothing true yet. Suspicious."));
       return;
     }
-    truths = truths.slice().sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+    truths = truths.slice().sort(function (a, b) { return entryDate(b) - entryDate(a); });
     var todayKey = truthDayKey(Date.now());
     var groups = [];
     truths.forEach(function (t) {
-      var k = truthDayKey(t.created);
+      var k = truthDayKey(entryDate(t));
       if (!groups.length || groups[groups.length - 1].key !== k) {
-        groups.push({ key: k, at: t.created || 0, items: [] });
+        groups.push({ key: k, at: entryDate(t), items: [] });
       }
       groups[groups.length - 1].items.push(t);
     });
@@ -1636,6 +2030,7 @@
         markIfClipped(p);
         var flags = [];
         if ((t.tags || []).length) flags.push("🏷");
+        if (syncRefs(t).length) flags.push("✝");
         if (t.workshop && t.workshop.trim()) flags.push("✎");
         if (t.mined) flags.push("⛏");
         if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
@@ -1696,6 +2091,7 @@
       foot.appendChild(footR);
 
       card.appendChild(foot);
+      card.appendChild(buildRefLine(t));
       shell.appendChild(card);
       attachSwipe(shell, card);
       list.appendChild(shell);
@@ -1907,7 +2303,15 @@
     }
     function hits(x) {
       if ((x.text || "").toLowerCase().indexOf(q) !== -1) return true;
-      return (x.tags || []).some(function (t) { return t.toLowerCase().indexOf(q) !== -1; });
+      if ((x.tags || []).some(function (t) { return t.toLowerCase().indexOf(q) !== -1; })) return true;
+      // references match on their canonical label, so "alma 32" finds it
+      // however you happened to type it in the entry
+      var refs = syncRefs(x);
+      if (refs.some(function (r) { return refLabel(r).toLowerCase().indexOf(q) !== -1; })) return true;
+      // and searching a bare book name finds every chapter of it
+      var qb = normalizeBook(q);
+      if (qb && refs.some(function (r) { return r.book === qb; })) return true;
+      return false;
     }
     var results = [];
     (state.truths || []).forEach(function (t) {
@@ -1982,12 +2386,33 @@
     var v = cur + dir * step;
     return v < 10 ? 0 : v;
   }
+  // Sermons hold entries by id from anywhere — a talk is mostly mercies and
+  // truths, so stuff belongs in the lineup directly, not mirrored through
+  // questions first.
   function findBitAnywhere(id) {
     var b = state.bits.find(function (x) { return x.id === id; });
-    if (b) return { bit: b, buried: false };
+    if (b) return { bit: b, buried: false, from: "question" };
+    b = (state.truths || []).find(function (x) { return x.id === id; });
+    if (b) return { bit: b, buried: false, from: "stuff" };
     b = (state.buried || []).find(function (x) { return x.id === id; });
-    if (b) return { bit: b, buried: true };
+    if (b) return { bit: b, buried: true, from: b.from === "stuff" ? "stuff" : "question" };
     return null;
+  }
+  // Every reference in a sermon's lineup, deduped and in scriptural order.
+  function sermonReadings(s) {
+    var seen = {}, out = [];
+    (s.bitIds || []).forEach(function (id) {
+      var f = findBitAnywhere(id);
+      if (!f) return;
+      syncRefs(f.bit).forEach(function (r) {
+        var k = r.book + "|" + r.ch;
+        if (seen[k]) return;
+        seen[k] = 1;
+        out.push({ book: r.book, ch: r.ch, bi: r.bi, v: null, vEnd: null });
+      });
+    });
+    out.sort(refSort);
+    return out;
   }
   function renderSets() {
     var body = document.getElementById("list");
@@ -1996,14 +2421,14 @@
     if (setOpen) {
       var s = state.sets.find(function (x) { return x.id === setOpen; });
       if (!s) { setOpen = null; render(); return; }
-      var back = el("button", "set-back", "‹ all sets");
+      var back = el("button", "set-back", "‹ all sermons");
       back.onclick = function () { setOpen = null; render(); };
       body.appendChild(back);
       var name = document.createElement("input");
       name.type = "text";
       name.className = "set-name";
       name.value = s.name || "";
-      name.placeholder = "name this set";
+      name.placeholder = "name this sermon";
       name.onchange = function () { s.name = name.value.trim(); s.updated = Date.now(); save(); };
       body.appendChild(name);
       var pruned = s.bitIds.filter(function (id) { return findBitAnywhere(id); });
@@ -2014,7 +2439,21 @@
         if (f.bit.est) total += f.bit.est; else untimed++;
       });
       body.appendChild(el("div", "set-total",
-        s.bitIds.length + (s.bitIds.length === 1 ? " bit" : " bits") + " · runs " + fmtSec(total) + (untimed ? " · " + untimed + " untimed" : "")));
+        s.bitIds.length + (s.bitIds.length === 1 ? " entry" : " entries") + " · runs " + fmtSec(total) + (untimed ? " · " + untimed + " untimed" : "")));
+
+      // reading list, assembled from the lineup in scriptural order
+      var readings = sermonReadings(s);
+      if (readings.length) {
+        var rl = el("div", "ref-readings");
+        rl.appendChild(el("div", "ref-readings-label", "readings"));
+        readings.forEach(function (r) {
+          var chip = el("button", "ref-chip", refLabel(r));
+          chip.title = "Everything you've written touching " + r.book + " " + r.ch;
+          chip.onclick = function (e) { e.stopPropagation(); openRefView(r); };
+          rl.appendChild(chip);
+        });
+        body.appendChild(rl);
+      }
       s.bitIds.forEach(function (id, idx) {
         var f = findBitAnywhere(id);
         var row = el("div", "set-row");
@@ -2068,21 +2507,37 @@
         row.appendChild(x);
         body.appendChild(row);
       });
-      if (s.bitIds.length === 0) body.appendChild(el("p", "empty", "Empty set — tap any bit below and it joins the lineup."));
-      body.appendChild(el("div", "set-add-head", "your bits — tap to add"));
-      var avail = state.bits.filter(function (b) { return s.bitIds.indexOf(b.id) === -1; });
-      if (avail.length === 0) body.appendChild(el("p", "empty", "No bits left to add — work something up in the bits tab."));
-      avail.forEach(function (b) {
+      if (s.bitIds.length === 0) body.appendChild(el("p", "empty", "Nothing in this sermon yet — tap anything below and it joins the lineup."));
+
+      // Both stuff and questions can join a sermon directly. A talk is mostly
+      // mercies and truths, so stuff leads.
+      var availStuff = (state.truths || []).filter(function (t) { return s.bitIds.indexOf(t.id) === -1; });
+      var availQ = state.bits.filter(function (b) { return s.bitIds.indexOf(b.id) === -1; });
+
+      function addable(x) {
         var row = el("div", "set-row set-addable");
-        row.appendChild(el("p", null, b.text));
-        if (b.react) row.appendChild(el("span", null, b.react));
-        if (b.est) row.appendChild(el("span", "time-chip", fmtSec(b.est)));
+        row.appendChild(el("p", null, x.text));
+        var refs = syncRefs(x);
+        if (refs.length) row.appendChild(el("span", "time-chip", refLabel(refs[0]) + (refs.length > 1 ? " +" + (refs.length - 1) : "")));
+        if (x.react) row.appendChild(el("span", null, x.react));
         row.onclick = function () {
-          s.bitIds.push(b.id);
+          s.bitIds.push(x.id);
           s.updated = Date.now(); save(); render();
         };
         body.appendChild(row);
-      });
+      }
+
+      if (availStuff.length) {
+        body.appendChild(el("div", "set-add-head", "from stuff — tap to add"));
+        availStuff.forEach(addable);
+      }
+      if (availQ.length) {
+        body.appendChild(el("div", "set-add-head", "from questions — tap to add"));
+        availQ.forEach(addable);
+      }
+      if (!availStuff.length && !availQ.length) {
+        body.appendChild(el("p", "empty", "Everything you've written is already in this sermon."));
+      }
     } else {
       var nw = el("button", "bone-digup", "+ new sermon");
       nw.style.marginBottom = "14px";
@@ -2109,7 +2564,7 @@
           if (f.bit.est) total += f.bit.est; else untimed++;
         });
         var actions = el("div", "bone-actions");
-        actions.appendChild(el("span", "bone-when", n + (n === 1 ? " bit" : " bits") + " · " + fmtSec(total) + (untimed ? " +" + untimed + "?" : "")));
+        actions.appendChild(el("span", "bone-when", n + (n === 1 ? " entry" : " entries") + " · " + fmtSec(total) + (untimed ? " +" + untimed + "?" : "")));
         var del = el("button", "bone-del", "delete");
         del.onclick = function (e) {
           e.stopPropagation();
