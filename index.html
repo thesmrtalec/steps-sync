@@ -182,8 +182,6 @@
   .cap-attach { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin: -4px 0 12px; }
   .cap-refs { margin: 0; width: auto; }
   .cap-refs.voice-line { margin-top: 0; }
-  .voice-chip { color: var(--muted); font-style: italic; }
-  .voice-chip:hover { color: var(--accent); }
   .voice-line { margin-top: 6px; }
   .grat-line { margin-top: 6px; }
   .grat-btn.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
@@ -191,9 +189,18 @@
   .lens { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 12px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
   .lens:hover { border-color: var(--accent); color: var(--accent); }
   .lens.on { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
-  .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .voice-pick { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 11px; font-family: var(--mono); font-size: 11px; color: var(--ink); cursor: pointer; white-space: nowrap; }
-  .voice-pick:hover { border-color: var(--accent); color: var(--accent); }
+  .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--rule); }
+  .voice-suggest-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--faint); width: 100%; margin-bottom: 1px; }
+  /* squared off and un-italic, so it can't be mistaken for an attached chip */
+  .voice-pick { background: transparent; border: 1px dashed var(--rule); border-radius: 6px;
+    padding: 3px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    cursor: pointer; white-space: nowrap; }
+  .voice-pick:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
+  /* attached speakers get a filled pill so the difference is obvious */
+  .voice-chip { background: var(--tagbg); border-color: transparent; color: var(--tagink); font-style: italic; }
+  .voice-chip:hover { color: var(--accent); }
   .ref-readings { margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); }
   .ref-readings-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
   .ref-readings .ref-chip { margin: 0 5px 5px 0; }
@@ -851,6 +858,7 @@
       row.appendChild(chip);
       if (refEditing === x.id) {
         var drop = el("button", "ref-drop", "✕");
+        drop.onmousedown = function (ev) { ev.preventDefault(); };
         drop.title = "Remove this reference";
         drop.onclick = function (e) {
           e.stopPropagation();
@@ -1024,6 +1032,11 @@
     function paint() {
       row.innerHTML = "";
       var picks = voiceSuggestions(input.value, getExclude());
+      if (!picks.length) return;
+      // Labelled and visually distinct on purpose — without this these read
+      // as speakers already attached to the entry, which they are not.
+      row.appendChild(el("span", "voice-suggest-label",
+        input.value.trim() ? "matches" : "tap to add"));
       picks.forEach(function (name) {
         var chip = el("button", "voice-pick", name);
         chip.onmousedown = function (e) { e.preventDefault(); };
@@ -1065,6 +1078,7 @@
       row.appendChild(chip);
       if (voiceEditing === x.id) {
         var drop = el("button", "ref-drop", "✕");
+        drop.onmousedown = function (ev) { ev.preventDefault(); };
         drop.title = "Remove this speaker";
         drop.onclick = function (e) {
           e.stopPropagation();
@@ -1585,6 +1599,7 @@
         (b.tags || []).forEach(function (t) {
           var chip = el("span", "foot-mark", t + " ✕");
           chip.style.cursor = "pointer";
+          chip.onmousedown = function (ev) { ev.preventDefault(); };
           chip.onclick = function (e) {
             e.stopPropagation();
             b.tags = b.tags.filter(function (x) { return x !== t; });
@@ -1670,6 +1685,7 @@
       var chip = el("span", "ref-chip", refLabel(r));
       row.appendChild(chip);
       var drop = el("button", "ref-drop", "✕");
+        drop.onmousedown = function (ev) { ev.preventDefault(); };
       drop.title = "Remove";
       drop.onclick = function () { pendingRefs.splice(i, 1); renderCapRefs(); };
       row.appendChild(drop);
@@ -1728,6 +1744,7 @@
       var chip = el("span", "ref-chip voice-chip", v);
       row.appendChild(chip);
       var drop = el("button", "ref-drop", "✕");
+        drop.onmousedown = function (ev) { ev.preventDefault(); };
       drop.title = "Remove";
       drop.onclick = function () { pendingVoices.splice(i, 1); renderCapVoices(); };
       row.appendChild(drop);
@@ -2486,6 +2503,7 @@
         (t.tags || []).forEach(function (tg) {
           var chip = el("span", "foot-mark", tg + " ✕");
           chip.style.cursor = "pointer";
+          chip.onmousedown = function (ev) { ev.preventDefault(); };
           chip.onclick = function (e) {
             e.stopPropagation();
             t.tags = t.tags.filter(function (x) { return x !== tg; });
