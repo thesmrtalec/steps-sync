@@ -271,7 +271,7 @@
   /* ——— notes drawer ——— */
   .notes-tab { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11.5px; padding: 4px 6px; }
   .notes-tab:hover { color: var(--accent); }
-  .notes-overlay { position: fixed; inset: 0; background: var(--page); z-index: 50; display: none; flex-direction: column; }
+  .notes-overlay { position: fixed; inset: 0; background: var(--page); z-index: 50; display: none; flex-direction: column; overscroll-behavior: contain; }
   .notes-overlay.open { display: flex; }
   .notes-inner { max-width: 620px; width: 100%; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .notes-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -280,11 +280,21 @@
   .notes-canvas { width: 100%; border: 1px solid var(--rule); border-radius: 10px; padding: 14px; font-size: 16px; font-family: var(--serif); line-height: 1.6; background: var(--card); color: var(--ink); resize: none; min-height: 220px; box-shadow: inset 0 1px 4px rgba(0,0,0,.10); }
   .notes-save { align-self: flex-start; margin-top: 10px; background: var(--accent); color: var(--onaccent); border: none; border-radius: 8px; padding: 8px 20px; font-family: var(--mono); font-size: 12px; letter-spacing: .07em; text-transform: uppercase; font-weight: 700; }
   .notes-save:hover { background: var(--accent2); }
-  .notes-index { margin-top: 22px; overflow-y: auto; }
+  .notes-index { margin-top: 22px; overflow-y: auto; min-height: 0;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .notes-index-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
   .note-card { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 9px; padding: 12px 14px; margin-bottom: 9px; box-shadow: var(--cardshadow); cursor: pointer; }
   .note-card p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .note-card .note-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 7px; display: flex; align-items: center; }
+  .notes-lock { display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; }
+  .lock-face { text-align: center; width: 100%; max-width: 280px; }
+  .lock-emoji { font-size: 34px; margin-bottom: 10px; }
+  .lock-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 0 0 16px; letter-spacing: .04em; }
+  .lock-input { width: 100%; box-sizing: border-box; text-align: center; letter-spacing: .5em; font-size: 22px; font-family: var(--mono); padding: 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); color: var(--ink); outline: none; }
+  .lock-input:focus { border-color: var(--accent); }
+  .lock-btns { margin-top: 14px; }
+  .lock-go { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; cursor: pointer; }
+  .lock-manage { margin-top: 18px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; text-decoration: underline; cursor: pointer; }
   .note-share { margin-left: auto; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 0 4px; }
   .note-share:hover { color: var(--accent2); }
   .note-del { margin-left: 10px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 0 4px; }
@@ -371,6 +381,13 @@
     background-position: 0 13px;
   }
   /* habit calendars */
+  /* Overlay panes must own their scrolling. .notes-inner is a fixed-height
+     flex column, so a tall child (three month grids, a long vault) overflows
+     with nowhere to go — which reads as stuttery, snapping scroll on iOS.
+     overscroll-behavior stops the gesture chaining to the page underneath. */
+  #habitBody, #boneList, #refList, #voiceList, #sermonPickList {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   #habitBody { padding-top: 4px; }
   .pray-today { display: block; width: 100%; box-sizing: border-box; border: 1.5px solid var(--accent); background: transparent; color: var(--accent); border-radius: 12px; padding: 13px 0; font-family: var(--mono); font-size: 14px; margin-bottom: 18px; cursor: pointer; }
   .pray-today.done { background: var(--accent); color: var(--onaccent); }
@@ -445,6 +462,7 @@
     <div class="util-menu" id="utilMenu" style="display:none">
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
+      <button id="pinManage">Journal PIN lock</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
       <input type="file" id="importFile" accept=".json" style="display:none" />
@@ -552,11 +570,24 @@
         <h2 id="notesTitle">Notes &amp; ideas</h2>
         <button class="notes-close" id="notesClose">done</button>
       </div>
-      <textarea class="notes-canvas" id="notesCanvas" placeholder="Free journaling, brain-dumps, whatever…"></textarea>
-      <button class="notes-save" id="notesSave">Save note</button>
-      <div class="notes-index">
-        <div class="notes-index-label">earlier notes</div>
-        <div id="notesList"></div>
+      <div id="notesLock" class="notes-lock" style="display:none">
+        <div class="lock-face">
+          <div class="lock-emoji">🔒</div>
+          <p class="lock-msg" id="lockMsg">Enter your PIN</p>
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" id="lockInput" class="lock-input" autocomplete="off" />
+          <div class="lock-btns">
+            <button id="lockGo" class="lock-go">Open</button>
+          </div>
+          <button id="lockManage" class="lock-manage"></button>
+        </div>
+      </div>
+      <div id="notesBody">
+        <textarea class="notes-canvas" id="notesCanvas" placeholder="Free journaling, brain-dumps, whatever…"></textarea>
+        <button class="notes-save" id="notesSave">Save note</button>
+        <div class="notes-index">
+          <div class="notes-index-label">earlier notes</div>
+          <div id="notesList"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -620,7 +651,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var tagEditing = null;
   var textEditing = null;
@@ -653,6 +684,7 @@
     state.poolMigrated = true;
     state.sets = data.sets || [];
     state.autoRefs = data.autoRefs === true;
+    state.notesPin = data.notesPin || null;
     state.updatedAt = data.updatedAt || 0;
   }
   function load() {
@@ -1333,9 +1365,21 @@
     face.addEventListener("touchmove", onMove, { passive: false });
     face.addEventListener("touchend", onEnd);
     face.addEventListener("touchcancel", onEnd);
-    face.addEventListener("mousedown", function (e) { onStart(e); });
-    window.addEventListener("mousemove", function (e) { if (dragging) onMove(e); });
-    window.addEventListener("mouseup", function () { if (dragging) onEnd(); });
+    // Window listeners are attached per-drag and torn down on release. The
+    // previous version added a pair on every card on every render and never
+    // removed them, so they piled up into the thousands and every pointer
+    // move ran the lot — which is what made scrolling stutter.
+    face.addEventListener("mousedown", function (e) {
+      onStart(e);
+      var mm = function (ev) { if (dragging) onMove(ev); };
+      var mu = function () {
+        if (dragging) onEnd();
+        window.removeEventListener("mousemove", mm);
+        window.removeEventListener("mouseup", mu);
+      };
+      window.addEventListener("mousemove", mm);
+      window.addEventListener("mouseup", mu);
+    });
   }
   document.addEventListener("click", function (e) {
     if (swipeOpenCard && !swipeOpenCard.parentNode.contains(e.target)) closeSwipe();
@@ -2230,13 +2274,118 @@
     document.getElementById("notesCanvas").value = "";
     document.getElementById("notesSave").textContent = "Save note";
   }
-  document.getElementById("notesOpen").onclick = function () {
+  // ——— notes PIN lock ———
+  // A curtain over the drawer, not encryption. It keeps the journal off a
+  // screen someone else is holding; it does not protect the stored data.
+  var notesUnlocked = false;
+  function showNotesBody() {
+    document.getElementById("notesLock").style.display = "none";
+    document.getElementById("notesBody").style.display = "";
     if (!state.notes) state.notes = [];
     resetNoteEditor(); renderNotes();
+  }
+  function showNotesLock(mode) {
+    var lock = document.getElementById("notesLock");
+    var body = document.getElementById("notesBody");
+    var msg = document.getElementById("lockMsg");
+    var inp = document.getElementById("lockInput");
+    var go = document.getElementById("lockGo");
+    var manage = document.getElementById("lockManage");
+    body.style.display = "none";
+    lock.style.display = "flex";
+    inp.value = "";
+    inp.dataset.mode = mode;
+    inp.dataset.stage = "";
+    inp.dataset.first = "";
+    if (mode === "set") {
+      msg.textContent = "Set a PIN for your journal (or skip)";
+      go.textContent = "Set PIN";
+      manage.textContent = "skip — no lock";
+      manage.style.display = "";
+    } else {
+      msg.textContent = "Enter your PIN";
+      go.textContent = "Open";
+      manage.textContent = "";
+      manage.style.display = "none";
+    }
+    setTimeout(function () { inp.focus(); }, 60);
+  }
+  function lockSubmit() {
+    var inp = document.getElementById("lockInput");
+    var msg = document.getElementById("lockMsg");
+    var val = (inp.value || "").trim();
+    var mode = inp.dataset.mode;
+    if (mode === "set") {
+      if (inp.dataset.stage === "confirm") {
+        if (val === inp.dataset.first) {
+          state.notesPin = val; save();
+          notesUnlocked = true; showNotesBody();
+        } else {
+          msg.textContent = "Didn't match. Pick a PIN again.";
+          inp.dataset.stage = ""; inp.dataset.first = ""; inp.value = "";
+        }
+        return;
+      }
+      if (val.length < 3) { msg.textContent = "Use at least 3 digits."; return; }
+      inp.dataset.first = val; inp.dataset.stage = "confirm";
+      msg.textContent = "Enter it again to confirm";
+      inp.value = "";
+      return;
+    }
+    if (val === state.notesPin) {
+      notesUnlocked = true; showNotesBody();
+    } else {
+      msg.textContent = "Nope. Try again.";
+      inp.value = "";
+    }
+  }
+  document.getElementById("lockGo").onclick = lockSubmit;
+  document.getElementById("lockInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); lockSubmit(); }
+  });
+  document.getElementById("lockManage").onclick = function () {
+    notesUnlocked = true; showNotesBody();
+  };
+  document.getElementById("notesOpen").onclick = function () {
     document.getElementById("notesOverlay").classList.add("open");
+    if (state.notesPin) {
+      if (notesUnlocked) showNotesBody();
+      else showNotesLock("enter");
+    } else {
+      showNotesLock("set");
+    }
   };
   document.getElementById("notesClose").onclick = function () {
     document.getElementById("notesOverlay").classList.remove("open");
+    if (state.notesPin) notesUnlocked = false;   // re-lock on close
+  };
+  document.getElementById("pinManage").onclick = function () {
+    document.getElementById("utilMenu").style.display = "none";
+    if (state.notesPin) {
+      var choice = prompt("Journal lock is ON.\nType a NEW pin to change it, or type REMOVE to turn the lock off.\n(Cancel to keep it as-is.)");
+      if (choice === null) return;
+      choice = choice.trim();
+      if (choice.toUpperCase() === "REMOVE") {
+        var cur = prompt("Enter your current PIN to remove the lock:");
+        if (cur !== null && cur.trim() === state.notesPin) {
+          state.notesPin = null; notesUnlocked = false; save();
+          alert("Lock removed.");
+        } else if (cur !== null) {
+          alert("PIN didn't match. Lock unchanged.");
+        }
+        return;
+      }
+      if (choice.length < 3 || /\D/.test(choice)) { alert("PIN must be at least 3 digits, numbers only."); return; }
+      state.notesPin = choice; notesUnlocked = false; save();
+      alert("PIN updated.");
+    } else {
+      var np = prompt("Set a PIN for your journal (at least 3 digits):");
+      if (np === null) return;
+      np = np.trim();
+      if (np.length < 3 || /\D/.test(np)) { alert("PIN must be at least 3 digits, numbers only."); return; }
+      state.notesPin = np; notesUnlocked = false; save();
+      alert("Your journal is now locked with a PIN.");
+    }
   };
   document.getElementById("notesSave").onclick = function () {
     var t = document.getElementById("notesCanvas").value.trim();
