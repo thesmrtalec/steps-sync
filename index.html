@@ -124,43 +124,61 @@
   .day-fold::before { content: "▸"; font-size: 9px; }
   .day-fold.open::before { content: "▾"; }
   .day-fold::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
-  .swipe-wrap { position: relative; margin-bottom: 9px; border-radius: 9px; overflow: hidden; }
-  .swipe-wrap .bit { margin-bottom: 0; position: relative; z-index: 1; touch-action: pan-y; }
-  .swipe-hint { position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 0; display: flex; align-items: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; padding: 0 18px; opacity: 0; transition: opacity .15s ease; }
-  .swipe-hint-right { justify-content: flex-start; color: #4f8f5c; }
-  .swipe-hint-left { justify-content: flex-end; color: var(--accent); }
-  .swipe-wrap.swipe-right-active .swipe-hint-right { opacity: 1; }
-  .swipe-wrap.swipe-left-active .swipe-hint-left { opacity: 1; }
-  .bit { padding: 13px 15px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; margin-bottom: 9px; box-shadow: var(--cardshadow); }
+  /* snug to the text, open or closed; long ones clamp+fade when collapsed */
+  .bit { padding: 10px 12px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; margin-bottom: 9px; box-shadow: var(--cardshadow); position: relative; }
+  .bit:not(.open) .bit-text { max-height: 3.1em; overflow: hidden; margin-bottom: 0; line-height: 1.3; }
+  .bit:not(.open) .bit-text.clipped { -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%); mask-image: linear-gradient(180deg, #000 72%, transparent 100%); }
+  .bit-flags { position: absolute; right: 9px; top: 7px; font-size: 10px; opacity: .35; letter-spacing: 2px; }
   .bit-text { margin: 0 0 9px; font-size: 16px; line-height: 1.6; white-space: pre-wrap; cursor: pointer; }
   .edit-area { width: 100%; border: 1px solid var(--accent); border-radius: 7px; padding: 9px 10px; font-size: 16px; font-family: var(--serif); line-height: 1.6; margin: 0 0 9px; background: var(--card); color: var(--ink); min-height: 64px; resize: vertical; }
-  .bit-meta { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
-  .stage-btn { background: transparent; border: 1px solid; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-family: var(--mono); letter-spacing: .03em; }
-  .st-observation { color: var(--st-concept); border-color: var(--st-concept); }
-  .st-bit { color: var(--st-bit); border-color: var(--st-bit); }
-  .st-ready { color: var(--st-ready); border-color: var(--st-ready); }
-  .st-proven { color: var(--st-proven); border-color: var(--st-proven); }
-  .stale { color: var(--accent2); font-size: 11.5px; font-weight: 700; font-style: italic; font-family: var(--mono); }
-  .bit-tag { background: var(--tagbg); border: none; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; color: var(--tagink); font-family: var(--mono); }
-  .add-tag-btn { background: transparent; border: 1px dashed var(--faint); border-radius: 999px; padding: 2px 10px; font-size: 11.5px; color: var(--faint); font-family: var(--mono); }
-  .add-tag-btn:hover { color: var(--accent); border-color: var(--accent); }
   .tag-input { width: 90px; border: 1px solid var(--rule); border-radius: 5px; padding: 3px 7px; font-size: 13px; font-family: var(--mono); background: var(--card); color: var(--ink); }
-  .delete-btn { background: transparent; border: none; color: var(--faint); font-size: 13px; margin-left: auto; padding: 2px 6px; opacity: .7; }
-  .delete-btn:hover { color: var(--accent2); opacity: 1; }
-  .delete-btn.confirm { color: var(--accent2); font-family: var(--mono); font-size: 11px; opacity: 1; }
   .bone-key { font-size: 15px; padding: 4px 4px; opacity: .55; }
   .bone-key:hover { opacity: 1; }
   .bone-note { font-size: 12.5px; color: var(--faint); font-style: italic; margin: 0 0 4px; }
   .bone-card { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--faint); border-radius: 9px; padding: 12px 14px; margin-bottom: 9px; box-shadow: var(--cardshadow); }
   .bone-card p { margin: 0 0 8px; font-size: 15px; line-height: 1.5; color: var(--ink); }
   .bone-actions { display: flex; align-items: center; gap: 6px; }
-  .truth-actions { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-  .truth-actions::-webkit-scrollbar { display: none; }
-  .truth-actions button, .truth-actions .bit-tag { white-space: nowrap; flex: 0 0 auto; }
-  .truth-card { position: relative; padding-right: 46px; }
-  .truth-corner { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; gap: 5px; }
-  .truth-noted { font-size: 11px; color: var(--faint); line-height: 1; }
-  .truth-more { background: transparent; border: none; color: var(--muted); font-size: 17px; line-height: 1; padding: 2px 5px; cursor: pointer; }
+
+  /* ——— swipe to reveal (mirrors the bits app) ——— */
+  .swipe-shell { position: relative; margin-bottom: 9px; border-radius: 9px; overflow: hidden; }
+  .swipe-act { position: absolute; top: 0; bottom: 0; width: 56px; border: none; display: flex;
+    align-items: center; justify-content: center; font-size: 17px; font-family: var(--mono);
+    cursor: pointer; padding: 0; }
+  .swipe-kill { right: 0; background: var(--accent2); color: #fff; }
+  .swipe-promote { left: 0; background: var(--accent); color: var(--onaccent); font-size: 12px; }
+  /* right side can hold two stacked actions (move across / send to sermon) —
+     unlike the bits app, both stuff and questions can reach sermons */
+  .swipe-act-col { position: absolute; top: 0; bottom: 0; left: 0; width: 56px; display: flex; flex-direction: column; }
+  .swipe-act-col .swipe-act { position: static; width: 100%; flex: 1; font-size: 10.5px; line-height: 1.2; padding: 2px; text-align: center; }
+  .swipe-act-col .swipe-act:first-child { border-bottom: 1px solid rgba(0,0,0,.15); }
+  .swipe-face { position: relative; z-index: 1; margin-bottom: 0 !important;
+    transition: transform .18s cubic-bezier(.2,.8,.3,1); touch-action: pan-y; background: var(--card); }
+
+  /* ——— expanded card footer: tags as a light line, not chips ——— */
+  .card-foot { display: flex; align-items: center; gap: 12px; margin-top: 10px;
+    padding-top: 9px; border-top: 1px solid var(--rule); }
+  .tag-line { flex: 1; min-width: 0; text-align: left; background: transparent; border: none;
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--muted);
+    padding: 3px 0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag-line.empty { color: var(--faint); opacity: .7; }
+  .tag-line-edit { flex: 1; min-width: 0; display: flex; gap: 6px; align-items: center; }
+  .foot-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  .foot-mark { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .foot-mark.stale { color: var(--accent2); }
+  .foot-btn { background: transparent; border: 1px solid var(--rule); border-radius: 7px;
+    padding: 3px 8px; font-size: 13px; line-height: 1.4; cursor: pointer; }
+  .foot-btn.react-btn { filter: grayscale(1); opacity: .55; border-style: dashed; }
+  .foot-btn.react-btn.has-react { filter: none; opacity: 1; border-style: solid; }
+
+  .truth-card { position: relative; }
+  .truth-card:not(.open) p { max-height: 3.1em; overflow: hidden; margin: 0; line-height: 1.3; }
+  .truth-card:not(.open) p.clipped { -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%); mask-image: linear-gradient(180deg, #000 72%, transparent 100%); }
+
+  .copy-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--page); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 60; }
+  .copy-toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
+
+  .sermon-pick-row { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--cardshadow); cursor: pointer; }
+  .sermon-pick-row p { flex: 1; margin: 0; font-size: 15px; color: var(--ink); }
   .tag-cloud { display: flex; flex-wrap: wrap; gap: 9px; padding-top: 6px; }
   .section-row { display: flex; gap: 10px; margin: 2px 0 14px; }
   .section-card { flex: 1; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 9px 12px 7px; text-align: left; cursor: pointer; box-shadow: var(--cardshadow); }
@@ -181,8 +199,6 @@
   .bone-del { margin-left: auto; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 2px 4px; }
   .bone-del:hover { color: var(--accent2); }
   .i-mined { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
-  .react-btn { background: transparent; border: 1px dashed var(--rule); border-radius: 7px; padding: 1px 7px; font-size: 13px; line-height: 1.5; filter: grayscale(1); opacity: .55; }
-  .react-btn.has-react { border-style: solid; filter: none; opacity: 1; }
   .set-back { background: transparent; border: none; color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 0; margin-bottom: 10px; display: block; }
   .set-name { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--rule); font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); padding: 2px 0 6px; margin-bottom: 8px; }
   .set-total { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 0 0 12px; }
@@ -359,6 +375,8 @@
 
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
+  <div id="copyToast" class="copy-toast">copied</div>
+
   <div id="list"></div>
   <p class="empty" id="empty" style="display:none"></p>
 
@@ -482,6 +500,16 @@
       </div>
     </div>
   </div>
+  <div class="notes-overlay" id="sermonPickOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>Send to a sermon</h2>
+        <button class="notes-close" id="sermonPickClose">cancel</button>
+      </div>
+      <button class="bone-digup" id="sermonPickNew" style="margin-bottom:14px;">+ new sermon</button>
+      <div id="sermonPickList"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -519,6 +547,7 @@
   var stageFilter = "home";
   var tagEditing = null;
   var textEditing = null;
+  var expandedBit = null;
 
   function hydrate(data) {
     var toPool = [];
@@ -578,6 +607,76 @@
     return days >= STALE_DAYS ? days : 0;
   }
 
+  // A collapsed card only gets the fade if its text is genuinely cut off.
+  // Measured after the node is in the DOM — CSS can't know this on its own.
+  function markIfClipped(node) {
+    requestAnimationFrame(function () {
+      if (!node.isConnected) return;
+      if (node.scrollHeight > node.clientHeight + 1) node.classList.add("clipped");
+      else node.classList.remove("clipped");
+    });
+  }
+
+  function flashCopied() {
+    var t = document.getElementById("copyToast");
+    if (!t) return;
+    t.classList.add("show");
+    clearTimeout(flashCopied._t);
+    flashCopied._t = setTimeout(function () { t.classList.remove("show"); }, 1100);
+  }
+  function buzz() {
+    try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+  }
+  function legacyCopy(str) {
+    var ta = document.createElement("textarea");
+    ta.value = str;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.setSelectionRange(0, str.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(str) {
+    if (!str) return;
+    var ok = legacyCopy(str);
+    if (ok) { flashCopied(); buzz(); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(str).then(function () { flashCopied(); buzz(); }, function () {});
+    }
+  }
+  function attachLongPressCopy(node, getText) {
+    node.style.webkitUserSelect = "none";
+    node.style.userSelect = "none";
+    node.style.webkitTouchCallout = "none";
+    var timer = null, startXY = null;
+    function start(e) {
+      if (e && e.touches && e.touches[0]) startXY = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      else if (e) startXY = { x: e.clientX, y: e.clientY };
+      clearTimeout(timer);
+      timer = setTimeout(function () { copyText(getText()); }, 450);
+    }
+    function moved(e) {
+      if (!startXY) return;
+      var p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+      if (Math.abs(p.clientX - startXY.x) > 10 || Math.abs(p.clientY - startXY.y) > 10) cancel();
+    }
+    function cancel() { clearTimeout(timer); }
+    node.addEventListener("touchstart", start, { passive: true });
+    node.addEventListener("touchend", cancel);
+    node.addEventListener("touchmove", moved, { passive: true });
+    node.addEventListener("touchcancel", cancel);
+    node.addEventListener("mousedown", start);
+    node.addEventListener("mouseup", cancel);
+    node.addEventListener("mouseleave", cancel);
+  }
+
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -585,58 +684,113 @@
     return e;
   }
 
-  // ——— swipe gesture (right = advance, left = bury) ———
-  function attachSwipe(card, onRight, onLeft) {
-    var startX = 0, startY = 0, dx = 0, dragging = false, decided = false, horizontal = false;
-    var THRESHOLD = 88;
-    var wrap = card.parentElement;
-    card.addEventListener("touchstart", function (e) {
-      if (e.touches.length !== 1) return;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      dx = 0; dragging = true; decided = false; horizontal = false;
-      card.style.transition = "none";
-    }, { passive: true });
-    card.addEventListener("touchmove", function (e) {
-      if (!dragging) return;
-      var x = e.touches[0].clientX, y = e.touches[0].clientY;
-      dx = x - startX;
-      var dy = y - startY;
-      if (!decided) {
-        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-          horizontal = Math.abs(dx) > Math.abs(dy);
-          decided = true;
-        }
-      }
-      if (horizontal) {
-        if (e.cancelable) e.preventDefault();
-        wrap.classList.toggle("swipe-right-active", dx > 24);
-        wrap.classList.toggle("swipe-left-active", dx < -24);
-        card.style.transform = "translateX(" + dx + "px)";
-      }
-    }, { passive: false });
-    function reset() {
-      card.style.transition = "transform .2s ease";
-      card.style.transform = "translateX(0)";
-      wrap.classList.remove("swipe-right-active", "swipe-left-active");
+  // ——— swipe to reveal. Horizontal drag slides the card aside to expose an
+  // action underneath; you then TAP it. Nothing destructive fires from the
+  // swipe alone — a mis-swipe while scrolling costs you nothing but a nudge back. ———
+  var swipeOpenCard = null;
+  function closeSwipe() {
+    if (swipeOpenCard) {
+      swipeOpenCard.style.transform = "";
+      swipeOpenCard.classList.remove("swiped-l", "swiped-r");
+      swipeOpenCard = null;
     }
-    card.addEventListener("touchend", function () {
+  }
+  function attachSwipe(shell, face) {
+    var x0 = 0, y0 = 0, dx = 0, dragging = false, decided = false, horizontal = false;
+    var THRESH = 56, DECIDE = 10;
+    function onStart(e) {
+      var t = e.touches ? e.touches[0] : e;
+      x0 = t.clientX; y0 = t.clientY;
+      dx = 0; dragging = true; decided = false; horizontal = false;
+      face.style.transition = "none";
+    }
+    function onMove(e) {
+      if (!dragging) return;
+      var t = e.touches ? e.touches[0] : e;
+      var ddx = t.clientX - x0, ddy = t.clientY - y0;
+      if (!decided) {
+        if (Math.abs(ddx) < DECIDE && Math.abs(ddy) < DECIDE) return;
+        decided = true;
+        horizontal = Math.abs(ddx) > Math.abs(ddy) * 1.3;
+        if (!horizontal) { dragging = false; face.style.transition = ""; return; }
+        if (swipeOpenCard && swipeOpenCard !== face) closeSwipe();
+      }
+      if (!horizontal) return;
+      if (e.cancelable) e.preventDefault();
+      dx = Math.max(-90, Math.min(90, ddx));
+      face.style.transform = "translateX(" + dx + "px)";
+    }
+    function onEnd() {
       if (!dragging) return;
       dragging = false;
-      if (horizontal && dx > THRESHOLD) {
-        card.style.transition = "transform .18s ease";
-        card.style.transform = "translateX(120%)";
-        setTimeout(onRight, 140);
-      } else if (horizontal && dx < -THRESHOLD) {
-        card.style.transition = "transform .18s ease";
-        card.style.transform = "translateX(-120%)";
-        setTimeout(onLeft, 140);
+      face.style.transition = "";
+      if (!horizontal) return;
+      if (dx <= -THRESH) {
+        face.style.transform = "translateX(-" + THRESH + "px)";
+        face.classList.add("swiped-l"); face.classList.remove("swiped-r");
+        swipeOpenCard = face;
+      } else if (dx >= THRESH) {
+        face.style.transform = "translateX(" + THRESH + "px)";
+        face.classList.add("swiped-r"); face.classList.remove("swiped-l");
+        swipeOpenCard = face;
       } else {
-        reset();
+        face.style.transform = "";
+        face.classList.remove("swiped-l", "swiped-r");
+        if (swipeOpenCard === face) swipeOpenCard = null;
       }
-    });
-    card.addEventListener("touchcancel", reset);
+    }
+    face.addEventListener("touchstart", onStart, { passive: true });
+    face.addEventListener("touchmove", onMove, { passive: false });
+    face.addEventListener("touchend", onEnd);
+    face.addEventListener("touchcancel", onEnd);
+    face.addEventListener("mousedown", function (e) { onStart(e); });
+    window.addEventListener("mousemove", function (e) { if (dragging) onMove(e); });
+    window.addEventListener("mouseup", function () { if (dragging) onEnd(); });
   }
+  document.addEventListener("click", function (e) {
+    if (swipeOpenCard && !swipeOpenCard.parentNode.contains(e.target)) closeSwipe();
+  }, true);
+
+  // ——— sermon picker: reachable from both stuff and questions ———
+  var sermonPickId = null;
+  function openSermonPicker(id) {
+    sermonPickId = id;
+    closeSwipe();
+    renderSermonPicker();
+    document.getElementById("sermonPickOverlay").classList.add("open");
+  }
+  function closeSermonPicker() {
+    sermonPickId = null;
+    document.getElementById("sermonPickOverlay").classList.remove("open");
+  }
+  function addToSermon(setObj) {
+    if (!sermonPickId) return;
+    if (setObj.bitIds.indexOf(sermonPickId) === -1) setObj.bitIds.push(sermonPickId);
+    setObj.updated = Date.now();
+    save(); closeSermonPicker(); render();
+  }
+  function renderSermonPicker() {
+    var list = document.getElementById("sermonPickList");
+    list.innerHTML = "";
+    if (!state.sets) state.sets = [];
+    if (state.sets.length === 0) {
+      list.appendChild(el("p", "empty", "No sermons yet — start one below."));
+      return;
+    }
+    state.sets.forEach(function (s) {
+      var row = el("div", "sermon-pick-row");
+      row.appendChild(el("p", null, s.name || "untitled sermon"));
+      row.onclick = function () { addToSermon(s); };
+      list.appendChild(row);
+    });
+  }
+  document.getElementById("sermonPickClose").onclick = closeSermonPicker;
+  document.getElementById("sermonPickNew").onclick = function () {
+    var id = Date.now().toString(36);
+    if (!state.sets) state.sets = [];
+    state.sets.unshift({ id: id, name: "", bitIds: [], created: Date.now(), updated: Date.now() });
+    addToSermon(state.sets[0]);
+  };
 
   function render() {
     document.body.classList.toggle("home-view", stageFilter === "home");
@@ -721,23 +875,19 @@
     });
 
     function renderCard(b, list) {
-      var wrap = el("div", "swipe-wrap");
-      var hintRight = el("div", "swipe-hint swipe-hint-right", "↦ back to stuff");
-      var hintLeft = el("div", "swipe-hint swipe-hint-left", "bury ✕");
-      wrap.appendChild(hintRight);
-      wrap.appendChild(hintLeft);
+      var isOpen = expandedBit === b.id;
 
       function moveToStuff() {
         state.bits = state.bits.filter(function (x) { return x.id !== b.id; });
         if (!state.truths) state.truths = [];
-        state.truths.unshift({ id: b.id, text: b.text, created: b.created, workshop: b.workshop, mined: b.mined, tags: b.tags });
-        save(); render();
+        state.truths.unshift({ id: b.id, text: b.text, created: b.created, workshop: b.workshop, mined: b.mined, tags: (b.tags || []).slice(), touched: Date.now() });
+        closeSwipe(); save(); render();
       }
       function buryEntry() {
         b.buriedAt = Date.now();
         state.buried.unshift(b);
         state.bits = state.bits.filter(function (x) { return x.id !== b.id; });
-        save(); render();
+        closeSwipe(); save(); render();
         try {
           if (!localStorage.getItem("gp-buried-once")) {
             localStorage.setItem("gp-buried-once", "1");
@@ -746,7 +896,24 @@
         } catch (e) {}
       }
 
-      var card = el("div", "bit");
+      // swipe shell: bury left, move-across + sermon stacked on the right
+      var shell = el("div", "swipe-shell");
+      var actL = el("button", "swipe-act swipe-kill", "🪦");
+      actL.title = "Bury it — to the vault";
+      actL.onclick = function (e) { e.stopPropagation(); buryEntry(); };
+      var actCol = el("div", "swipe-act-col");
+      var actMove = el("button", "swipe-act swipe-promote", "← stuff");
+      actMove.title = "Not a question after all — send it back to stuff";
+      actMove.onclick = function (e) { e.stopPropagation(); moveToStuff(); };
+      var actSermon = el("button", "swipe-act swipe-promote", "→ sermon");
+      actSermon.title = "Send to a sermon";
+      actSermon.onclick = function (e) { e.stopPropagation(); openSermonPicker(b.id); };
+      actCol.appendChild(actMove);
+      actCol.appendChild(actSermon);
+      shell.appendChild(actCol);
+      shell.appendChild(actL);
+
+      var card = el("div", "bit swipe-face" + (isOpen ? " open" : ""));
 
       if (textEditing === b.id) {
         var editArea = document.createElement("textarea");
@@ -768,52 +935,47 @@
           editArea.focus();
           editArea.setSelectionRange(editArea.value.length, editArea.value.length);
         }, 0);
-      } else {
-        var p = el("p", "bit-text", b.text);
-        p.title = "Tap to open workbench";
-        p.onclick = function () { openWorkbench(b.id); };
-        card.appendChild(p);
+        card.appendChild(buildBitMeta(b));
+        shell.appendChild(card);
+        list.appendChild(shell);
+        return;
       }
 
-      var meta = el("div", "bit-meta");
+      var p = el("p", "bit-text", b.text);
+      p.title = isOpen ? "Tap to collapse · long-press to copy" : "Tap to open · long-press to copy";
+      p.onclick = function () {
+        if (swipeOpenCard === card) { closeSwipe(); return; }
+        expandedBit = isOpen ? null : b.id; render();
+      };
+      attachLongPressCopy(p, function () { return b.text; });
+      card.appendChild(p);
 
-      var toPoolBtn = el("button", "stage-btn", "back to stuff");
-      toPoolBtn.title = "Move it back to stuff";
-      toPoolBtn.onclick = moveToStuff;
-      meta.appendChild(toPoolBtn);
-
-      {
-        var REACTS = ["", "😒", "😆", "😂"];
-        var rBtn = el("button", "react-btn" + (b.react ? " has-react" : ""), b.react || "😶");
-        rBtn.title = "How'd it land? Tap to cycle";
-        rBtn.onclick = function () {
-          var ri = REACTS.indexOf(b.react || "");
-          var next = REACTS[(ri + 1) % REACTS.length];
-          if (next) b.react = next; else delete b.react;
-          b.touched = Date.now();
-          save(); render();
-        };
-        meta.appendChild(rBtn);
+      if (!isOpen) {
+        markIfClipped(p);
+        var flags = [];
+        if ((b.tags || []).length) flags.push("🏷");
+        if (b.workshop && b.workshop.trim()) flags.push("✎");
+        if (b.react) flags.push(b.react);
+        if (staleDays(b) > 0) flags.push("⏳");
+        if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
+        shell.appendChild(card);
+        attachSwipe(shell, card);
+        list.appendChild(shell);
+        return;
       }
 
-      var sd = staleDays(b);
-      if (sd > 0) {
-        var st = el("span", "stale", "⏳ stale " + sd + "d");
-        st.title = "Advance it or kill it";
-        meta.appendChild(st);
-      }
+      card.appendChild(buildBitMeta(b));
+      shell.appendChild(card);
+      attachSwipe(shell, card);
+      list.appendChild(shell);
+    }
 
-      b.tags.forEach(function (t) {
-        var tag = el("button", "bit-tag", t + " ✕");
-        tag.title = "Tap to remove tag";
-        tag.onclick = function () {
-          b.tags = b.tags.filter(function (x) { return x !== t; });
-          save(); render();
-        };
-        meta.appendChild(tag);
-      });
+    // Open-card footer: tags as a light line, react + stale on the right.
+    function buildBitMeta(b) {
+      var foot = el("div", "card-foot");
 
       if (tagEditing === b.id) {
+        var tp = el("div", "tag-line-edit");
         var input = el("input", "tag-input");
         input.placeholder = "tag";
         function commit() {
@@ -824,30 +986,55 @@
         }
         input.onkeydown = function (e) { if (e.key === "Enter") commit(); };
         input.onblur = commit;
-        meta.appendChild(input);
+        tp.appendChild(input);
+        (b.tags || []).forEach(function (t) {
+          var chip = el("span", "foot-mark", t + " ✕");
+          chip.style.cursor = "pointer";
+          chip.onclick = function (e) {
+            e.stopPropagation();
+            b.tags = b.tags.filter(function (x) { return x !== t; });
+            save(); render();
+          };
+          tp.appendChild(chip);
+        });
+        foot.appendChild(tp);
         setTimeout(function () { input.focus(); }, 0);
       } else {
-        var addTag = el("button", "add-tag-btn", "+ tag");
-        addTag.onclick = function () { tagEditing = b.id; render(); };
-        meta.appendChild(addTag);
+        var tagLine = el("button", "tag-line");
+        tagLine.textContent = (b.tags && b.tags.length) ? b.tags.join("  ·  ") : "+ tag";
+        if (!(b.tags && b.tags.length)) tagLine.classList.add("empty");
+        tagLine.title = "Tap to edit tags";
+        tagLine.onclick = function (e) { e.stopPropagation(); tagEditing = b.id; render(); };
+        foot.appendChild(tagLine);
       }
 
-      if (b.workshop && b.workshop.trim()) {
-        var notesMark = el("span", "has-notes", "✎");
-        notesMark.title = "Has workbench notes";
-        meta.appendChild(notesMark);
+      var footR = el("div", "foot-right");
+      var sd = staleDays(b);
+      if (sd > 0) {
+        var st = el("span", "foot-mark stale", "⏳ " + sd + "d");
+        st.title = "Stale — advance it or bury it";
+        footR.appendChild(st);
       }
+      var REACTS = ["", "😒", "😆", "😂"];
+      var rBtn = el("button", "foot-btn react-btn" + (b.react ? " has-react" : ""), b.react || "😶");
+      rBtn.title = "How'd it land? Tap to cycle";
+      rBtn.onclick = function (e) {
+        e.stopPropagation();
+        var ri = REACTS.indexOf(b.react || "");
+        var next = REACTS[(ri + 1) % REACTS.length];
+        if (next) b.react = next; else delete b.react;
+        b.touched = Date.now();
+        save(); render();
+      };
+      footR.appendChild(rBtn);
+      var wbBtn = el("button", "foot-btn", "📝");
+      wbBtn.title = "Open the workbench";
+      wbBtn.setAttribute("aria-label", "workbench");
+      wbBtn.onclick = function (e) { e.stopPropagation(); openWorkbench(b.id); };
+      footR.appendChild(wbBtn);
+      foot.appendChild(footR);
 
-      var del = el("button", "delete-btn", "✕");
-      del.setAttribute("aria-label", "bury entry");
-      del.title = "Bury to the vault";
-      del.onclick = buryEntry;
-      meta.appendChild(del);
-
-      card.appendChild(meta);
-      wrap.appendChild(card);
-      list.appendChild(wrap);
-      attachSwipe(card, moveToStuff, buryEntry);
+      return foot;
     }
 
     var empty = document.getElementById("empty");
@@ -1376,51 +1563,92 @@
     });
   }
   function renderTruthCard(t, list) {
-      var card = el("div", "bone-card truth-card");
-      var p = el("p", null, t.text);
-      p.style.cursor = "pointer";
-      p.onclick = function () { openWorkbench(t.id, "truth"); };
-      card.appendChild(p);
-      var corner = el("div", "truth-corner");
-      if (t.workshop && t.workshop.trim()) {
-        var noted = el("span", "truth-noted", "✎");
-        noted.title = "Has workbench notes";
-        corner.appendChild(noted);
-      }
-      var more = el("button", "truth-more", "⋯");
-      more.setAttribute("aria-label", "show actions");
-      more.onclick = function () { expandedTruth = expandedTruth === t.id ? null : t.id; render(); };
-      corner.appendChild(more);
-      card.appendChild(corner);
-      if (expandedTruth !== t.id) { list.appendChild(card); return; }
-      var actions = el("div", "bone-actions truth-actions");
-      var promote = el("button", "bone-digup", "+ question");
-      promote.title = "Copy this into questions — it stays here too";
-      promote.onclick = function (e) {
+      var isOpen = expandedTruth === t.id;
+
+      // shell holds the swipe actions; face is what slides.
+      // Left reveals bury. Right reveals two stacked moves — unlike the bits
+      // app, stuff can go to questions OR straight to a sermon.
+      var shell = el("div", "swipe-shell");
+      var actL = el("button", "swipe-act swipe-kill", "🪦");
+      actL.title = "Bury it — to the vault";
+      actL.onclick = function (e) {
+        e.stopPropagation();
+        if (!state.buried) state.buried = [];
+        t.buriedAt = Date.now(); t.from = "stuff";
+        state.buried.unshift(t);
+        state.truths = state.truths.filter(function (x) { return x.id !== t.id; });
+        closeSwipe(); save(); render();
+      };
+      var actCol = el("div", "swipe-act-col");
+      var actQ = el("button", "swipe-act swipe-promote", "+ question");
+      actQ.title = "Copy into questions — it stays here too";
+      actQ.onclick = function (e) {
         e.stopPropagation();
         state.bits.unshift({
           id: Date.now().toString(36),
           text: t.text,
           tags: (t.tags || []).slice(),
+          workshop: t.workshop || "",
           created: Date.now(),
           statusAt: Date.now()
         });
         t.mined = (t.mined || 0) + 1;
         t.touched = Date.now();
-        save(); render();
+        closeSwipe(); save(); render();
       };
-      actions.appendChild(promote);
-      (t.tags || []).forEach(function (tg) {
-        var tag = el("button", "bit-tag", tg + " ✕");
-        tag.title = "Tap to remove tag";
-        tag.onclick = function (e) {
-          e.stopPropagation();
-          t.tags = t.tags.filter(function (x) { return x !== tg; });
-          save(); render();
-        };
-        actions.appendChild(tag);
-      });
+      var actS = el("button", "swipe-act swipe-promote", "→ sermon");
+      actS.title = "Send straight to a sermon";
+      actS.onclick = function (e) {
+        e.stopPropagation();
+        // sermons hold entries by id — mirror it into questions so the
+        // lineup can find it, then open the picker on that new copy
+        var nid = Date.now().toString(36);
+        state.bits.unshift({
+          id: nid,
+          text: t.text,
+          tags: (t.tags || []).slice(),
+          workshop: t.workshop || "",
+          created: Date.now(),
+          statusAt: Date.now()
+        });
+        t.mined = (t.mined || 0) + 1;
+        t.touched = Date.now();
+        save();
+        openSermonPicker(nid);
+      };
+      actCol.appendChild(actQ);
+      actCol.appendChild(actS);
+      shell.appendChild(actCol);
+      shell.appendChild(actL);
+
+      var card = el("div", "bone-card truth-card swipe-face" + (isOpen ? " open" : ""));
+      var p = el("p", null, t.text);
+      p.style.cursor = "pointer";
+      p.title = isOpen ? "Tap to collapse · long-press to copy" : "Tap to open · long-press to copy";
+      p.onclick = function () {
+        if (swipeOpenCard === card) { closeSwipe(); return; }
+        expandedTruth = isOpen ? null : t.id; render();
+      };
+      attachLongPressCopy(p, function () { return t.text; });
+      card.appendChild(p);
+
+      if (!isOpen) {
+        markIfClipped(p);
+        var flags = [];
+        if ((t.tags || []).length) flags.push("🏷");
+        if (t.workshop && t.workshop.trim()) flags.push("✎");
+        if (t.mined) flags.push("⛏");
+        if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
+        shell.appendChild(card);
+        attachSwipe(shell, card);
+        list.appendChild(shell);
+        return;
+      }
+
+      // OPEN: one quiet footer — tags as a light line, bench on the right.
+      var foot = el("div", "card-foot");
       if (tagEditing === t.id) {
+        var tp = el("div", "tag-line-edit");
         var tinput = el("input", "tag-input");
         tinput.placeholder = "tag";
         var commitT = function () {
@@ -1432,23 +1660,45 @@
         };
         tinput.onkeydown = function (e) { if (e.key === "Enter") commitT(); };
         tinput.onblur = commitT;
-        actions.appendChild(tinput);
+        tp.appendChild(tinput);
+        (t.tags || []).forEach(function (tg) {
+          var chip = el("span", "foot-mark", tg + " ✕");
+          chip.style.cursor = "pointer";
+          chip.onclick = function (e) {
+            e.stopPropagation();
+            t.tags = t.tags.filter(function (x) { return x !== tg; });
+            save(); render();
+          };
+          tp.appendChild(chip);
+        });
+        foot.appendChild(tp);
         setTimeout(function () { tinput.focus(); }, 0);
       } else {
-        var addTag = el("button", "add-tag-btn", "+ tag");
-        addTag.onclick = function (e) { e.stopPropagation(); tagEditing = t.id; render(); };
-        actions.appendChild(addTag);
+        var tagLine = el("button", "tag-line");
+        tagLine.textContent = (t.tags && t.tags.length) ? t.tags.join("  ·  ") : "+ tag";
+        if (!(t.tags && t.tags.length)) tagLine.classList.add("empty");
+        tagLine.title = "Tap to edit tags";
+        tagLine.onclick = function (e) { e.stopPropagation(); tagEditing = t.id; render(); };
+        foot.appendChild(tagLine);
       }
-      var del = el("button", "bone-del", "delete");
-      del.onclick = function (e) {
-        e.stopPropagation();
-        if (del.textContent === "delete") { del.textContent = "sure?"; setTimeout(function () { if (del) del.textContent = "delete"; }, 2500); return; }
-        state.truths = state.truths.filter(function (x) { return x.id !== t.id; });
-        save(); render();
-      };
-      actions.appendChild(del);
-      card.appendChild(actions);
-      list.appendChild(card);
+
+      var footR = el("div", "foot-right");
+      if (t.mined) {
+        var mined = el("span", "foot-mark", "⛏ " + t.mined);
+        mined.title = "Carried into questions " + t.mined + "×";
+        footR.appendChild(mined);
+      }
+      var twb = el("button", "foot-btn", "📝");
+      twb.setAttribute("aria-label", "workbench");
+      twb.title = "Open the workbench";
+      twb.onclick = function (e) { e.stopPropagation(); openWorkbench(t.id, "truth"); };
+      footR.appendChild(twb);
+      foot.appendChild(footR);
+
+      card.appendChild(foot);
+      shell.appendChild(card);
+      attachSwipe(shell, card);
+      list.appendChild(shell);
   }
 
   // ——— tags: everything you've ever written about X ———
