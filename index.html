@@ -275,6 +275,13 @@
   .notes-overlay.open { display: flex; }
   .notes-inner { max-width: 620px; width: 100%; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .notes-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .wb-browse { display: flex; align-items: center; gap: 4px; margin-left: auto; margin-right: 10px; }
+  .wb-arrow { background: transparent; border: 1px solid var(--rule); border-radius: 7px;
+    color: var(--muted); font-size: 17px; line-height: 1; padding: 2px 10px 4px; cursor: pointer; }
+  .wb-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .wb-arrow:disabled { opacity: .3; cursor: default; }
+  .wb-browse-pos { font-family: var(--mono); font-size: 9.5px; color: var(--faint);
+    letter-spacing: .06em; min-width: 44px; text-align: center; }
   .notes-head h2 { font-family: var(--serif); font-style: italic; font-size: 22px; margin: 0; color: var(--ink); }
   .notes-close { margin-left: auto; background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 999px; padding: 5px 14px; font-family: var(--mono); font-size: 12px; }
   .notes-canvas { width: 100%; border: 1px solid var(--rule); border-radius: 10px; padding: 14px; font-size: 16px; font-family: var(--serif); line-height: 1.6; background: var(--card); color: var(--ink); resize: none; min-height: 220px; box-shadow: inset 0 1px 4px rgba(0,0,0,.10); }
@@ -550,6 +557,11 @@
     <div class="notes-inner">
       <div class="notes-head">
         <h2>Workbench</h2>
+        <div class="wb-browse" id="wbBrowse" style="display:none">
+          <button class="wb-arrow" id="wbPrev" aria-label="previous">‹</button>
+          <span class="wb-browse-pos" id="wbBrowsePos"></span>
+          <button class="wb-arrow" id="wbNext" aria-label="next">›</button>
+        </div>
         <button class="notes-close" id="wbClose">done</button>
       </div>
       <div class="wb-label">the entry</div>
@@ -2155,8 +2167,10 @@
     } else {
       m.textContent = b.workshop ? "" : "Working notes live here — separate from the entry itself.";
     }
+    renderBrowseNav();
     document.getElementById("workbenchOverlay").classList.add("open");
-    setTimeout(function () { document.getElementById("wbBit").focus(); }, 0);
+    // don't steal focus mid-browse — you're reading, not editing yet
+    if (!browseDeck) setTimeout(function () { document.getElementById("wbBit").focus(); }, 0);
   }
   function saveWorkbench() {
     if (!workbenchId) return;
@@ -2191,8 +2205,11 @@
     document.getElementById("wbWhen").value = "";
     saveWorkbench();
   };
+  document.getElementById("wbPrev").onclick = function () { saveWorkbench(); browseGo(-1); };
+  document.getElementById("wbNext").onclick = function () { saveWorkbench(); browseGo(1); };
   document.getElementById("wbClose").onclick = function () {
     saveWorkbench();
+    clearBrowse();
     workbenchId = null;
     workbenchKind = "bit";
     document.getElementById("workbenchOverlay").classList.remove("open");
@@ -2719,6 +2736,27 @@
     return names.map(function (t) { return { tag: t, count: counts[t] }; });
   }
   // ——— shuffle: pick a pool, get an age-weighted deal ———
+  // The roll deals the whole pool rather than one entry, so you can keep
+  // moving through without closing and rolling again.
+  var browseDeck = null, browseIdx = 0, browseKind = "bit";
+  function clearBrowse() { browseDeck = null; browseIdx = 0; }
+  function browseGo(step) {
+    if (!browseDeck) return;
+    var n = browseIdx + step;
+    if (n < 0 || n >= browseDeck.length) return;
+    browseIdx = n;
+    openWorkbench(browseDeck[n].id, browseKind);
+  }
+  function renderBrowseNav() {
+    var nav = document.getElementById("wbBrowse");
+    if (!nav) return;
+    if (!browseDeck || browseDeck.length < 2) { nav.style.display = "none"; return; }
+    nav.style.display = "flex";
+    document.getElementById("wbBrowsePos").textContent =
+      (browseIdx + 1) + " / " + browseDeck.length;
+    document.getElementById("wbPrev").disabled = browseIdx === 0;
+    document.getElementById("wbNext").disabled = browseIdx === browseDeck.length - 1;
+  }
   function dealShuffle(which) {
     var pool, kind;
     if (which === "pool") {
@@ -2733,17 +2771,22 @@
     var weights = pool.map(function (x) {
       return 1 + Math.floor((now - (x.at || now)) / DAY);
     });
-    var total = 0;
-    weights.forEach(function (w) { total += w; });
-    var r = Math.random() * total;
-    var pick = pool[pool.length - 1];
-    for (var i = 0; i < pool.length; i++) {
-      r -= weights[i];
-      if (r <= 0) { pick = pool[i]; break; }
+    // draw the whole pool in weighted order — the longest-untouched surface
+    // first, but everything remains reachable on a long pass
+    var remaining = pool.slice(), remW = weights.slice(), order = [];
+    while (remaining.length) {
+      var total = 0;
+      remW.forEach(function (w) { total += w; });
+      var r = Math.random() * total, k = remaining.length - 1;
+      for (var i = 0; i < remaining.length; i++) {
+        r -= remW[i];
+        if (r <= 0) { k = i; break; }
+      }
+      order.push(remaining[k]);
+      remaining.splice(k, 1); remW.splice(k, 1);
     }
-    openWorkbench(pick.id, kind);
-    var age = Math.floor((now - (pick.at || now)) / DAY);
-    if (age > 0) document.getElementById("wbMeta").textContent = "untouched " + age + "d";
+    browseDeck = order; browseIdx = 0; browseKind = kind;
+    openWorkbench(order[0].id, kind);
   }
   // ——— green room wall ———
   var WISDOM = [
