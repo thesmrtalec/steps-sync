@@ -279,8 +279,6 @@
     line-height: 1; padding: 2px 6px; cursor: pointer; }
   .prep-phase { font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
     text-transform: uppercase; color: var(--accent); }
-  .prep-time { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--faint);
-    letter-spacing: .06em; }
   .prep-body { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center;
     min-height: 0; overflow-y: auto; padding: 8px 0; }
   .prep-lead { font-family: var(--serif); font-size: 25px; line-height: 1.45; color: var(--ink);
@@ -289,7 +287,8 @@
     margin-bottom: 12px; line-height: 1.4; }
   .br-group { padding: 12px 2px; border-bottom: 1px solid var(--rule); }
   .br-group:last-child { border-bottom: none; }
-  .br-head { display: flex; align-items: baseline; gap: 10px; cursor: pointer; }
+  .br-head { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }
+  .br-caret { font-size: 10px; color: var(--faint); flex: 0 0 auto; }
   .br-name { font-family: var(--serif); font-size: 16.5px; color: var(--ink); }
   .br-count { font-family: var(--mono); font-size: 9.5px; color: var(--faint); letter-spacing: .06em; margin-left: auto; }
   .br-items { margin-top: 8px; }
@@ -520,7 +519,7 @@
     <button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">📖</button>
     <button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">🙏</button>
     <button class="notes-tab bone-key" id="anchorBtn" aria-label="what holds" title="What holds — things of ultimate value">🪨</button>
-    <button class="notes-tab bone-key" id="prepBtn" aria-label="prepare" title="Prepare — slow down before you pray">🕯️</button>
+    <button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">🧭</button>
     <button class="notes-tab bone-key" id="shuffleBtn" aria-label="shuffle: deal a stale line" title="Shuffle — deal a stale line">🎲</button>
     <button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">🗝️</button>
     <button class="notes-tab" id="utilBtn" title="More">⚙ more</button>
@@ -569,7 +568,6 @@
     <div class="prep-bar">
       <button class="prep-x" id="prepClose">&times;</button>
       <span class="prep-phase" id="prepPhase"></span>
-      <span class="prep-time" id="prepTime"></span>
     </div>
     <div class="prep-body">
       <div class="prep-lead" id="prepLead"></div>
@@ -767,7 +765,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.2.0";
+  var APP_VERSION = "v1.3.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var tagEditing = null;
@@ -2327,6 +2325,12 @@
     workbenchId = null;
     workbenchKind = "bit";
     document.getElementById("workbenchOverlay").classList.remove("open");
+    if (browseReturn) {                 // came in from a browse view
+      var back = browseReturn;
+      browseReturn = null;
+      openBrowse(back);
+      return;
+    }
     render();
   };
 
@@ -2537,7 +2541,9 @@
   function allEntries() {
     return (state.truths || []).concat(state.questions || []);
   }
+  var browseOpenGroups = {}, browseKindNow = null, browseReturn = null;
   function openBrowse(kind) {
+    if (browseKindNow !== kind) { browseOpenGroups = {}; browseKindNow = kind; }
     var title = document.getElementById("browseTitle");
     var note = document.getElementById("browseNote");
     var list = document.getElementById("browseList");
@@ -2589,17 +2595,25 @@
     groups.forEach(function (g) {
       if (!g.items.length) return;
       var wrap = el("div", "br-group");
+      var open = g.name ? !!browseOpenGroups[g.name] : true;
       if (g.name) {
         var head = el("div", "br-head");
+        head.appendChild(el("span", "br-caret", open ? "\u25be" : "\u25b8"));
         head.appendChild(el("span", "br-name", g.name));
         head.appendChild(el("span", "br-count", g.items.length + ""));
+        head.onclick = function () {
+          browseOpenGroups[g.name] = !browseOpenGroups[g.name];
+          openBrowse(kind);
+        };
         wrap.appendChild(head);
       }
+      if (!open) { list.appendChild(wrap); return; }
       var items = el("div", "br-items");
       g.items.forEach(function (e) {
         var row = el("div", "br-item", e.text);
         row.title = "Open it";
         row.onclick = function () {
+          browseReturn = kind;   // so closing the entry brings you back here
           document.getElementById("browseOverlay").classList.remove("open");
           openWorkbench(e.id, (state.questions || []).indexOf(e) !== -1 ? "bit" : "truth");
         };
@@ -2614,6 +2628,7 @@
   document.getElementById("refsBtn").onclick = function () { openBrowse("refs"); };
   document.getElementById("gratBtn").onclick = function () { openBrowse("grat"); };
   document.getElementById("browseClose").onclick = function () {
+    browseReturn = null;
     document.getElementById("browseOverlay").classList.remove("open");
   };
 
@@ -2687,15 +2702,14 @@
     var own = (state.creed && state.creed.prompts) || [];
     return own.length ? own : WRITE_PROMPTS;
   }
+  // Three questions, in his words: noticing the hand of God, understanding who
+  // he is, and where he's going. No timer, no settling, no ceremony — the
+  // liturgy I built around this was mine, not his.
   var PREP_PHASES = [
-    { k: "settle",  name: "settle",     secs: [45, 60],   io: "none" },
-    { k: "see",     name: "learn to see",      secs: [90, 180],  io: "line",
-      ask: "What did you see? Name it plainly." },
-    { k: "write",   name: "write to understand", secs: [120, 300], io: "pad",
-      ask: "What are you actually thinking about?" },
-    { k: "live",    name: "live deeply",       secs: [60, 90],   io: "line",
-      ask: null },
-    { k: "still",   name: "still",     secs: [45, 90],   io: "none" }
+    { k: "see",   name: "his hand",       io: "line",
+      ask: "Where did you see God\u2019s hand?" },
+    { k: "write", name: "who I am",       io: "pad", prompts: true },
+    { k: "live",  name: "where I\u2019m going", io: "line" }
   ];
   var prep = { on: false, i: 0, long: false, endsAt: 0, tick: null, kept: [], padText: "" };
 
@@ -2706,12 +2720,12 @@
     prep = { on: true, i: 0, long: !!long, endsAt: 0, tick: null, kept: [], padText: "" };
     document.getElementById("prepOverlay").classList.add("open");
     enterPrepPhase(0);
-    prep.tick = setInterval(prepTick, 500);
+
   }
   function enterPrepPhase(i) {
     prep.i = i;
     var ph = PREP_PHASES[i];
-    prep.endsAt = Date.now() + ph.secs[prep.long ? 1 : 0] * 1000;
+
     document.getElementById("prepPhase").textContent = ph.name;
     var lead = document.getElementById("prepLead");
     var ask = document.getElementById("prepAsk");
@@ -2720,21 +2734,13 @@
     var kept = document.getElementById("prepKept");
     kept.innerHTML = "";
     // the settle and still phases hold something to rest on; the rest ask
-    lead.style.display = (ph.k === "settle" || ph.k === "still") ? "" : "none";
-    if (ph.k === "settle") {
-      // rest on something he actually holds, falling back to the sentence
-      var list = anchors();
-      lead.textContent = list.length
-        ? list[Math.floor(Math.random() * list.length)].t
-        : creedText();
-    } else {
-      lead.textContent = "";
-    }
-    ask.style.display = (ph.ask || ph.k === "live" || ph.k === "write") ? "" : "none";
+    lead.style.display = "none";
+    lead.textContent = "";
+    ask.style.display = "";
     ask.innerHTML = "";
     if (ph.k === "live") {
       ask.textContent = northText();
-    } else if (ph.k === "write") {
+    } else if (ph.prompts) {
       var list = writePrompts();
       prep.promptIdx = Math.floor(Math.random() * list.length);
       var q = el("span", null, list[prep.promptIdx]);
@@ -2753,7 +2759,7 @@
     line.style.display = ph.io === "line" ? "" : "none";
     pad.style.display = ph.io === "pad" ? "" : "none";
     line.value = ""; 
-    line.placeholder = ph.k === "see" ? "one thing" : "a line, if one comes";
+    line.placeholder = ph.k === "see" ? "one thing" : "a line to keep";
     if (ph.io === "pad") pad.value = prep.padText;
     document.getElementById("prepNext").textContent =
       i === PREP_PHASES.length - 1 ? "done" : "next \u2192";
@@ -2773,14 +2779,7 @@
       host.appendChild(row);
     });
   }
-  function prepTick() {
-    if (!prep.on) return;
-    var left = Math.max(0, Math.round((prep.endsAt - Date.now()) / 1000));
-    var m = Math.floor(left / 60), ss = left % 60;
-    document.getElementById("prepTime").textContent = m + ":" + (ss < 10 ? "0" : "") + ss;
-    // time running out never forces you on — it just stops counting
-    if (left <= 0) document.getElementById("prepTime").textContent = "\u2014";
-  }
+
   function prepCommitLine() {
     var line = document.getElementById("prepLine");
     var v = line.value.trim();
@@ -2807,6 +2806,7 @@
         save();
       }
     }
+
     if (prep.i >= PREP_PHASES.length - 1) { endPrep(); return; }
     enterPrepPhase(prep.i + 1);
   }
@@ -2816,10 +2816,7 @@
     document.getElementById("prepOverlay").classList.remove("open");
     render();
   }
-  document.getElementById("prepBtn").onclick = function () {
-    var long = confirm("Ten minutes?\n\nOK for the longer pass, Cancel for about five.");
-    startPrep(long);
-  };
+  document.getElementById("prepBtn").onclick = function () { startPrep(false); };
   document.getElementById("prepClose").onclick = endPrep;
   document.getElementById("prepNext").onclick = prepNext;
   document.getElementById("prepLine").addEventListener("keydown", function (e) {
