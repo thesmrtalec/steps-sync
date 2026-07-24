@@ -287,6 +287,19 @@
     text-align: center; margin-bottom: 26px; }
   .prep-ask { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--muted);
     margin-bottom: 12px; line-height: 1.4; }
+  .br-group { padding: 12px 2px; border-bottom: 1px solid var(--rule); }
+  .br-group:last-child { border-bottom: none; }
+  .br-head { display: flex; align-items: baseline; gap: 10px; cursor: pointer; }
+  .br-name { font-family: var(--serif); font-size: 16.5px; color: var(--ink); }
+  .br-count { font-family: var(--mono); font-size: 9.5px; color: var(--faint); letter-spacing: .06em; margin-left: auto; }
+  .br-items { margin-top: 8px; }
+  .br-item { font-family: var(--serif); font-size: 14.5px; line-height: 1.5; color: var(--muted);
+    padding: 5px 0 5px 10px; border-left: 2px solid var(--rule); margin-bottom: 4px; cursor: pointer; }
+  .br-item:hover { border-left-color: var(--accent); color: var(--ink); }
+  .set-search { width: 100%; box-sizing: border-box; background: var(--card); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 9px; padding: 9px 12px; font-family: var(--serif);
+    font-size: 15px; outline: none; margin: 8px 0 4px; }
+  .set-search:focus { border-color: var(--accent); }
   .anchor-row { padding: 13px 2px; border-bottom: 1px solid var(--rule); display: flex;
     align-items: flex-start; gap: 10px; }
   .anchor-row:last-child { border-bottom: none; }
@@ -503,7 +516,10 @@
   <div class="backup">
     <button class="notes-tab" id="notesOpen">🗒 notes</button>
     <button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">📊</button>
-    <button class="notes-tab bone-key" id="anchorBtn" aria-label="what holds" title="What holds — things of ultimate value">⚓</button>
+    <button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">👑</button>
+    <button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">📖</button>
+    <button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">🙏</button>
+    <button class="notes-tab bone-key" id="anchorBtn" aria-label="what holds" title="What holds — things of ultimate value">🪨</button>
     <button class="notes-tab bone-key" id="prepBtn" aria-label="prepare" title="Prepare — slow down before you pray">🕯️</button>
     <button class="notes-tab bone-key" id="shuffleBtn" aria-label="shuffle: deal a stale line" title="Shuffle — deal a stale line">🎲</button>
     <button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">🗝️</button>
@@ -522,6 +538,18 @@
     <div class="util-menu" id="shuffleMenu" style="display:none">
       <button data-pool="pool">remember some stuff</button>
       <button data-pool="bit">remember a question</button>
+    </div>
+  </div>
+  <div class="notes-overlay" id="browseOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2 id="browseTitle"></h2>
+        <button class="notes-close" id="browseClose">done</button>
+      </div>
+      <p class="bone-note" id="browseNote"></p>
+      <div class="notes-index" style="margin-top:10px">
+        <div id="browseList"></div>
+      </div>
     </div>
   </div>
   <div class="notes-overlay" id="anchorOverlay">
@@ -739,7 +767,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.1.0";
+  var APP_VERSION = "v1.2.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var tagEditing = null;
@@ -2502,6 +2530,93 @@
     save(); resetNoteEditor(); renderNotes();
   };
 
+  // ——— browse: speakers, scriptures, gratitude ———
+  // The lens row filters the stuff list; these are the whole collection at
+  // once, grouped, so you can see who you keep returning to and what you\'ve
+  // marked. Everything is derived — no new fields.
+  function allEntries() {
+    return (state.truths || []).concat(state.questions || []);
+  }
+  function openBrowse(kind) {
+    var title = document.getElementById("browseTitle");
+    var note = document.getElementById("browseNote");
+    var list = document.getElementById("browseList");
+    list.innerHTML = "";
+    var groups = [];
+
+    if (kind === "voices") {
+      title.textContent = "Speakers";
+      var byName = {};
+      allEntries().forEach(function (e) {
+        (e.voices || []).forEach(function (v) {
+          if (!byName[v]) byName[v] = [];
+          byName[v].push(e);
+        });
+      });
+      groups = Object.keys(byName).sort(function (a, b) {
+        if (byName[b].length !== byName[a].length) return byName[b].length - byName[a].length;
+        return a.localeCompare(b);
+      }).map(function (n) { return { name: n, items: byName[n] }; });
+      note.textContent = groups.length
+        ? groups.length + (groups.length === 1 ? " voice" : " voices")
+        : "Nothing quoted yet \u2014 attach a speaker with + speaker while you write.";
+
+    } else if (kind === "refs") {
+      title.textContent = "Scriptures";
+      var byRef = {};
+      allEntries().forEach(function (e) {
+        syncRefs(e).forEach(function (r) {
+          var lab = refLabel(r);
+          if (!byRef[lab]) byRef[lab] = [];
+          byRef[lab].push(e);
+        });
+      });
+      groups = Object.keys(byRef).sort().map(function (n) { return { name: n, items: byRef[n] }; });
+      note.textContent = groups.length
+        ? groups.length + (groups.length === 1 ? " passage" : " passages")
+        : "Nothing marked yet \u2014 attach a reference with + scripture while you write.";
+
+    } else {
+      title.textContent = "Hand of God";
+      var grat = allEntries().filter(function (e) { return e.grateful; })
+        .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
+      groups = [{ name: null, items: grat }];
+      note.textContent = grat.length
+        ? grat.length + (grat.length === 1 ? " moment" : " moments")
+        : "Nothing marked yet \u2014 tap + gratitude while you write, or run \ud83d\udd6f\ufe0f prepare.";
+    }
+
+    groups.forEach(function (g) {
+      if (!g.items.length) return;
+      var wrap = el("div", "br-group");
+      if (g.name) {
+        var head = el("div", "br-head");
+        head.appendChild(el("span", "br-name", g.name));
+        head.appendChild(el("span", "br-count", g.items.length + ""));
+        wrap.appendChild(head);
+      }
+      var items = el("div", "br-items");
+      g.items.forEach(function (e) {
+        var row = el("div", "br-item", e.text);
+        row.title = "Open it";
+        row.onclick = function () {
+          document.getElementById("browseOverlay").classList.remove("open");
+          openWorkbench(e.id, (state.questions || []).indexOf(e) !== -1 ? "bit" : "truth");
+        };
+        items.appendChild(row);
+      });
+      wrap.appendChild(items);
+      list.appendChild(wrap);
+    });
+    document.getElementById("browseOverlay").classList.add("open");
+  }
+  document.getElementById("voicesBtn").onclick = function () { openBrowse("voices"); };
+  document.getElementById("refsBtn").onclick = function () { openBrowse("refs"); };
+  document.getElementById("gratBtn").onclick = function () { openBrowse("grat"); };
+  document.getElementById("browseClose").onclick = function () {
+    document.getElementById("browseOverlay").classList.remove("open");
+  };
+
   // ——— what holds ———
   // Kept apart from journal entries on purpose. An entry is what happened; an
   // anchor is what he holds regardless. They\'re few, they\'re permanent, and
@@ -3321,7 +3436,7 @@
   });
 
   // ——— sets ———
-  var setOpen = null;
+  var setOpen = null, setFind = "";
   var timeEditing = null;
   function fmtSec(s) {
     var m = Math.floor(s / 60), r = s % 60;
@@ -3456,7 +3571,7 @@
       var s = state.sets.find(function (x) { return x.id === setOpen; });
       if (!s) { setOpen = null; render(); return; }
       var back = el("button", "set-back", "‹ all sermons");
-      back.onclick = function () { setOpen = null; render(); };
+      back.onclick = function () { setOpen = null; setFind = ""; render(); };
       body.appendChild(back);
       var name = document.createElement("input");
       name.type = "text";
@@ -3465,6 +3580,15 @@
       name.placeholder = "name this sermon";
       name.onchange = function () { s.name = name.value.trim(); s.updated = Date.now(); save(); };
       body.appendChild(name);
+      var find = document.createElement("input");
+      find.type = "search";
+      find.className = "set-search";
+      find.placeholder = "find in this sermon\u2026";
+      find.value = setFind;
+      find.oninput = function () { setFind = find.value; render(); setTimeout(function () {
+        var f = document.querySelector(".set-search"); if (f) { f.focus();
+          f.setSelectionRange(f.value.length, f.value.length); } }, 0); };
+      body.appendChild(find);
       var pruned = s.bitIds.filter(function (id) { return findBitAnywhere(id); });
       if (pruned.length !== s.bitIds.length) { s.bitIds = pruned; save(); }
       var total = 0, untimed = 0;
@@ -3503,6 +3627,14 @@
       var lineup = el("div", "set-lineup");
       s.bitIds.forEach(function (id, idx) {
         var f = findBitAnywhere(id);
+        // filtering hides rows rather than reordering them, so the lineup you
+        // see is still the lineup you'd preach
+        if (setFind.trim()) {
+          var q = setFind.trim().toLowerCase();
+          var hay = (f.bit.text || "").toLowerCase();
+          var vs = (f.bit.voices || []).join(" ").toLowerCase();
+          if (hay.indexOf(q) === -1 && vs.indexOf(q) === -1) return;
+        }
         var row = el("div", "set-row set-drag-row");
         row.setAttribute("data-idx", idx);
         var grip = el("div", "set-grip", "≡");
