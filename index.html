@@ -271,6 +271,48 @@
   /* ——— notes drawer ——— */
   .notes-tab { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11.5px; padding: 4px 6px; }
   .notes-tab:hover { color: var(--accent); }
+  .prep-overlay { position: fixed; inset: 0; background: var(--page); z-index: 320;
+    display: none; flex-direction: column; padding: 0 20px 20px; }
+  .prep-overlay.open { display: flex; }
+  .prep-bar { display: flex; align-items: center; gap: 12px; padding: 12px 0 6px; flex: 0 0 auto; }
+  .prep-x { background: transparent; border: none; color: var(--muted); font-size: 26px;
+    line-height: 1; padding: 2px 6px; cursor: pointer; }
+  .prep-phase { font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent); }
+  .prep-time { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--faint);
+    letter-spacing: .06em; }
+  .prep-body { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center;
+    min-height: 0; overflow-y: auto; padding: 8px 0; }
+  .prep-lead { font-family: var(--serif); font-size: 25px; line-height: 1.45; color: var(--ink);
+    text-align: center; margin-bottom: 26px; }
+  .prep-ask { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--muted);
+    margin-bottom: 12px; line-height: 1.4; }
+  .anchor-row { padding: 13px 2px; border-bottom: 1px solid var(--rule); display: flex;
+    align-items: flex-start; gap: 10px; }
+  .anchor-row:last-child { border-bottom: none; }
+  .anchor-txt { flex: 1; font-family: var(--serif); font-size: 16.5px; line-height: 1.45; color: var(--ink); }
+  .anchor-when { font-family: var(--mono); font-size: 9px; color: var(--faint); letter-spacing: .06em;
+    flex: 0 0 auto; padding-top: 4px; }
+  .anchor-del { background: transparent; border: none; color: var(--faint); font-size: 13px;
+    padding: 2px 4px; cursor: pointer; flex: 0 0 auto; }
+  .anchor-del:hover { color: var(--accent2); }
+  .prep-alt { background: transparent; border: none; color: var(--faint); font-size: 15px;
+    line-height: 1; padding: 0 6px; cursor: pointer; font-style: normal; }
+  .prep-alt:hover { color: var(--accent); }
+  .prep-line, .prep-pad { width: 100%; box-sizing: border-box; background: var(--card);
+    color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; padding: 13px 15px;
+    font-family: var(--serif); font-size: 16.5px; outline: none; }
+  .prep-line:focus, .prep-pad:focus { border-color: var(--accent); }
+  .prep-pad { line-height: 1.6; resize: none; }
+  .prep-kept { margin-top: 14px; }
+  .prep-kept-row { display: flex; gap: 9px; padding: 6px 0; font-family: var(--serif);
+    font-size: 15px; color: var(--muted); line-height: 1.45; }
+  .prep-kept-row span:first-child { color: var(--accent); flex: 0 0 auto; }
+  .prep-foot { flex: 0 0 auto; display: flex; justify-content: flex-end; padding-top: 10px; }
+  .prep-next { background: transparent; border: 1px solid var(--rule); border-radius: 9px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); padding: 9px 15px; cursor: pointer; }
+  .prep-next:hover { border-color: var(--accent); color: var(--accent); }
   .notes-overlay { position: fixed; inset: 0; background: var(--page); z-index: 50; display: none; flex-direction: column; overscroll-behavior: contain; }
   .notes-overlay.open { display: flex; }
   .notes-inner { max-width: 620px; width: 100%; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
@@ -461,6 +503,8 @@
   <div class="backup">
     <button class="notes-tab" id="notesOpen">🗒 notes</button>
     <button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">📊</button>
+    <button class="notes-tab bone-key" id="anchorBtn" aria-label="what holds" title="What holds — things of ultimate value">⚓</button>
+    <button class="notes-tab bone-key" id="prepBtn" aria-label="prepare" title="Prepare — slow down before you pray">🕯️</button>
     <button class="notes-tab bone-key" id="shuffleBtn" aria-label="shuffle: deal a stale line" title="Shuffle — deal a stale line">🎲</button>
     <button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">🗝️</button>
     <button class="notes-tab" id="utilBtn" title="More">⚙ more</button>
@@ -478,6 +522,38 @@
     <div class="util-menu" id="shuffleMenu" style="display:none">
       <button data-pool="pool">remember some stuff</button>
       <button data-pool="bit">remember a question</button>
+    </div>
+  </div>
+  <div class="notes-overlay" id="anchorOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>What holds</h2>
+        <button class="notes-close" id="anchorClose">done</button>
+      </div>
+      <p class="bone-note">Things you hold as true. Not clever, not for anyone else — the ones you’d want said back to you on a hard day.</p>
+      <input id="anchorNew" class="prep-line" placeholder="write one… (enter to keep)" autocomplete="off" style="margin-top:12px" />
+      <div class="notes-index" style="margin-top:14px">
+        <div id="anchorList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="prep-overlay" id="prepOverlay">
+    <div class="prep-bar">
+      <button class="prep-x" id="prepClose">&times;</button>
+      <span class="prep-phase" id="prepPhase"></span>
+      <span class="prep-time" id="prepTime"></span>
+    </div>
+    <div class="prep-body">
+      <div class="prep-lead" id="prepLead"></div>
+      <div class="prep-ask" id="prepAsk"></div>
+      <div class="prep-io" id="prepIo">
+        <input id="prepLine" class="prep-line" autocomplete="off" />
+        <textarea id="prepPad" class="prep-pad" rows="6"></textarea>
+      </div>
+      <div class="prep-kept" id="prepKept"></div>
+    </div>
+    <div class="prep-foot">
+      <button class="prep-next" id="prepNext">next \u2192</button>
     </div>
   </div>
   <div class="notes-overlay" id="boneOverlay">
@@ -663,6 +739,7 @@
     "What's on your mind to pray about?"
   ];
 
+  var APP_VERSION = "v1.1.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var tagEditing = null;
@@ -697,6 +774,8 @@
     state.sets = data.sets || [];
     state.autoRefs = data.autoRefs === true;
     state.notesPin = data.notesPin || null;
+    state.anchors = data.anchors || [];
+    state.creed = data.creed || null;
     state.updatedAt = data.updatedAt || 0;
   }
   function load() {
@@ -1311,6 +1390,13 @@
     node.addEventListener("mouseleave", cancel);
   }
 
+  // Date.now() alone collides when entries are written back to back, which
+  // the gratitude phase does constantly. A counter keeps every id unique.
+  var _idSeq = 0;
+  function uid() {
+    _idSeq = (_idSeq + 1) % 1000000;
+    return Date.now().toString(36) + _idSeq.toString(36);
+  }
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -2415,6 +2501,220 @@
     }
     save(); resetNoteEditor(); renderNotes();
   };
+
+  // ——— what holds ———
+  // Kept apart from journal entries on purpose. An entry is what happened; an
+  // anchor is what he holds regardless. They\'re few, they\'re permanent, and
+  // the settle phase rests on one instead of on a slogan.
+  function anchors() { return (state.anchors || []); }
+  function renderAnchors() {
+    var host = document.getElementById("anchorList");
+    host.innerHTML = "";
+    var list = anchors();
+    list.forEach(function (a2) {
+      var row = el("div", "anchor-row");
+      var d = new Date(a2.at);
+      row.appendChild(el("span", "anchor-when",
+        d.toLocaleDateString("en-US", { month: "short", year: "2-digit" })));
+      row.appendChild(el("span", "anchor-txt", a2.t));
+      var del = el("button", "anchor-del", "\u2715");
+      del.title = "Remove";
+      del.onclick = function () {
+        state.anchors = anchors().filter(function (x) { return x !== a2; });
+        save(); renderAnchors();
+      };
+      row.appendChild(del);
+      host.appendChild(row);
+    });
+  }
+  function addAnchor(txt) {
+    var v = (txt || "").trim();
+    if (!v) return;
+    if (!state.anchors) state.anchors = [];
+    state.anchors.unshift({ t: v, at: Date.now() });
+    save();
+  }
+  document.getElementById("anchorBtn").onclick = function () {
+    renderAnchors();
+    document.getElementById("anchorOverlay").classList.add("open");
+  };
+  document.getElementById("anchorClose").onclick = function () {
+    document.getElementById("anchorOverlay").classList.remove("open");
+  };
+  document.getElementById("anchorNew").addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    var inp = document.getElementById("anchorNew");
+    addAnchor(inp.value);
+    inp.value = "";
+    renderAnchors();
+  });
+
+  // ——— prepare ———
+  // Not a workout. The bits circuit counts reps because output is the point;
+  // here arriving is the point, so every phase runs on a clock and nothing
+  // is required. Three phases, each one of his own principles:
+  //   see        \u2192 gratitude
+  //   understand \u2192 reflective writing
+  //   live       \u2192 the time and roles he's been given
+  // It hands you off at the end rather than trying to be the destination.
+  var CREED_DEFAULT = "Become the kind of man from whom good work naturally flows.";
+  var NORTH_DEFAULT = "Where is my energy most needed today?";
+  var WRITE_PROMPTS = [
+    "What are you actually thinking about?",
+    "What\u2019s weighing on you right now?",
+    "What are you avoiding?",
+    "Who needs something from you that you haven\u2019t given?",
+    "What went better than you expected?",
+    "Where did you fall short today?"
+  ];
+  function writePrompts() {
+    var own = (state.creed && state.creed.prompts) || [];
+    return own.length ? own : WRITE_PROMPTS;
+  }
+  var PREP_PHASES = [
+    { k: "settle",  name: "settle",     secs: [45, 60],   io: "none" },
+    { k: "see",     name: "learn to see",      secs: [90, 180],  io: "line",
+      ask: "What did you see? Name it plainly." },
+    { k: "write",   name: "write to understand", secs: [120, 300], io: "pad",
+      ask: "What are you actually thinking about?" },
+    { k: "live",    name: "live deeply",       secs: [60, 90],   io: "line",
+      ask: null },
+    { k: "still",   name: "still",     secs: [45, 90],   io: "none" }
+  ];
+  var prep = { on: false, i: 0, long: false, endsAt: 0, tick: null, kept: [], padText: "" };
+
+  function creedText() { return (state.creed && state.creed.sentence) || CREED_DEFAULT; }
+  function northText() { return (state.creed && state.creed.north) || NORTH_DEFAULT; }
+
+  function startPrep(long) {
+    prep = { on: true, i: 0, long: !!long, endsAt: 0, tick: null, kept: [], padText: "" };
+    document.getElementById("prepOverlay").classList.add("open");
+    enterPrepPhase(0);
+    prep.tick = setInterval(prepTick, 500);
+  }
+  function enterPrepPhase(i) {
+    prep.i = i;
+    var ph = PREP_PHASES[i];
+    prep.endsAt = Date.now() + ph.secs[prep.long ? 1 : 0] * 1000;
+    document.getElementById("prepPhase").textContent = ph.name;
+    var lead = document.getElementById("prepLead");
+    var ask = document.getElementById("prepAsk");
+    var line = document.getElementById("prepLine");
+    var pad = document.getElementById("prepPad");
+    var kept = document.getElementById("prepKept");
+    kept.innerHTML = "";
+    // the settle and still phases hold something to rest on; the rest ask
+    lead.style.display = (ph.k === "settle" || ph.k === "still") ? "" : "none";
+    if (ph.k === "settle") {
+      // rest on something he actually holds, falling back to the sentence
+      var list = anchors();
+      lead.textContent = list.length
+        ? list[Math.floor(Math.random() * list.length)].t
+        : creedText();
+    } else {
+      lead.textContent = "";
+    }
+    ask.style.display = (ph.ask || ph.k === "live" || ph.k === "write") ? "" : "none";
+    ask.innerHTML = "";
+    if (ph.k === "live") {
+      ask.textContent = northText();
+    } else if (ph.k === "write") {
+      var list = writePrompts();
+      prep.promptIdx = Math.floor(Math.random() * list.length);
+      var q = el("span", null, list[prep.promptIdx]);
+      ask.appendChild(q);
+      var alt = el("button", "prep-alt", "\u21bb");
+      alt.title = "A different question";
+      alt.onclick = function () {
+        var l2 = writePrompts();
+        prep.promptIdx = (prep.promptIdx + 1) % l2.length;
+        q.textContent = l2[prep.promptIdx];
+      };
+      ask.appendChild(alt);
+    } else if (ph.ask) {
+      ask.textContent = ph.ask;
+    }
+    line.style.display = ph.io === "line" ? "" : "none";
+    pad.style.display = ph.io === "pad" ? "" : "none";
+    line.value = ""; 
+    line.placeholder = ph.k === "see" ? "one thing" : "a line, if one comes";
+    if (ph.io === "pad") pad.value = prep.padText;
+    document.getElementById("prepNext").textContent =
+      i === PREP_PHASES.length - 1 ? "done" : "next \u2192";
+    if (ph.io !== "none") setTimeout(function () {
+      (ph.io === "pad" ? pad : line).focus();
+    }, 60);
+    renderPrepKept();
+  }
+  function renderPrepKept() {
+    var host = document.getElementById("prepKept");
+    host.innerHTML = "";
+    if (PREP_PHASES[prep.i].k !== "see") return;
+    prep.kept.forEach(function (t) {
+      var row = el("div", "prep-kept-row");
+      row.appendChild(el("span", null, "\u2766"));
+      row.appendChild(el("span", null, t));
+      host.appendChild(row);
+    });
+  }
+  function prepTick() {
+    if (!prep.on) return;
+    var left = Math.max(0, Math.round((prep.endsAt - Date.now()) / 1000));
+    var m = Math.floor(left / 60), ss = left % 60;
+    document.getElementById("prepTime").textContent = m + ":" + (ss < 10 ? "0" : "") + ss;
+    // time running out never forces you on — it just stops counting
+    if (left <= 0) document.getElementById("prepTime").textContent = "\u2014";
+  }
+  function prepCommitLine() {
+    var line = document.getElementById("prepLine");
+    var v = line.value.trim();
+    if (!v) return;
+    var ph = PREP_PHASES[prep.i];
+    if (!state.truths) state.truths = [];
+    var e = { id: uid(), text: v, created: Date.now(), refs: [], voices: [] };
+    if (ph.k === "see") { e.grateful = true; prep.kept.push(v); }
+    state.truths.unshift(e);
+    line.value = "";
+    save();
+    renderPrepKept();
+  }
+  function prepNext() {
+    var ph = PREP_PHASES[prep.i];
+    if (ph.io === "line") prepCommitLine();
+    if (ph.io === "pad") {
+      var pad = document.getElementById("prepPad");
+      var v = pad.value.trim();
+      prep.padText = pad.value;
+      if (v) {
+        if (!state.notes) state.notes = [];
+        state.notes.unshift({ id: uid(), text: v, updated: Date.now() });
+        save();
+      }
+    }
+    if (prep.i >= PREP_PHASES.length - 1) { endPrep(); return; }
+    enterPrepPhase(prep.i + 1);
+  }
+  function endPrep() {
+    prep.on = false;
+    if (prep.tick) { clearInterval(prep.tick); prep.tick = null; }
+    document.getElementById("prepOverlay").classList.remove("open");
+    render();
+  }
+  document.getElementById("prepBtn").onclick = function () {
+    var long = confirm("Ten minutes?\n\nOK for the longer pass, Cancel for about five.");
+    startPrep(long);
+  };
+  document.getElementById("prepClose").onclick = endPrep;
+  document.getElementById("prepNext").onclick = prepNext;
+  document.getElementById("prepLine").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      // gratitude keeps stacking; the single-line phases move on
+      if (PREP_PHASES[prep.i].k === "see") prepCommitLine();
+      else prepNext();
+    }
+  });
 
   // ——— boneyard ———
   function renderBoneyard() {
