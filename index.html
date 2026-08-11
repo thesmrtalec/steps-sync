@@ -124,10 +124,30 @@
   .day-fold::before { content: "▸"; font-size: 9px; }
   .day-fold.open::before { content: "▾"; }
   .day-fold::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  /* older folds sit quieter than the recent band — no shouting for filed days */
+  .day-fold.older { padding: 12px 0 6px; color: var(--faint); opacity: .72; font-size: 10.5px; }
+  .day-fold.older::after { opacity: .6; }
+  /* recent band: a soft date rule you scroll past, not a button to tap */
+  .day-mark { display: flex; align-items: center; gap: 10px; width: 100%;
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--muted);
+    text-transform: uppercase; padding: 20px 0 10px; font-family: var(--mono); }
+  .day-mark::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .day-mark:first-child { padding-top: 6px; }
+  /* the seam between the browsable band and the filed log below */
+  .band-split { display: flex; align-items: center; gap: 12px; width: 100%;
+    font-size: 10px; font-weight: 700; letter-spacing: .18em; color: var(--faint);
+    text-transform: uppercase; padding: 26px 0 2px; font-family: var(--mono); opacity: .8; }
+  .band-split::before, .band-split::after { content: ""; flex: 1; height: 1px;
+    background: var(--rule); opacity: .7; }
   /* snug to the text, open or closed; long ones clamp+fade when collapsed */
   .bit { padding: 10px 12px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; margin-bottom: 9px; box-shadow: var(--cardshadow); position: relative; }
   .bit:not(.open) .bit-text { max-height: 3.1em; overflow: hidden; margin-bottom: 0; line-height: 1.3; }
   .bit:not(.open) .bit-text.clipped { -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%); mask-image: linear-gradient(180deg, #000 72%, transparent 100%); }
+  /* recent-band cards: meant to be grazed, so a few lines show and fade,
+     with a touch more air than the tight filed-log clamp above */
+  .bit.band { padding: 13px 15px; margin-bottom: 11px; }
+  .bit.band:not(.open) .bit-text { max-height: 5.2em; line-height: 1.45; }
+  .bit.band:not(.open) .bit-text.clipped { -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%); mask-image: linear-gradient(180deg, #000 62%, transparent 100%); }
   .bit-flags { position: absolute; right: 9px; top: 7px; font-size: 10px; opacity: .35; letter-spacing: 2px; }
   .bit-text { margin: 0 0 9px; font-size: 16px; line-height: 1.6; white-space: pre-wrap; cursor: pointer; }
   .edit-area { width: 100%; border: 1px solid var(--accent); border-radius: 7px; padding: 9px 10px; font-size: 16px; font-family: var(--serif); line-height: 1.6; margin: 0 0 9px; background: var(--card); color: var(--ink); min-height: 64px; resize: vertical; }
@@ -1693,17 +1713,32 @@
       }
       bGroups[bGroups.length - 1].items.push(b);
     });
-    bGroups.forEach(function (g) {
+    // The most recent few days are a pasture to wander through — cards open,
+    // a soft date rule between them, no fold to fight. Older days below stay
+    // the tidy collapsed log. RECENT_DAYS = how many day-groups ride up top.
+    var RECENT_DAYS = 3;
+    bGroups.forEach(function (g, gi) {
+      if (gi < RECENT_DAYS) {
+        // browsable band: quiet divider, then the cards themselves
+        var div = el("div", "day-mark", truthDayLabel(g.at) + " · " + g.items.length);
+        list.appendChild(div);
+        g.items.forEach(function (b) { renderCard(b, list, true); });
+        if (gi === RECENT_DAYS - 1 && bGroups.length > RECENT_DAYS) {
+          list.appendChild(el("div", "band-split", "earlier"));
+        }
+        return;
+      }
+      // older: collapsed fold, lightened
       var fk = "b:" + g.key;
-      var isOpen = (fk in openDays) ? openDays[fk] : g.key === todayK;
-      var hdr = el("button", "day-fold" + (isOpen ? " open" : ""), truthDayLabel(g.at) + " · " + g.items.length);
+      var isOpen = (fk in openDays) ? openDays[fk] : false;
+      var hdr = el("button", "day-fold older" + (isOpen ? " open" : ""), truthDayLabel(g.at) + " · " + g.items.length);
       hdr.onclick = function () { openDays[fk] = !isOpen; render(); };
       list.appendChild(hdr);
       if (!isOpen) return;
       g.items.forEach(function (b) { renderCard(b, list); });
     });
 
-    function renderCard(b, list) {
+    function renderCard(b, list, band) {
       var isOpen = expandedBit === b.id;
 
       function moveToStuff() {
@@ -1753,7 +1788,7 @@
       shell.appendChild(actCol);
       shell.appendChild(actL);
 
-      var card = el("div", "bit swipe-face" + (isOpen ? " open" : ""));
+      var card = el("div", "bit swipe-face" + (isOpen ? " open" : "") + (band ? " band" : ""));
 
       if (textEditing === b.id) {
         var editArea = document.createElement("textarea");
