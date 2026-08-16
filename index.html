@@ -247,6 +247,11 @@
     font-size: clamp(28px, 5.2vw, 44px); line-height: 1.4; color: var(--ink); white-space: pre-wrap; }
   .run-est { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
     color: var(--faint); margin-top: 22px; }
+  /* rehearsal cue: which scripture to turn to / whose voice this is */
+  .run-cues { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 20px; }
+  .run-cue { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
+    font-size: 13px; letter-spacing: .04em; color: var(--faint); opacity: .85; }
+  .run-cue b { font-weight: 600; color: var(--ink); opacity: .75; }
   .run-tap { position: absolute; top: 56px; bottom: 64px; width: 38%; z-index: 2; }
   .run-tap-l { left: 0; } .run-tap-r { right: 0; }
   .run-clock { font-family: var(--mono); font-size: 30px; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
@@ -3954,6 +3959,26 @@
     var b = runState.bits[runState.i];
     var card2 = el("div", "run-card");
     card2.appendChild(el("div", "run-bit", b.text));
+    // cue line: scripture to turn to, and whose voice you're quoting — so you
+    // know mid-rehearsal, without threading it into the entry text.
+    var refs = (b.refs || []).slice().sort(refSort);
+    var voices = (b.voices || []);
+    if (refs.length || voices.length) {
+      var cues = el("div", "run-cues");
+      if (refs.length) {
+        var rc = el("div", "run-cue");
+        rc.appendChild(el("span", null, "\u2720"));
+        rc.appendChild(el("b", null, refs.map(refLabel).join("  ·  ")));
+        cues.appendChild(rc);
+      }
+      if (voices.length) {
+        var vc = el("div", "run-cue");
+        vc.appendChild(el("span", null, "\uD83D\uDC51"));
+        vc.appendChild(el("b", null, voices.join("  ·  ")));
+        cues.appendChild(vc);
+      }
+      card2.appendChild(cues);
+    }
     if (b.est) card2.appendChild(el("div", "run-est", "you called it " + fmtSec(b.est)));
     stage.appendChild(card2);
     runState.bits.forEach(function (_, idx) {
