@@ -258,6 +258,15 @@
   .run-cue { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
     font-size: 13px; letter-spacing: .04em; color: var(--faint); opacity: .85; }
   .run-cue b { font-weight: 600; color: var(--ink); opacity: .75; }
+  /* tap the text to unlock it for editing in place — same screen, clock keeps running */
+  .run-bit { cursor: text; }
+  .run-bit.editing { outline: none; caret-color: var(--accent);
+    box-shadow: inset 0 -2px 0 var(--rule); border-radius: 2px; }
+  .run-edit-hint { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--faint); opacity: .55; margin-top: 14px; pointer-events: auto; cursor: pointer; }
+  .run-edit-done { background: var(--accent); color: var(--onaccent, #fff); border: none; border-radius: 8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 7px 16px; margin-top: 16px; cursor: pointer; pointer-events: auto; }
   .run-tap { position: absolute; top: 56px; bottom: 64px; width: 38%; z-index: 2; }
   .run-tap-l { left: 0; } .run-tap-r { right: 0; }
   .run-clock { font-family: var(--mono); font-size: 30px; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
@@ -3863,12 +3872,12 @@
   // Rehearsal, not performance: full entry on the card, a clock counting up from
   // zero on each entry (resets when you advance), and a scorecard at the end
   // showing what you ACTUALLY took vs. the time you'd called. Nothing is saved.
-  var runState = { set: null, bits: [], i: 0, actual: [], marks: [], startedAt: 0, setStartedAt: 0, tick: null, done: false };
+  var runState = { set: null, bits: [], i: 0, actual: [], marks: [], startedAt: 0, setStartedAt: 0, tick: null, done: false, editing: false };
   function openRun(sset) {
     var bits = sset.bitIds.map(findBitAnywhere).filter(Boolean).map(function (f) { return f.bit; });
     if (!bits.length) { alert("Nothing to practice — add some entries to this sermon first."); return; }
     runState.set = sset; runState.bits = bits; runState.marks = [];
-    runState.i = 0; runState.actual = []; runState.done = false;
+    runState.i = 0; runState.actual = []; runState.done = false; runState.editing = false;
     runState.setStartedAt = Date.now(); runState.startedAt = Date.now();
     if (runState.tick) clearInterval(runState.tick);
     runState.tick = setInterval(runTick, 250);
@@ -3891,7 +3900,7 @@
   function renderRunMarks() {
     var w = document.getElementById("runMarkWeak"), st = document.getElementById("runMarkStrong");
     if (!w || !st) return;
-    var m = runState.marks[runState.i], hide = runState.done;
+    var m = runState.marks[runState.i], hide = runState.done || runState.editing;
     w.style.visibility = hide ? "hidden" : ""; st.style.visibility = hide ? "hidden" : "";
     w.classList.toggle("on", m === "weak"); st.classList.toggle("on", m === "strong");
   }
@@ -3906,7 +3915,7 @@
     document.getElementById("runTotal").textContent = fmtSec(tot);
   }
   function runAdvance(dir) {
-    if (runState.done) return;
+    if (runState.done || runState.editing) return;
     if (dir > 0) {
       runState.actual[runState.i] = Math.floor((Date.now() - runState.startedAt) / 1000);
       if (runState.i >= runState.bits.length - 1) { runFinish(); return; }
@@ -3922,6 +3931,48 @@
     runState.done = true;
     if (runState.tick) { clearInterval(runState.tick); runState.tick = null; }
     renderRun();
+  }
+  // In-place edit during rehearsal: tap the entry text to unlock it, edit right
+  // on the practice screen (clock keeps running), tap ✓ or tap away to save back
+  // to the real entry. No workbench, no leaving the run.
+  function runEnterEdit() {
+    if (runState.done || runState.editing) return;
+    var bit = document.getElementById("runBitText");
+    if (!bit) return;
+    runState.editing = true;
+    bit.contentEditable = "true";
+    bit.classList.add("editing");
+    bit.focus();
+    bit.onblur = function () { if (runState.editing) runSaveEdit(); };
+    // place caret at end
+    var r = document.createRange(); r.selectNodeContents(bit); r.collapse(false);
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    renderRunEditChrome();
+  }
+  function runSaveEdit() {
+    if (!runState.editing) return;
+    var bit = document.getElementById("runBitText");
+    var b = runState.bits[runState.i];
+    if (bit && b) {
+      var txt = bit.innerText.replace(/\u00a0/g, " ").replace(/\s+$/,"");
+      if (txt !== b.text) {
+        var f = findBitAnywhere(b.id);
+        if (f) { f.bit.text = txt; b.text = txt; save(); }
+        else { b.text = txt; }
+      }
+      bit.contentEditable = "false";
+      bit.classList.remove("editing");
+    }
+    runState.editing = false;
+    renderRunEditChrome();
+  }
+  function renderRunEditChrome() {
+    // swap the hint line for a ✓ done button while editing, and hide the marks
+    var hint = document.getElementById("runEditHint");
+    var done = document.getElementById("runEditDone");
+    if (hint) hint.style.display = runState.editing ? "none" : "";
+    if (done) done.style.display = runState.editing ? "" : "none";
+    renderRunMarks();
   }
   function renderRun() {
     var stage = document.getElementById("runStage"), dots = document.getElementById("runDots");
@@ -3969,7 +4020,13 @@
     var n = (b.text || "").length;
     var lenCls = n > 520 ? " len-xl" : n > 300 ? " len-l" : n > 140 ? " len-m" : "";
     stage.classList.toggle("tall", n > 300);
-    card2.appendChild(el("div", "run-bit" + lenCls, b.text));
+    var bitEl = el("div", "run-bit" + lenCls, b.text);
+    bitEl.id = "runBitText";
+    // tap the text to unlock it for editing (unless already editing)
+    bitEl.addEventListener("click", function (e) {
+      if (!runState.editing) { e.stopPropagation(); runEnterEdit(); }
+    });
+    card2.appendChild(bitEl);
     // cue line: scripture to turn to, and whose voice you're quoting — so you
     // know mid-rehearsal, without threading it into the entry text.
     var refs = (b.refs || []).slice().sort(refSort);
@@ -3991,6 +4048,15 @@
       card2.appendChild(cues);
     }
     if (b.est) card2.appendChild(el("div", "run-est", "you called it " + fmtSec(b.est)));
+    var hint = el("div", "run-edit-hint", "tap text to edit");
+    hint.id = "runEditHint";
+    hint.addEventListener("click", function (e) { e.stopPropagation(); runEnterEdit(); });
+    card2.appendChild(hint);
+    var doneBtn = el("button", "run-edit-done", "\u2713 done");
+    doneBtn.id = "runEditDone";
+    doneBtn.style.display = "none";
+    doneBtn.addEventListener("click", function (e) { e.stopPropagation(); runSaveEdit(); });
+    card2.appendChild(doneBtn);
     stage.appendChild(card2);
     runState.bits.forEach(function (_, idx) {
       var d = document.createElement("i");
@@ -4006,7 +4072,10 @@
   document.addEventListener("keydown", function (e) {
     if (!document.getElementById("runOverlay").classList.contains("open")) return;
     var t = e.target;
-    if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+    if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) {
+      if (e.key === "Escape") { e.preventDefault(); runSaveEdit(); }
+      return;
+    }
     if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); runAdvance(1); }
     else if (e.key === "ArrowLeft") runAdvance(-1);
     else if (e.key === "Escape") closeRun();
