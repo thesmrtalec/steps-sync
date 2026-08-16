@@ -3879,7 +3879,7 @@
     var bits = sset.bitIds.map(findBitAnywhere).filter(Boolean).map(function (f) { return f.bit; });
     if (!bits.length) { alert("Nothing to practice — add some entries to this sermon first."); return; }
     runState.set = sset; runState.bits = bits; runState.marks = [];
-    runState.i = 0; runState.actual = []; runState.done = false; runState.editing = false;
+    runState.i = 0; runState.actual = []; runState.done = false; runState.editing = false; runState.editsMade = false;
     runState.setStartedAt = Date.now(); runState.startedAt = Date.now();
     if (runState.tick) clearInterval(runState.tick);
     runState.tick = setInterval(runTick, 250);
@@ -3891,6 +3891,9 @@
     if (runState.tick) { clearInterval(runState.tick); runState.tick = null; }
     document.getElementById("runOverlay").classList.remove("open");
     document.body.style.overflow = "";
+    // edits made in practice write to the live entry; repaint so every other
+    // view (cards, sermon lineup, browse) reflects the new text, not the old.
+    if (runState.editsMade) { runState.editsMade = false; render(); }
   }
   function setRunMark(kind) {
     if (runState.done) return;
@@ -3946,6 +3949,10 @@
     runState.editing = true;
     bit.contentEditable = "true";
     bit.classList.add("editing");
+    bit.setAttribute("autocomplete", "off");
+    bit.setAttribute("autocorrect", "off");
+    bit.setAttribute("autocapitalize", "sentences");
+    bit.setAttribute("spellcheck", "false");
     bit.focus();
     bit.onblur = function () { if (runState.editing) runSaveEdit(); };
     // place caret at end
@@ -3963,6 +3970,7 @@
         var f = findBitAnywhere(b.id);
         if (f) { f.bit.text = txt; b.text = txt; save(); }
         else { b.text = txt; }
+        runState.editsMade = true;
       }
       bit.contentEditable = "false";
       bit.classList.remove("editing");
