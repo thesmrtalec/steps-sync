@@ -241,10 +241,16 @@
   .run-dots i.on { background: var(--accent); width: 15px; }
   .run-total { font-family: var(--mono); font-size: 12px; color: var(--faint); min-width: 46px; text-align: right; }
   .run-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 26px 20px; overflow-y: auto; position: relative; z-index: 3; pointer-events: none; }
+  /* a long entry shouldn't be centered-then-clipped: pin it to the top and let it scroll */
+  .run-stage.tall { align-items: flex-start; }
   .run-card { width: 100%; max-width: 640px; }
   .run-bit, .run-sum, .run-again { pointer-events: auto; }
   .run-bit { font-family: 'Caveat', 'Bradley Hand', cursive; font-weight: 500;
     font-size: clamp(28px, 5.2vw, 44px); line-height: 1.4; color: var(--ink); white-space: pre-wrap; }
+  /* long entries step down so a full paragraph doesn't blow past the screen */
+  .run-bit.len-m { font-size: clamp(24px, 4.2vw, 34px); line-height: 1.38; }
+  .run-bit.len-l { font-size: clamp(21px, 3.4vw, 27px); line-height: 1.42; }
+  .run-bit.len-xl { font-size: clamp(18px, 2.8vw, 22px); line-height: 1.5; text-align: left; }
   .run-est { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
     color: var(--faint); margin-top: 22px; }
   /* rehearsal cue: which scripture to turn to / whose voice this is */
@@ -3919,7 +3925,7 @@
   }
   function renderRun() {
     var stage = document.getElementById("runStage"), dots = document.getElementById("runDots");
-    stage.innerHTML = ""; dots.innerHTML = "";
+    stage.innerHTML = ""; dots.innerHTML = ""; stage.classList.remove("tall");
     if (runState.done) {
       document.getElementById("runClock").textContent = "";
       renderRunMarks();
@@ -3958,7 +3964,12 @@
     }
     var b = runState.bits[runState.i];
     var card2 = el("div", "run-card");
-    card2.appendChild(el("div", "run-bit", b.text));
+    // size the text to its length so a long entry stays on-screen and readable,
+    // and top-align the stage so a tall card scrolls from the top instead of clipping.
+    var n = (b.text || "").length;
+    var lenCls = n > 520 ? " len-xl" : n > 300 ? " len-l" : n > 140 ? " len-m" : "";
+    stage.classList.toggle("tall", n > 300);
+    card2.appendChild(el("div", "run-bit" + lenCls, b.text));
     // cue line: scripture to turn to, and whose voice you're quoting — so you
     // know mid-rehearsal, without threading it into the entry text.
     var refs = (b.refs || []).slice().sort(refSort);
