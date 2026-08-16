@@ -296,6 +296,8 @@
     border: none; border-radius: 12px; padding: 15px; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
   .set-practice { background: var(--accent); color: var(--onaccent, #fff); border: none; border-radius: 10px;
     padding: 11px 18px; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; margin: 4px 0 14px; }
+  .set-export { background: transparent; color: var(--ink); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 11px 18px; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; margin: 4px 0 14px 8px; }
   .copy-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--page); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 60; }
   .copy-toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
 
@@ -2451,6 +2453,74 @@
   };
 
   // ——— notes drawer ———
+  // Export an assembled sermon as a clean, readable PDF — the whole thing laid
+  // out to preach from: title, the readings/voices it draws on, then every entry
+  // in lineup order. Compact enough that a normal sermon lands on one page; a long
+  // one paginates rather than shrinking to unreadable.
+  function sermonPDF(s) {
+    try {
+      var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+      if (!jsPDFLib) { alert("PDF export isn't available right now — check your connection and try again."); return; }
+      var doc = new jsPDFLib({ unit: "pt", format: "letter" });
+      var pageW = doc.internal.pageSize.getWidth();
+      var pageH = doc.internal.pageSize.getHeight();
+      var margin = 54, width = pageW - margin * 2;
+      var y = 58, bottom = pageH - 48;
+      function ensure(h) { if (y + h > bottom) { doc.addPage(); y = 58; } }
+      function para(text, opt) {
+        opt = opt || {};
+        doc.setFont(opt.font || "times", opt.style || "normal");
+        doc.setFontSize(opt.size || 12);
+        doc.setTextColor(opt.color != null ? opt.color : 25);
+        var lh = (opt.size || 12) * (opt.lh || 1.4);
+        var lines = doc.splitTextToSize(text, width);
+        for (var i = 0; i < lines.length; i++) {
+          ensure(lh);
+          doc.text(lines[i], margin, y);
+          y += lh;
+        }
+      }
+      doc.setFont("times", "italic"); doc.setFontSize(10); doc.setTextColor(130);
+      doc.text("The Good Plates", margin, 40);
+      var title = (s.name && s.name.trim()) ? s.name.trim() : "Untitled sermon";
+      para(title, { size: 20, style: "bold", lh: 1.2 });
+      y += 6;
+      var readings = sermonReadings(s).map(refLabel);
+      var voices = sermonVoices(s);
+      if (readings.length) { para("Readings:  " + readings.join("   \u00b7   "), { size: 10.5, style: "italic", color: 90, lh: 1.35 }); }
+      if (voices.length) { para("Voices:  " + voices.join("   \u00b7   "), { size: 10.5, style: "italic", color: 90, lh: 1.35 }); }
+      if (readings.length || voices.length) { y += 4; ensure(1); doc.setDrawColor(200); doc.line(margin, y, pageW - margin, y); y += 16; }
+      else { y += 8; }
+      s.bitIds.forEach(function (id, idx) {
+        var f = findBitAnywhere(id);
+        if (!f) return;
+        var b = f.bit;
+        y += (idx === 0 ? 0 : 10);
+        para(b.text || "", { size: 13, lh: 1.5 });
+        var cue = [];
+        if (b.refs && b.refs.length) cue.push(b.refs.slice().sort(refSort).map(refLabel).join(", "));
+        if (b.voices && b.voices.length) cue.push(b.voices.join(", "));
+        if (b.est) cue.push(fmtSec(b.est));
+        if (cue.length) { y += 2; para(cue.join("   \u00b7   "), { font: "courier", size: 9, color: 140, lh: 1.3 }); }
+      });
+      var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "sermon";
+      var fname = "good-plates-" + slug + ".pdf";
+      var blob = doc.output("blob");
+      var file = new File([blob], fname, { type: "application/pdf" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: "The Good Plates \u2014 " + title }).catch(function () {});
+      } else {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = fname;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      }
+    } catch (err) {
+      alert("Couldn't build the PDF: " + (err && err.message ? err.message : err));
+    }
+  }
+
   function sharePDF(note) {
     try {
       var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
@@ -3715,6 +3785,10 @@
         var practice = el("button", "set-practice", "\u25b6 practice");
         practice.onclick = function () { openRun(s); };
         body.appendChild(practice);
+        var expo = el("button", "set-export", "\u2193 export pdf");
+        expo.title = "Export this whole sermon as a PDF";
+        expo.onclick = function () { sermonPDF(s); };
+        body.appendChild(expo);
       }
 
       // reading list, assembled from the lineup in scriptural order
