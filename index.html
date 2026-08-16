@@ -4034,10 +4034,6 @@
     stage.classList.toggle("tall", n > 300);
     var bitEl = el("div", "run-bit" + lenCls, b.text);
     bitEl.id = "runBitText";
-    // tap the text to unlock it for editing (unless already editing)
-    bitEl.addEventListener("click", function (e) {
-      if (!runState.editing) { e.stopPropagation(); runEnterEdit(); }
-    });
     card2.appendChild(bitEl);
     // cue line: scripture to turn to, and whose voice you're quoting — so you
     // know mid-rehearsal, without threading it into the entry text.
@@ -4060,7 +4056,7 @@
       card2.appendChild(cues);
     }
     if (b.est) card2.appendChild(el("div", "run-est", "you called it " + fmtSec(b.est)));
-    var hint = el("div", "run-edit-hint", "tap text to edit");
+    var hint = el("div", "run-edit-hint", "✎ edit this");
     hint.id = "runEditHint";
     hint.addEventListener("click", function (e) { e.stopPropagation(); runEnterEdit(); });
     card2.appendChild(hint);
@@ -4086,8 +4082,9 @@
     var stage = document.getElementById("runStage");
     var sx = 0, sy = 0, moved = false, tracking = false, lastTouch = 0;
     function isInteractive(t) {
-      // don't treat taps on the editable text, links, or buttons as "advance"
-      return !!(t && (t.closest && (t.closest("#runBitText") || t.closest("button") ||
+      // buttons and the edit hint aren't "advance" taps; the text itself IS
+      // (editing is reached via the hint, and is guarded by runState.editing)
+      return !!(t && (t.closest && (t.closest("button") ||
         t.closest("a") || t.closest(".run-edit-hint"))));
     }
     stage.addEventListener("touchstart", function (e) {
