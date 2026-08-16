@@ -240,7 +240,9 @@
   .run-dots i { width: 5px; height: 5px; border-radius: 9px; background: var(--rule); transition: .2s; }
   .run-dots i.on { background: var(--accent); width: 15px; }
   .run-total { font-family: var(--mono); font-size: 12px; color: var(--faint); min-width: 46px; text-align: right; }
-  .run-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 26px 20px; overflow-y: auto; position: relative; z-index: 3; pointer-events: none; }
+  .run-stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px 26px 20px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    position: relative; z-index: 3; }
   /* a long entry shouldn't be centered-then-clipped: pin it to the top and let it scroll */
   .run-stage.tall { align-items: flex-start; }
   .run-card { width: 100%; max-width: 640px; }
@@ -267,7 +269,7 @@
   .run-edit-done { background: var(--accent); color: var(--onaccent, #fff); border: none; border-radius: 8px;
     font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
     padding: 7px 16px; margin-top: 16px; cursor: pointer; pointer-events: auto; }
-  .run-tap { position: absolute; top: 56px; bottom: 64px; width: 38%; z-index: 2; }
+  .run-tap { position: absolute; top: 56px; bottom: 64px; width: 38%; z-index: 2; pointer-events: none; }
   .run-tap-l { left: 0; } .run-tap-r { right: 0; }
   .run-clock { font-family: var(--mono); font-size: 30px; font-weight: 600; color: var(--accent); letter-spacing: .04em; }
   .run-clock.over { color: var(--accent2, #b4452f); }
@@ -3883,10 +3885,12 @@
     runState.tick = setInterval(runTick, 250);
     renderRun();
     document.getElementById("runOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
   }
   function closeRun() {
     if (runState.tick) { clearInterval(runState.tick); runState.tick = null; }
     document.getElementById("runOverlay").classList.remove("open");
+    document.body.style.overflow = "";
   }
   function setRunMark(kind) {
     if (runState.done) return;
@@ -4067,8 +4071,41 @@
   document.getElementById("runMarkWeak").onclick = function () { setRunMark("weak"); };
   document.getElementById("runMarkStrong").onclick = function () { setRunMark("strong"); };
   document.getElementById("runClose").onclick = closeRun;
-  document.getElementById("runTapR").onclick = function () { runAdvance(1); };
-  document.getElementById("runTapL").onclick = function () { runAdvance(-1); };
+  // Tap-vs-scroll on the stage itself: a still tap advances (by which side you
+  // touched), but a drag scrolls a long entry instead of being eaten as a tap.
+  // The stage now owns the touch (it's scrollable); the old side zones are inert.
+  (function () {
+    var stage = document.getElementById("runStage");
+    var sx = 0, sy = 0, moved = false, tracking = false, lastTouch = 0;
+    function isInteractive(t) {
+      // don't treat taps on the editable text, links, or buttons as "advance"
+      return !!(t && (t.closest && (t.closest("#runBitText") || t.closest("button") ||
+        t.closest("a") || t.closest(".run-edit-hint"))));
+    }
+    stage.addEventListener("touchstart", function (e) {
+      if (runState.editing) return;
+      var t = e.touches[0]; sx = t.clientX; sy = t.clientY; moved = false; tracking = true;
+    }, { passive: true });
+    stage.addEventListener("touchmove", function (e) {
+      if (!tracking) return;
+      var t = e.touches[0];
+      if (Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) moved = true;
+    }, { passive: true });
+    stage.addEventListener("touchend", function (e) {
+      if (!tracking) return; tracking = false;
+      lastTouch = Date.now();
+      if (moved || runState.editing) return;               // a scroll, not a tap
+      if (isInteractive(e.target)) return;                  // tapped text/button
+      var x = (e.changedTouches[0] || {}).clientX || 0;
+      runAdvance(x < window.innerWidth / 2 ? -1 : 1);
+    }, { passive: true });
+    // Desktop / mouse: plain click on the stage advances by side.
+    stage.addEventListener("click", function (e) {
+      if (runState.editing || isInteractive(e.target)) return;
+      if (Date.now() - lastTouch < 700) return;  // ignore the click synthesized after a touch tap
+      runAdvance(e.clientX < window.innerWidth / 2 ? -1 : 1);
+    });
+  })();
   document.addEventListener("keydown", function (e) {
     if (!document.getElementById("runOverlay").classList.contains("open")) return;
     var t = e.target;
