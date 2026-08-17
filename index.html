@@ -505,6 +505,10 @@
   .tour-stage p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink); }
   .tour-rule { height: 1px; background: var(--rule); margin: 4px 0 16px; }
   .tour-dot.alt { background: var(--ink); }
+  .tour-sec { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 26px 0 12px; }
+  .tour-sec:first-of-type { margin-top: 6px; }
+  .tour-key { flex: 0 0 auto; font-size: 20px; width: 34px; text-align: center; margin-top: -1px; }
+  .tour-stage .tk-label { font-weight: 700; }
   .tour-go { width: 100%; padding: 13px; border: none; border-radius: 10px; background: var(--accent); color: var(--onaccent); font-family: var(--mono); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; margin-top: 8px; }
   /* your handwriting */
   #draft, .notes-canvas, .edit-area,
@@ -726,15 +730,44 @@
     <div class="tour-box">
       <h2>How this works</h2>
       <p class="tsub">stuff in, sermons out</p>
-      <div class="tour-stage"><span class="tour-dot">stuff</span><p>Tender mercies, study insights, half-thoughts. Anything worth writing down. Entries never leave.</p></div>
-      <div class="tour-stage"><span class="tour-dot">questions</span><p>The things you’re wrestling with. They can sit for years, gathering notes each time you return.</p></div>
-      <div class="tour-stage"><span class="tour-dot">sermons</span><p>String stuff and questions in order — for a talk, a lesson, family night, the youth.</p></div>
-      <div class="tour-rule"></div>
-      <div class="tour-stage"><span class="tour-dot alt">capture</span><p>Write it down. You won’t remember it in 30 seconds. <b>WRITE IT DOWN.</b> The tab you’re on says which drawer it lands in — stuff or questions.</p></div>
-      <div class="tour-stage"><span class="tour-dot alt">tags</span><p>Casually organize your mess. Buzzwords of your choice — topic, voice, theme, intended audience. Tap one to filter; the ones you use most rise to the top.</p></div>
-      <div class="tour-stage"><span class="tour-dot alt">ponder</span><p>Tap any entry to open the ponder pad — the line up top, a scratch pad below for scriptures, thoughts, and where it leads. Each keeps its own.</p></div>
-      <div class="tour-stage"><span class="tour-dot alt">notes</span><p>Endless blank space. Free journaling, brain-dumps, whatever doesn’t belong anywhere else.</p></div>
-      <div class="tour-stage"><span class="tour-dot alt">vault</span><p>Buried entries rest here. Want a second look? Dig one up. Ready to let it go? Delete for good from here.</p></div>
+
+      <div class="tour-sec">the three drawers</div>
+      <div class="tour-stage"><span class="tour-dot">stuff</span><p>Tender mercies, study insights, truths, half-thoughts — anything worth keeping. Entries never leave.</p></div>
+      <div class="tour-stage"><span class="tour-dot">questions</span><p>The things you're wrestling with. They can sit for years, gathering notes each time you return. Tap ○ → ◐ → ● on a question to mark where it stands.</p></div>
+      <div class="tour-stage"><span class="tour-dot">sermons</span><p>String stuff and questions in order — for a talk, lesson, family night, the youth. Both kinds of entry can go in.</p></div>
+
+      <div class="tour-sec">capturing</div>
+      <div class="tour-stage"><span class="tour-dot alt">write it</span><p>Type in the box and add it. The tab you're on decides the drawer — stuff or questions. You won't remember it in 30 seconds. <b>Write it down.</b></p></div>
+      <div class="tour-stage"><span class="tour-dot alt">+ scripture</span><p>Attach a reference as its own field — no need to thread it into the prose. Auto-detect is off by default; turn it on in ⚙️ if you want refs pulled from your text.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">+ speaker</span><p>Tag whose words these are. Start typing and past names surface, most-used first; the General Authority list fills in spelling (Elder Holland → Jeffrey R. Holland). Anyone off-list stays as you typed.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">+ gratitude</span><p>A simple ❦ stamp — nothing to fill in. Marks a moment you caught the Lord's hand.</p></div>
+
+      <div class="tour-sec">working an entry</div>
+      <div class="tour-stage"><span class="tour-dot alt">tap</span><p>Opens the ponder pad — the line up top, a scratch pad below for scriptures, thoughts, and where it leads. Each entry keeps its own.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">📝 bench</span><p>The workbench: sit with one entry, set when it happened (separate from when you wrote it), and shape it.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">swipe →</span><p>Reveals move-across actions. <b>Swipe left</b> reveals bury — sends it to the vault, not the trash.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">tags</span><p>Casually organize the mess — topic, voice, theme, audience. Tap one to filter; the ones you use most rise to the top. Lens row at the top of stuff filters by ✝ scripture / ❝ quotes / ❦ gratitude.</p></div>
+
+      <div class="tour-sec">the footer keys</div>
+      <div class="tour-stage"><span class="tour-key">📊</span><p><span class="tk-label">Daily</span> — habit tracker for prayer and the good/bad habits you're watching.</p></div>
+      <div class="tour-stage"><span class="tour-key">👑</span><p><span class="tk-label">Speakers</span> — everyone you've quoted, grouped by name, most-quoted first. Tap a name for everything in their voice.</p></div>
+      <div class="tour-stage"><span class="tour-key">📖</span><p><span class="tk-label">Scriptures</span> — every passage you've marked, sorted. Tap one to see all you've written touching it.</p></div>
+      <div class="tour-stage"><span class="tour-key">🙏</span><p><span class="tk-label">Hand of God</span> — every gratitude moment, newest first.</p></div>
+      <div class="tour-stage"><span class="tour-key">🪨</span><p><span class="tk-label">What holds</span> — your own container for spiritual truths of ultimate value. Rare by design; write them deliberately. Nothing else ever fills this for you.</p></div>
+      <div class="tour-stage"><span class="tour-key">🧭</span><p><span class="tk-label">Take stock</span> — three prompts: where you saw God's hand (stacks as gratitude), who you are, where you're going. No timer, no liturgy.</p></div>
+      <div class="tour-stage"><span class="tour-key">🎲</span><p><span class="tk-label">Shuffle</span> — deals the whole pool in age-weighted order so stale lines resurface. Use ‹ › in the workbench to move through without re-rolling.</p></div>
+      <div class="tour-stage"><span class="tour-key">🗝️</span><p><span class="tk-label">The vault</span> — buried entries rest here. Dig one up for a second look, or delete for good (two taps, on purpose).</p></div>
+
+      <div class="tour-sec">building &amp; preaching a sermon</div>
+      <div class="tour-stage"><span class="tour-dot alt">assemble</span><p>Add entries to a sermon, then drag the ≡ grip to reorder the lineup. It builds a reading list and a voices strip automatically from what's inside.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">▶ practice</span><p>Full-screen runner, one entry per screen. Tap a side to move (drag to scroll a long one), clock counts up per entry and turns red past its called time. Mark ○ stumbled / ● landed. Tap ✎ edit this to fix a line in place — it saves back everywhere. Ends on a scorecard.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">↓ export pdf</span><p>The whole assembled sermon as a clean PDF to preach from — title, readings, voices, every entry in order. Share, print, or save to Files.</p></div>
+
+      <div class="tour-sec">notes, lock &amp; sync</div>
+      <div class="tour-stage"><span class="tour-dot alt">notes</span><p>Endless blank space for free journaling and brain-dumps. Has its own share-PDF button.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">PIN lock</span><p>Lock the journal behind a PIN from ⚙️. It curtains over and re-locks when you close it.</p></div>
+      <div class="tour-stage"><span class="tour-dot alt">synced</span><p>Same email and password on each device keeps your plates in sync. Add to Home Screen (Share → Add to Home Screen) for the full-screen app.</p></div>
+
       <button class="tour-go" id="tourGo">Let's go</button>
     </div>
   </div>
