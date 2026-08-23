@@ -310,30 +310,32 @@
   .section-card .sc-count { font-family: var(--serif); font-size: 21px; font-weight: 700; color: var(--accent); line-height: 1.1; }
   .section-card.active { border-color: var(--accent); }
 
-  /* ——— daily workout ——— */
-  .wk-step { margin: 0 0 22px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
-  .wk-step:last-child { border-bottom: none; }
-  .wk-kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
-  .wk-input { width: 100%; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; font-family: var(--serif); font-size: 16px; color: var(--ink); margin-bottom: 10px; resize: none; }
-  .wk-input::placeholder { color: var(--faint); }
-  .wk-primary { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 600; letter-spacing: .01em; box-shadow: var(--glow); }
-  .wk-ghost { width: 100%; background: transparent; color: var(--muted); border: 1px solid var(--rule); border-radius: 10px; padding: 11px; font-size: 14px; margin-top: 8px; }
-  .wk-done-note { font-family: var(--mono); font-size: 12.5px; letter-spacing: .04em; color: var(--faint); padding: 4px 0; }
-  .wk-diag-q { font-size: 19px; font-weight: 600; line-height: 1.3; margin: 0 0 12px; color: var(--ink); }
-  .wk-rep { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 14px 10px; margin-bottom: 12px; box-shadow: var(--cardshadow); }
-  .wk-rep.done-done { border-color: var(--accent); }
-  .wk-rep.done-skip { opacity: .55; }
-  .wk-rep-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 7px; }
-  .wk-rep-group { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent2); font-weight: 700; }
-  .wk-rep-vs { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--faint); }
-  .wk-rep-text { font-size: 17px; line-height: 1.35; color: var(--ink); margin-bottom: 6px; }
-  .wk-rep-heavy { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .wk-rep-actions { display: flex; gap: 7px; margin: 10px 0 4px; }
-  .wk-stat { flex: 1; background: transparent; border: 1px solid var(--rule); border-radius: 8px; padding: 9px 4px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--muted); }
-  .wk-stat.on { background: var(--accent); color: var(--onaccent); border-color: var(--accent); }
-  .wk-rep-meta { display: flex; gap: 14px; padding: 2px 2px 0; }
-  .wk-link { background: none; border: none; padding: 4px 0; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; }
-  .wk-finish .wk-done-note { font-size: 15px; font-family: var(--serif); color: var(--muted); letter-spacing: 0; margin-bottom: 12px; }
+  /* ——— daily 3 ——— */
+  .d3-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 2px 0 16px; }
+  .d3-hat { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; box-shadow: var(--cardshadow); }
+  .d3-hat.picked { border-color: var(--accent); border-width: 2px; padding: 12px 14px; }
+  .d3-hat-top { display: flex; align-items: center; justify-content: space-between; }
+  .d3-hat-label { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1; }
+  .d3-hat.picked .d3-hat-label { color: var(--accent); }
+  .d3-hat-check { color: var(--accent); font-size: 18px; font-weight: 700; }
+  .d3-hat-warn { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; color: var(--faint); margin-top: 3px; }
+  .d3-count { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--faint); text-align: center; margin-top: 6px; }
+  .d3-nudge { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--accent2); background: var(--tagbg); border-radius: 8px; padding: 9px 12px; margin: 0 0 14px; line-height: 1.35; }
+  .d3-card { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 15px; margin-bottom: 14px; box-shadow: var(--cardshadow); }
+  .d3-card.done { border-color: var(--accent); }
+  .d3-card-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 10px; }
+  .d3-card-label { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); }
+  .d3-card-warn { font-family: var(--mono); font-size: 10.5px; letter-spacing: .05em; color: var(--faint); }
+  .d3-task { width: 100%; background: var(--page); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; font-family: var(--serif); font-size: 16px; color: var(--ink); resize: none; margin-bottom: 10px; }
+  .d3-task::placeholder { color: var(--faint); }
+  .d3-task-fixed { font-family: var(--serif); font-size: 16px; color: var(--ink); line-height: 1.35; margin-bottom: 8px; }
+  .d3-done { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; box-shadow: var(--glow); }
+  .d3-done.dim { opacity: .4; }
+  .d3-undo { background: none; border: none; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; padding: 2px 0; }
+  .d3-finish { text-align: center; padding: 8px 0 4px; margin-top: 4px; }
+  .d3-finish-line { font-family: var(--serif); font-size: 17px; color: var(--muted); margin-bottom: 12px; }
+  .d3-out { background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 11px 28px; font-size: 14px; font-weight: 600; }
+  .d3-reset { display: block; margin: 18px auto 0; background: none; border: none; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; }
   .search-row { margin: 0 0 12px; }
   .search-row input { width: 100%; box-sizing: border-box; background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 10px 18px; font-family: var(--serif); font-size: 16px; color: var(--ink); outline: none; }
   .search-row input:focus { border-color: var(--accent); }
@@ -684,7 +686,7 @@
 
 
   <div id="list"></div>
-  <div id="workoutHost" style="display:none"></div>
+  <div id="d3Host" style="display:none"></div>
   <p class="empty" id="empty" style="display:none"></p>
 
   <div class="backup">
@@ -1841,7 +1843,7 @@
     sectionCard("pool", "stuff", (state.truths || []).length);
     sectionCard("bit", "questions", state.bits.length);
     sectionCard("sets", "sermons", (state.sets || []).length);
-    sectionCard("workout", "workout", "▶");
+    sectionCard("daily3", "daily 3", "✓");
 
     var capWrap = document.querySelector(".capture");
     var capDest = document.getElementById("capDest");
@@ -1855,18 +1857,18 @@
     document.getElementById("wisdom").style.display = stageFilter === "home" ? "" : "none";
     if (stageFilter !== "home") searchOut.innerHTML = "";
 
-    var _wkHost = document.getElementById("workoutHost");
-    if (stageFilter === "workout") {
-      document.getElementById("empty").style.display = "none";
-      document.getElementById("list").innerHTML = "";
-      capWrap.style.display = "none";
-      capRefsRow.style.display = "none"; capVoicesRow.style.display = "none"; capGratRow.style.display = "none";
-      capDest.style.display = "none";
-      _wkHost.style.display = "";
-      wkRender();
+    var _d3=document.getElementById("d3Host");
+    if (stageFilter === "daily3") {
+      document.getElementById("empty").style.display="none";
+      document.getElementById("list").innerHTML="";
+      capWrap.style.display="none";
+      capRefsRow.style.display="none"; capVoicesRow.style.display="none"; capGratRow.style.display="none";
+      capDest.style.display="none";
+      _d3.style.display="";
+      d3Render();
       return;
     }
-    if (_wkHost) _wkHost.style.display = "none";
+    if(_d3) _d3.style.display="none";
     if (stageFilter === "home") {
       document.getElementById("empty").style.display = "none";
       document.getElementById("list").innerHTML = "";
@@ -4415,306 +4417,164 @@
     try { if (localStorage.getItem(WKEY) && !localStorage.getItem(TKEY)) maybeTour(); } catch (e) {}
   })();
   // ============================================================================
-  //  DAILY WORKOUT  —  less talk about it, more do about it.
-  //  A new stageFilter === "workout" screen. Reuses el(), save(), state, and the
-  //  note path. No streaks, no score, no history. Deal reps, do them, get out.
+  //  DAILY 3 — pick the 3 hats that matter most today, move the needle, check off.
+  //  Hats are ROLES. The warning is who you become when you wear it badly.
+  //  No streaks, no engine. Small & simple. Do it, check it, get out.
   // ============================================================================
-
-  // ——— muscle groups: the future selves, inverted ———
-  var WK_GROUPS = {
-    initiative:  { label: "Initiative",     against: "the complacent bishop" },
-    presence:    { label: "Presence",       against: "the distracted dad" },
-    strength:    { label: "Strength",       against: "the weak man" },
-    courage:     { label: "Courage",        against: "the scared comic" },
-    service:     { label: "Self-Possession", against: "the needy husband" },
-    honor:       { label: "Honor",          against: "the rude son" },
-    loyalty:     { label: "Loyalty",        against: "the fair-weather friend" }
-  };
-  var WK_ORDER = ["initiative","presence","strength","courage","service","honor","loyalty"];
-
-  // ——— rep library. tier 1 = warmup, 2 = working, 3 = heavy.
-  //  EVERY rep has an observable finish line. "heavy:true" = may finish later today,
-  //  not in the morning; it becomes the day's live rep with a by-tonight deadline.
-  var WK_REPS = {
-    courage: [
-      { t:1, text:"Send one message you've been afraid to send." },
-      { t:1, text:"Say the thing plainly to someone today — no softening." },
-      { t:2, text:"Make an ask that could get a no. Send it before you finish here." },
-      { t:2, text:"Find one open mic near you and note the date." },
-      { t:3, heavy:true, text:"Sign up for a mic. By tonight: you're on a list." },
-      { t:3, heavy:true, text:"Go to the mic and perform. Rep counts even if you bomb." },
-      { t:3, heavy:true, text:"Perform material you haven't tested yet. On purpose." }
-    ],
-    presence: [
-      { t:1, text:"Give one child 10 minutes, phone in another room." },
-      { t:1, text:"Ask a kid one real question and only listen to the answer." },
-      { t:2, text:"Pray alone with one child today." },
-      { t:2, text:"Get on the floor and play — let them lead — for 10 minutes." },
-      { t:3, heavy:true, text:"One-on-one with a kid, out of the house, before bed tonight." }
-    ],
-    loyalty: [
-      { t:1, text:"Text a friend you haven't talked to lately. Ask about THEM." },
-      { t:1, text:"Follow up on one thing a friend told you before." },
-      { t:2, text:"Make an actual plan with someone — a day, not 'we should.'" },
-      { t:3, heavy:true, text:"Show up for someone today when it's inconvenient." }
-    ],
-    initiative: [
-      { t:1, text:"Contact the ward member who's been on your mind." },
-      { t:1, text:"Ask the question you've been assuming someone else handled." },
-      { t:2, text:"Handle one leadership thing you've been avoiding. Close it today." },
-      { t:3, heavy:true, text:"Have the hard conversation you've been putting off. By tonight." }
-    ],
-    strength: [
-      { t:1, text:"Do the workout. Body, not app." },
-      { t:1, text:"Finish one uncomfortable thing before you touch your phone." },
-      { t:2, text:"Keep a commitment you're tempted to renegotiate today." },
-      { t:2, text:"Pick the harder option once today, on purpose." },
-      { t:3, heavy:true, text:"Do the thing you keep saying you'll start 'when things settle.'" }
-    ],
-    service: [
-      { t:1, text:"Do one useful thing for your wife without announcing it." },
-      { t:1, text:"Handle your own frustration before you bring it to her." },
-      { t:2, text:"Ask what would make her day easier, then actually do it." },
-      { t:3, heavy:true, text:"Carry something for her all day without keeping score." }
-    ],
-    honor: [
-      { t:1, text:"Call a parent. Not a text. A call." },
-      { t:1, text:"Tell a parent one specific thing you're grateful to them for." },
-      { t:2, text:"Ask a parent a real question and let them talk." },
-      { t:3, heavy:true, text:"Offer a parent actual help — and follow through today." }
-    ]
-  };
-
-  // ——— the diagnostic questions. answered SOMETIMES, and they steer the deal. ———
-  //  each maps a set of groups it should bias toward.
-  var WK_DIAG = [
-    { q:"What are you avoiding?",                                   bias:["initiative","courage","strength"] },
-    { q:"What are you making harder than it is?",                   bias:["strength","courage"] },
-    { q:"Where is fear making decisions for you?",                  bias:["courage","initiative"] },
-    { q:"What are you using for comfort instead of dealing with something?", bias:["strength","service"] },
-    { q:"Where have you been full of it lately?",                   bias:["honor","service","loyalty"] },
-    { q:"What have you been meaning to do 'when things settle down'?", bias:["strength","initiative","courage"] },
-    { q:"Who have you gone quiet on?",                              bias:["loyalty","honor","presence"] }
+  var HATS = [
+    { key:"bishop",  label:"Bishop",  warn:"complacent" },
+    { key:"dad",     label:"Dad",     warn:"distracted" },
+    { key:"husband", label:"Husband", warn:"needy" },
+    { key:"son",     label:"Son",     warn:"rude" },
+    { key:"friend",  label:"Friend",  warn:"fair-weather" },
+    { key:"comic",   label:"Comic",   warn:"scared" },
+    { key:"man",     label:"Man",     warn:"weak" }
   ];
+  function hatByKey(k){ for(var i=0;i<HATS.length;i++) if(HATS[i].key===k) return HATS[i]; return null; }
 
-  // ——— state slice ———
-  function wkState() {
-    if (!state.workout) {
-      state.workout = {
-        lastSeen: {},     // group -> timestamp last dealt (for weighting)
-        easy: {},         // "group|repText" -> true  (demoted warmups)
-        today: null       // the live session: { date, prayed, names, need, diagIdx, diagAns, reps:[{group,rep,status}], keepsakeAsked }
-      };
+  function d3Today(){ var d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function d3(){
+    if(!state.daily3) state.daily3={ day:0, picks:[], going:false };
+    if(state.daily3.day!==d3Today()){ state.daily3={ day:d3Today(), picks:[], going:false }; }
+    if(!state.d3History) state.d3History={};   // { dayTs: [hatKey, ...completed] }
+    return state.daily3;
+  }
+  // record a completed hat into today's history (for the neglect nudge)
+  function d3LogDone(key){
+    if(!state.d3History) state.d3History={};
+    var day=String(d3Today());
+    if(!state.d3History[day]) state.d3History[day]=[];
+    state.d3History[day].push(key);
+  }
+  // which hats haven't been TOUCHED in the last 7 days (by completion)
+  function d3Neglected(){
+    var now=d3Today(), seen={};
+    for(var i=0;i<7;i++){
+      var day=String(now - i*86400000);
+      (state.d3History[day]||[]).forEach(function(k){ seen[k]=1; });
     }
-    var w = state.workout;
-    if (!w.lastSeen) w.lastSeen = {};
-    if (!w.easy) w.easy = {};
-    return w;
-  }
-  function wkToday() {
-    var d = new Date(); d.setHours(0,0,0,0);
-    return d.getTime();
-  }
-  function wkFreshSession() {
-    var w = wkState();
-    if (!w.today || w.today.date !== wkToday()) {
-      w.today = { date: wkToday(), prayed:false, names:"", need:"", diagIdx:null, diagAns:"", reps:null, keepsakeDone:false };
-    }
-    return w.today;
+    return HATS.filter(function(h){ return !seen[h.key]; });
   }
 
-  // ——— dealing: weighted toward groups not seen recently + diagnostic bias ———
-  function wkDeal(biasGroups) {
-    var w = wkState();
-    var now = Date.now();
-    var scored = WK_ORDER.map(function (g) {
-      var since = now - (w.lastSeen[g] || 0);
-      var days = since / 86400000;
-      var score = Math.min(days, 30) + Math.random() * 4;      // recency + jitter
-      if (biasGroups && biasGroups.indexOf(g) !== -1) score += 12; // diagnostic pull
-      return { g: g, score: score };
-    });
-    scored.sort(function (a, b) { return b.score - a.score; });
-    var picked = scored.slice(0, 3).map(function (s) { return s.g; });
+  function d3Render(){
+    var host=document.getElementById("d3Host"); if(!host) return;
+    host.innerHTML="";
+    var s=d3();
 
-    var reps = picked.map(function (g) {
-      return { group: g, rep: wkPickRep(g), status: null };
-    });
-    picked.forEach(function (g) { w.lastSeen[g] = now; });
-    return reps;
-  }
+    // still choosing?  first pass = haven't started any yet;  "go again" = reopened
+    var startedCount=s.picks.filter(function(p){return p.started;}).length;
+    var stillChoosing = s.going || startedCount===0;
 
-  // pick the appropriate-weight rep for a group: skip ones marked easy; climb tiers.
-  function wkPickRep(group) {
-    var pool = WK_REPS[group] || [];
-    var live = pool.filter(function (r) { return !wkState().easy[group + "|" + r.text]; });
-    if (!live.length) live = pool;               // all demoted? fall back to full set
-    // prefer the lowest tier that still has non-easy reps, then random within it
-    var minTier = Math.min.apply(null, live.map(function (r) { return r.t; }));
-    var tierPool = live.filter(function (r) { return r.t === minTier; });
-    return tierPool[Math.floor(Math.random() * tierPool.length)];
-  }
+    if(stillChoosing){
+      var firstRound = !s.going;
+      host.appendChild(el("div","d3-kicker", s.going ? "Go again \u2014 pick any hat, double up if you want" : "Which 3 hats matter most today?"));
 
-  function wkReplaceRep(idx) {
-    var t = wkFreshSession();
-    if (!t.reps || !t.reps[idx]) return;
-    var g = t.reps[idx].group;
-    t.reps[idx] = { group: g, rep: wkPickRep(g), status: null };
-    save(); wkRender();
-  }
+      // neglect nudge
+      var neg=d3Neglected();
+      if(neg.length && neg.length<7){
+        var names=neg.map(function(h){return h.label;});
+        var msg = names.length===1
+          ? names[0]+" hasn't come up all week."
+          : names.slice(0,3).join(", ")+(names.length>3?" and others":"")+" haven't come up all week.";
+        host.appendChild(el("div","d3-nudge",msg));
+      }
 
-  function wkMarkEasy(idx) {
-    var t = wkFreshSession();
-    var r = t.reps[idx];
-    if (!r) return;
-    wkState().easy[r.group + "|" + r.rep.text] = true;
-    // immediately deal a harder one from the same group
-    t.reps[idx] = { group: r.group, rep: wkPickRep(r.group), status: null };
-    save(); wkRender();
-  }
+      // in go-again mode, count only the NEW (non-retired, not-yet-started) picks
+      var live=s.picks.filter(function(p){return !p.started;});
+      var chosen={}; live.forEach(function(p){chosen[p.key]=1;});
+      var capReached = !s.going && live.length>=3;
 
-  function wkSetStatus(idx, status) {
-    var t = wkFreshSession();
-    if (!t.reps || !t.reps[idx]) return;
-    t.reps[idx].status = (t.reps[idx].status === status) ? null : status;
-    save(); wkRender();
-  }
+      HATS.forEach(function(h){
+        var picked=!!chosen[h.key];
+        var b=el("button","d3-hat"+(picked?" picked":""));
+        var top=el("div","d3-hat-top");
+        top.appendChild(el("span","d3-hat-label",h.label));
+        if(picked) top.appendChild(el("span","d3-hat-check","\u2713"));
+        b.appendChild(top);
+        b.appendChild(el("span","d3-hat-warn","don't be "+h.warn));
+        b.onclick=function(){
+          if(picked){ s.picks=s.picks.filter(function(p){return !(p.key===h.key && !p.started);}); }
+          else if(s.going || live.length<3){ s.picks.push({key:h.key,task:"",done:false,started:false}); }
+          save(); d3Render();
+        };
+        host.appendChild(b);
+      });
 
-  // ——— keepsake handoff into Good Plates (reuses the notes path) ———
-  function wkSaveKeepsake(text) {
-    if (!text) return;
-    if (!state.notes) state.notes = [];
-    state.notes.unshift({ id: Date.now().toString(36), text: text, updated: Date.now() });
-    var t = wkFreshSession(); t.keepsakeDone = true;
-    save(); wkRender();
-  }
-
-  // ============================================================================
-  //  RENDER
-  // ============================================================================
-  function wkRender() {
-    var host = document.getElementById("workoutHost");
-    if (!host) return;
-    host.innerHTML = "";
-    var t = wkFreshSession();
-
-    // — STEP 1: ORIENT —
-    var s1 = el("div", "wk-step");
-    s1.appendChild(el("div", "wk-kicker", "Orient · speak to God"));
-    var names = el("textarea", "wk-input");
-    names.rows = 2; names.placeholder = "Who needs your prayer, by name?";
-    names.value = t.names;
-    names.oninput = function () { t.names = names.value; };
-    names.onblur = save;
-    s1.appendChild(names);
-    var need = el("input", "wk-input");
-    need.type = "text"; need.placeholder = "What do you need today?";
-    need.value = t.need;
-    need.oninput = function () { t.need = need.value; };
-    need.onblur = save;
-    s1.appendChild(need);
-    if (!t.prayed) {
-      var pray = el("button", "wk-primary", "Now go pray. Plainly. →");
-      pray.onclick = function () { t.prayed = true; save(); wkRender(); };
-      s1.appendChild(pray);
-    } else {
-      s1.appendChild(el("div", "wk-done-note", "Prayed. ✓"));
-    }
-    host.appendChild(s1);
-
-    if (!t.prayed) return;  // gate the rest behind actually praying
-
-    // — STEP 2: FACE YOURSELF (most days; steers the deal) —
-    // Shown ~2 of every 3 days so it doesn't become a daily confession field.
-    // Decided once per session, before reps are dealt, then it stays put.
-    if (t.diagIdx === null && !t.reps) {
-      var dayNum = Math.floor(wkToday() / 86400000);
-      if (dayNum % 3 !== 0) t.diagIdx = dayNum % WK_DIAG.length;
-      else t.diagIdx = -1;  // -1 = deliberately no diagnostic today
-    }
-    if (t.diagIdx === -1) { /* no diagnostic today */ }
-    if (t.diagIdx !== null && t.diagIdx !== -1) {
-      var s2 = el("div", "wk-step");
-      s2.appendChild(el("div", "wk-kicker", "Face yourself"));
-      s2.appendChild(el("div", "wk-diag-q", WK_DIAG[t.diagIdx].q));
-      var da = el("input", "wk-input");
-      da.type = "text"; da.placeholder = "One answer. Then move.";
-      da.value = t.diagAns;
-      da.oninput = function () { t.diagAns = da.value; };
-      da.onblur = save;
-      s2.appendChild(da);
-      host.appendChild(s2);
-    }
-
-    // — STEP 3: TODAY'S REPS —
-    if (!t.reps) {
-      var s3 = el("div", "wk-step");
-      var bias = (t.diagIdx !== null && t.diagIdx !== -1) ? WK_DIAG[t.diagIdx].bias : null;
-      var deal = el("button", "wk-primary", "Deal today's reps →");
-      deal.onclick = function () { t.reps = wkDeal(bias); save(); wkRender(); };
-      s3.appendChild(deal);
-      host.appendChild(s3);
+      if(s.going){
+        // go-again: any number, confirm to start
+        if(live.length>0){
+          var goBtn=el("button","d3-done","Start these \u2192");
+          goBtn.onclick=function(){ live.forEach(function(p){p.started=true;}); s.going=false; save(); d3Render(); };
+          host.appendChild(goBtn);
+        }
+        var never=el("button","d3-reset","never mind \u2014 close");
+        never.onclick=function(){ s.going=false; save(); stageFilter="home"; render(); };
+        host.appendChild(never);
+      } else {
+        // first round: need exactly 3, then start
+        if(live.length>=3){
+          var startBtn=el("button","d3-done","Start these 3 \u2192");
+          startBtn.onclick=function(){ live.forEach(function(p){p.started=true;}); save(); d3Render(); };
+          host.appendChild(startBtn);
+        } else if(live.length>0){
+          host.appendChild(el("div","d3-count",live.length+" of 3 chosen"));
+        }
+      }
       return;
     }
 
-    var s3 = el("div", "wk-step");
-    s3.appendChild(el("div", "wk-kicker", "Today's reps"));
-    t.reps.forEach(function (r, idx) {
-      var g = WK_GROUPS[r.group];
-      var card = el("div", "wk-rep" + (r.status ? " done-" + r.status : ""));
-      var head = el("div", "wk-rep-head");
-      head.appendChild(el("span", "wk-rep-group", g.label));
-      head.appendChild(el("span", "wk-rep-vs", "vs " + g.against));
+    host.appendChild(el("div","d3-kicker","Move the needle \u2014 one concrete thing each"));
+    var active=s.picks.filter(function(p){return p.started;});
+    active.forEach(function(p){
+      var h=hatByKey(p.key);
+      var card=el("div","d3-card"+(p.done?" done":""));
+      var head=el("div","d3-card-head");
+      head.appendChild(el("span","d3-card-label",h.label));
+      head.appendChild(el("span","d3-card-warn","don't be "+h.warn));
       card.appendChild(head);
-      card.appendChild(el("div", "wk-rep-text", r.rep.text));
-      if (r.rep.heavy) card.appendChild(el("div", "wk-rep-heavy", "Heavy — finish by tonight."));
 
-      var row = el("div", "wk-rep-actions");
-      ["done","adapted","skip"].forEach(function (st) {
-        var lbl = st === "done" ? "Done" : st === "adapted" ? "Adapted" : "Not done";
-        var b = el("button", "wk-stat" + (r.status === st ? " on" : ""), lbl);
-        b.onclick = function () { wkSetStatus(idx, st); };
-        row.appendChild(b);
-      });
-      card.appendChild(row);
-
-      var meta = el("div", "wk-rep-meta");
-      var swap = el("button", "wk-link", "swap");
-      swap.onclick = function () { wkReplaceRep(idx); };
-      meta.appendChild(swap);
-      var easy = el("button", "wk-link", "too easy");
-      easy.onclick = function () { wkMarkEasy(idx); };
-      meta.appendChild(easy);
-      card.appendChild(meta);
-
-      s3.appendChild(card);
+      if(!p.done){
+        var ta=el("textarea","d3-task"); ta.rows=2;
+        ta.placeholder="What will you actually DO today? Something you can say 'I did that' about.";
+        ta.value=p.task;
+        ta.oninput=function(){ p.task=ta.value; };
+        ta.onblur=save;
+        card.appendChild(ta);
+        var done=el("button","d3-done"+(p.task.trim()?"":" dim"),"Did it \u2713");
+        done.onclick=function(){ if(!p.task.trim()){ ta.focus(); return; } p.done=true; d3LogDone(p.key); save(); d3Render(); };
+        card.appendChild(done);
+      } else {
+        card.appendChild(el("div","d3-task-fixed",p.task));
+        var undo=el("button","d3-undo","undo");
+        undo.onclick=function(){
+          p.done=false;
+          // pull the last matching completion back out of history
+          var day=String(d3Today()), arr=state.d3History[day]||[];
+          var i=arr.lastIndexOf(p.key); if(i!==-1) arr.splice(i,1);
+          save(); d3Render();
+        };
+        card.appendChild(undo);
+      }
+      host.appendChild(card);
     });
-    host.appendChild(s3);
 
-    // — STEP 4: FINISH — only appears once every rep has a status —
-    var allMarked = t.reps.every(function (r) { return r.status; });
-    if (allMarked && !t.keepsakeDone) {
-      var s4 = el("div", "wk-step wk-finish");
-      s4.appendChild(el("div", "wk-kicker", "Finish"));
-      s4.appendChild(el("div", "wk-diag-q", "Anything worth remembering?"));
-      var ka = el("textarea", "wk-input"); ka.rows = 2;
-      ka.placeholder = "Optional — this goes into your plates. Or just leave.";
-      s4.appendChild(ka);
-      var keep = el("button", "wk-primary", "Keep it →");
-      keep.onclick = function () { wkSaveKeepsake(ka.value.trim()); };
-      s4.appendChild(keep);
-      var out = el("button", "wk-ghost", "Nothing. Get me out. →");
-      out.onclick = function () { t.keepsakeDone = true; save(); stageFilter = "home"; render(); };
-      s4.appendChild(out);
-      host.appendChild(s4);
-    } else if (allMarked && t.keepsakeDone) {
-      var s5 = el("div", "wk-step wk-finish");
-      s5.appendChild(el("div", "wk-done-note", "That's the workout. Go live your day."));
-      var out2 = el("button", "wk-ghost", "Close →");
-      out2.onclick = function () { stageFilter = "home"; render(); };
-      s5.appendChild(out2);
-      host.appendChild(s5);
+    if(active.length && active.every(function(p){return p.done;})){
+      var doneCount=state.d3History[String(d3Today())] ? state.d3History[String(d3Today())].length : active.length;
+      var fin=el("div","d3-finish");
+      fin.appendChild(el("div","d3-finish-line", doneCount>3 ? doneCount+" needles moved today. Keep going or call it." : "Three needles moved. That's the day."));
+      var again=el("button","d3-done","Go again \u2192");
+      again.onclick=function(){ s.going=true; save(); d3Render(); };
+      fin.appendChild(again);
+      var out=el("button","d3-reset","Close \u2014 that's enough for today");
+      out.onclick=function(){ stageFilter="home"; render(); };
+      fin.appendChild(out);
+      host.appendChild(fin);
+      return;
     }
+
+    var reset=el("button","d3-reset","start over");
+    reset.onclick=function(){ s.picks=[]; save(); d3Render(); };
+    host.appendChild(reset);
   }
 
 })();
