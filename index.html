@@ -329,6 +329,16 @@
   .d3-task { width: 100%; background: var(--page); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; font-family: var(--serif); font-size: 16px; color: var(--ink); resize: none; margin-bottom: 10px; }
   .d3-task::placeholder { color: var(--faint); }
   .d3-task-fixed { font-family: var(--serif); font-size: 16px; color: var(--ink); line-height: 1.35; margin-bottom: 8px; }
+  .d3-sugg { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+  .d3-sugg-body { flex: 1; }
+  .d3-sugg-text { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--accent2); line-height: 1.3; cursor: pointer; }
+  .d3-sugg-text:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .d3-sugg-actions { display: flex; gap: 12px; margin-top: 5px; }
+  .d3-sugg-act { background: none; border: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); padding: 0; }
+  .d3-sugg-act:hover { color: var(--accent); }
+  .d3-sugg-add-row { display: flex; gap: 6px; margin-bottom: 10px; }
+  .d3-sugg-add-row input { flex: 1; background: var(--page); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; font-family: var(--serif); font-size: 14px; color: var(--ink); }
+  .d3-sugg-add-row button { background: var(--accent); color: var(--onaccent); border: none; border-radius: 8px; padding: 0 14px; font-family: var(--mono); font-size: 12px; }
   .d3-done { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; box-shadow: var(--glow); }
   .d3-done.dim { opacity: .4; }
   .d3-undo { background: none; border: none; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; padding: 2px 0; }
@@ -479,11 +489,15 @@
   .wb-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 7px; }
   .wb-bit { min-height: 4.6em; flex: 0 0 auto; font-weight: 600; margin-bottom: 20px; }
   .wb-pad { flex: 1 1 auto; min-height: 200px; }
-  .wb-when { display: flex; align-items: center; gap: 10px; margin: 0 0 20px; flex-wrap: wrap; }
-  .wb-when .wb-label { margin: 0; }
-  .wb-date { border: 1px solid var(--rule); border-radius: 7px; padding: 5px 9px; font-family: var(--mono); font-size: 12px; background: var(--card); color: var(--ink); }
-  .wb-when-clear { background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 2px 4px; cursor: pointer; }
-  .wb-when-clear:hover { color: var(--accent2); }
+  .wb-attached { margin: 0 0 20px; display: flex; flex-direction: column; gap: 9px; }
+  .wb-attached:empty { display: none; margin: 0; }
+  .wb-att-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .wb-att-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-right: 3px; flex: 0 0 auto; }
+  .wb-att-chip { background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+  .wb-att-ref { color: var(--accent2); }
+  .wb-att-voice { background: var(--tagbg); border-color: var(--tagbg); color: var(--tagink); }
+  .wb-att-tag { color: var(--muted); }
+  .wb-att-grat { color: var(--accent); border-color: var(--accent); }
   .wb-meta { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin: 14px 0 0; }
   .has-notes { font-family: var(--mono); font-size: 10px; color: var(--accent); opacity: .8; margin-left: 7px; }
 
@@ -933,11 +947,7 @@
       </div>
       <div class="wb-label">the entry</div>
       <textarea class="notes-canvas wb-bit" id="wbBit" placeholder="the entry as it stands…"></textarea>
-      <div class="wb-when">
-        <label class="wb-label" for="wbWhen">when it happened</label>
-        <input type="date" id="wbWhen" class="wb-date">
-        <button class="wb-when-clear" id="wbWhenClear" title="Clear — fall back to the day you wrote it">clear</button>
-      </div>
+      <div class="wb-attached" id="wbAttached"></div>
       <div class="wb-label">working it out</div>
       <textarea class="notes-canvas wb-pad" id="wbPad" placeholder="scriptures, thoughts, where it leads…"></textarea>
       <div class="wb-meta" id="wbMeta"></div>
@@ -2565,7 +2575,7 @@
     if (!b) { workbenchId = null; workbenchKind = "bit"; return; }
     document.getElementById("wbBit").value = b.text;
     document.getElementById("wbPad").value = b.workshop || "";
-    document.getElementById("wbWhen").value = b.occurred ? isoDay(b.occurred) : "";
+    renderWbAttached(b);
     var m = document.getElementById("wbMeta");
     if (workbenchKind === "truth") {
       m.textContent = b.mined ? "used ×" + b.mined : "";
@@ -2586,30 +2596,29 @@
     if ((v && v !== b.text) || pad !== (b.workshop || "")) b.touched = Date.now();
     if (v) b.text = v;
     b.workshop = pad;
-    var w = document.getElementById("wbWhen").value;
-    if (w) {
-      var parts = w.split("-");
-      b.occurred = new Date(+parts[0], +parts[1] - 1, +parts[2], 12).getTime();
-    } else {
-      delete b.occurred;
-    }
     save();
   }
-  // A mercy is often written down days after it happened. When it happened is
-  // what a talk wants; when you wrote it is just bookkeeping.
-  function isoDay(ts) {
-    var d = new Date(ts);
-    var mm = ("0" + (d.getMonth() + 1)).slice(-2);
-    var dd = ("0" + d.getDate()).slice(-2);
-    return d.getFullYear() + "-" + mm + "-" + dd;
+  // Show what's already attached to this entry — scriptures, speakers, tags,
+  // gratitude — so the workbench reflects the whole entry, not just its text.
+  function renderWbAttached(b) {
+    var host = document.getElementById("wbAttached");
+    host.innerHTML = "";
+    function row(label, chips, cls) {
+      if (!chips.length) return;
+      var r = el("div", "wb-att-row");
+      r.appendChild(el("span", "wb-att-label", label));
+      chips.forEach(function (txt) {
+        r.appendChild(el("span", "wb-att-chip " + cls, txt));
+      });
+      host.appendChild(r);
+    }
+    row("scripture", entryRefs(b).map(refLabel), "wb-att-ref");
+    row("said by", entryVoices(b).slice(), "wb-att-voice");
+    row("tags", (b.tags || []).slice(), "wb-att-tag");
+    if (b.grateful) row("", ["❦ gratitude"], "wb-att-grat");
   }
   document.getElementById("wbBit").oninput = saveWorkbench;
   document.getElementById("wbPad").oninput = saveWorkbench;
-  document.getElementById("wbWhen").onchange = saveWorkbench;
-  document.getElementById("wbWhenClear").onclick = function () {
-    document.getElementById("wbWhen").value = "";
-    saveWorkbench();
-  };
   document.getElementById("wbPrev").onclick = function () { saveWorkbench(); browseGo(-1); };
   document.getElementById("wbNext").onclick = function () { saveWorkbench(); browseGo(1); };
   document.getElementById("wbClose").onclick = function () {
@@ -4432,6 +4441,74 @@
   ];
   function hatByKey(k){ for(var i=0;i<HATS.length;i++) if(HATS[i].key===k) return HATS[i]; return null; }
 
+  // Fixed seed tasks per hat — small, concrete things that feed into positives.
+  // He can add his own; those live in state.d3Seeds[key] and merge on top.
+  var SEEDS = {
+    bishop: [
+      "Text one ward member just to check in \u2014 no agenda.",
+      "Reach out to someone you haven't seen at church lately.",
+      "Thank a person who quietly serves and never gets noticed.",
+      "Follow up on one assignment you handed off.",
+      "Ask a counselor how they're actually doing.",
+      "Prepare one thought for the next meeting instead of winging it."
+    ],
+    dad: [
+      "Put the phone down and give one kid your full attention for 15 minutes.",
+      "Ask a kid about something THEY care about, then just listen.",
+      "Do one thing on their terms \u2014 their game, their idea.",
+      "Teach one small skill you keep meaning to pass on.",
+      "Catch a kid doing something right and say so out loud.",
+      "Read or wrestle or build \u2014 something physical and present."
+    ],
+    husband: [
+      "Do one chore she'd normally have to ask for.",
+      "Ask about her day and actually stay in the answer.",
+      "Say the specific thing you appreciate, not a generic thanks.",
+      "Take one thing off her plate today without being asked.",
+      "Plan or protect time that's just the two of you.",
+      "Give without keeping score."
+    ],
+    son: [
+      "Call or text a parent \u2014 not for anything, just to connect.",
+      "Ask about their day before talking about yours.",
+      "Say thank you for something they did that you took for granted.",
+      "Offer help with a thing they've been putting off."
+    ],
+    friend: [
+      "Reach out to a friend you've gone quiet on.",
+      "Show up for someone without being asked.",
+      "Follow up on something a friend told you was weighing on them.",
+      "Make a plan instead of saying 'we should hang out sometime.'"
+    ],
+    comic: [
+      "Write for 10 minutes even if it's garbage.",
+      "Test one bit out loud, on someone, today.",
+      "Capture the funny thing before you forget it.",
+      "Watch a set and steal a structure, not a joke.",
+      "Book, confirm, or plan the next stage time.",
+      "Do the scary version of the bit, not the safe one."
+    ],
+    man: [
+      "Do the hard thing first, before it grows.",
+      "Move your body on purpose today.",
+      "Keep one promise you made to yourself.",
+      "Say the true thing even though it's easier not to.",
+      "Sit with the discomfort for five minutes instead of numbing it.",
+      "Finish something you started."
+    ]
+  };
+  // full pool for a hat: fixed seeds + his own additions
+  function d3SeedPool(key){
+    var mine = (state.d3Seeds && state.d3Seeds[key]) ? state.d3Seeds[key] : [];
+    return (SEEDS[key]||[]).concat(mine);
+  }
+  function d3AddSeed(key, text){
+    text = (text||"").trim(); if(!text) return;
+    if(!state.d3Seeds) state.d3Seeds={};
+    if(!state.d3Seeds[key]) state.d3Seeds[key]=[];
+    state.d3Seeds[key].push(text);
+  }
+
   function d3Today(){ var d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
   function d3(){
     if(!state.daily3) state.daily3={ day:0, picks:[], going:false };
@@ -4537,11 +4614,46 @@
         var ta=el("textarea","d3-task"); ta.rows=2;
         ta.placeholder="What will you actually DO today? Something you can say 'I did that' about.";
         ta.value=p.task;
-        ta.oninput=function(){ p.task=ta.value; };
+        ta.oninput=function(){ p.task=ta.value; refreshDim(); };
         ta.onblur=save;
-        card.appendChild(ta);
         var done=el("button","d3-done"+(p.task.trim()?"":" dim"),"Did it \u2713");
         done.onclick=function(){ if(!p.task.trim()){ ta.focus(); return; } p.done=true; d3LogDone(p.key); save(); d3Render(); };
+        function refreshDim(){ done.className="d3-done"+(ta.value.trim()?"":" dim"); }
+
+        // ——— suggestion: one shown, tap to use, tap shuffle to cycle ———
+        var pool=d3SeedPool(p.key);
+        if(pool.length){
+          if(typeof p.si!=="number" || p.si>=pool.length){ p.si=Math.floor(Math.random()*pool.length); }
+          var wrap=el("div","d3-sugg");
+          var body=el("div","d3-sugg-body");
+          var txt=el("div","d3-sugg-text",pool[p.si]);
+          txt.title="tap to use this";
+          txt.onclick=function(){ ta.value=pool[p.si]; p.task=pool[p.si]; refreshDim(); ta.focus(); save(); };
+          body.appendChild(txt);
+          var acts=el("div","d3-sugg-actions");
+          var shuffle=el("button","d3-sugg-act","shuffle \u21bb");
+          shuffle.onclick=function(){
+            if(pool.length<2) return;
+            var n=p.si; while(n===p.si){ n=Math.floor(Math.random()*pool.length); }
+            p.si=n; txt.textContent=pool[p.si]; save();
+          };
+          var addBtn=el("button","d3-sugg-act","+ add my own");
+          acts.appendChild(shuffle); acts.appendChild(addBtn);
+          body.appendChild(acts); wrap.appendChild(body);
+          card.appendChild(wrap);
+
+          var addRow=el("div","d3-sugg-add-row"); addRow.style.display="none";
+          var inp=el("input"); inp.type="text"; inp.placeholder="A "+h.label+" task to keep in the rotation\u2026";
+          var saveBtn=el("button",null,"save");
+          function commit(){ if(inp.value.trim()){ d3AddSeed(p.key,inp.value); p.si=d3SeedPool(p.key).length-1; save(); d3Render(); } }
+          saveBtn.onclick=commit;
+          inp.onkeydown=function(e){ if(e.key==="Enter") commit(); };
+          addRow.appendChild(inp); addRow.appendChild(saveBtn);
+          card.appendChild(addRow);
+          addBtn.onclick=function(){ var vis=addRow.style.display!=="none"; addRow.style.display=vis?"none":"flex"; if(!vis) inp.focus(); };
+        }
+
+        card.appendChild(ta);
         card.appendChild(done);
       } else {
         card.appendChild(el("div","d3-task-fixed",p.task));
