@@ -642,9 +642,9 @@
   .habit-rename { margin-top: 8px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; cursor: pointer; padding: 0; }
 
   [hidden] { display:none !important; }
-  .main-modes { display:flex; gap:6px; margin:20px 0; }
-  .main-modes button { flex:1; min-height:46px; border:1px solid var(--rule); border-radius:8px; background:var(--card); color:var(--ink); font:14px var(--mono); }
-  .main-modes button[aria-pressed="true"] {background:var(--accent);color:var(--onaccent);}
+  .main-modes { display:flex; gap:22px; margin:20px 0 24px; flex-wrap:wrap; }
+  .main-modes button { flex:0 0 auto; min-height:46px; padding:10px 0 12px; border:0; border-bottom:2px solid transparent; border-radius:0; background:transparent; color:var(--muted); font:16px var(--mono); }
+  .main-modes button[aria-pressed="true"] {background:transparent;color:var(--accent);border-bottom-color:var(--accent);font-weight:700;}
   #composer .capture {flex-direction:column; margin-bottom:12px; min-height:0;}
   #composer #draft {width:100%;box-sizing:border-box;min-height:180px;resize:none;}
   #composer .add-btn {min-height:44px;}
@@ -686,6 +686,68 @@
   body.capture-keyboard #composer .cap-attach {max-height:38%;}
   body.capture-keyboard #composer #draft {height:0;}
 
+  #workbenchOverlay {z-index:110;bottom:auto;height:100dvh;}
+  #workbenchOverlay .notes-inner {padding:16px 20px;overflow:hidden;}
+  #workbenchOverlay .notes-head {flex-shrink:0;margin-bottom:14px;}
+  #workbenchOverlay .notes-head h2 {font:26px var(--serif);margin:0;}
+  #workbenchOverlay .notes-close {font-size:14px;min-height:44px;}
+  #workbenchOverlay .wb-writing {display:flex;flex-direction:column;flex:1;min-height:120px;overflow:auto;}
+  #workbenchOverlay .wb-label {font:14px var(--serif);text-transform:none;letter-spacing:0;margin:0 0 6px;color:var(--muted);}
+  #workbenchOverlay textarea {box-shadow:none;resize:none;flex-shrink:0;}
+  #workbenchOverlay .wb-bit {height:130px;min-height:100px;margin-bottom:16px;}
+  #workbenchOverlay .wb-pad {min-height:150px;flex:1;margin:0;}
+  .wb-details {border-top:1px solid var(--rule);margin-top:14px;flex:0 0 auto;max-height:48%;overflow:auto;}
+  .wb-details summary {cursor:pointer;padding:12px 0;font-size:16px;}
+  .wb-details summary span {display:block;font-size:14px;color:var(--muted);margin:4px 0 0 17px;}
+  #workbenchOverlay .wb-attached {margin:8px 0;gap:16px;}
+  .wb-detail-chips {display:flex;flex-wrap:wrap;gap:6px;}
+  .wb-detail-chip {display:inline-flex;align-items:center;gap:6px;border-bottom:1px solid var(--rule);font-size:16px;}
+  .wb-detail-chip button {border:0;background:transparent;color:var(--muted);min-width:36px;min-height:44px;font-size:20px;}
+  .wb-detail-form {display:flex;gap:10px;align-items:center;}
+  .wb-detail-form input, #workbenchOverlay .ref-input {min-width:0;flex:1;font:16px var(--serif);border:0;border-bottom:1px solid var(--rule);border-radius:0;background:transparent;color:var(--ink);padding:10px 2px;min-height:44px;}
+  .wb-detail-form button, #workbenchOverlay .ref-add, .wb-gratitude {font:14px var(--serif);min-height:44px;border:0;background:transparent;color:var(--accent);padding:4px 8px;}
+  .wb-gratitude {align-self:flex-start;}
+  .wb-gratitude[aria-pressed="true"] {border-bottom:2px solid var(--accent);}
+  .wb-detail-error {font-size:14px;color:var(--accent);}
+  #workbenchOverlay .wb-meta:empty {display:none;}
+  #workbenchOverlay .wb-meta {font-size:14px;margin-top:8px;flex-shrink:0;}
+  #workbenchOverlay.wb-typing .wb-meta {display:none;}
+  #workbenchOverlay.wb-typing .wb-details:not([open]) summary span {display:none;}
+  #workbenchOverlay.wb-typing[data-editor="notes"] .wb-bit,
+  #workbenchOverlay.wb-typing[data-editor="notes"] label[for="wbBit"],
+  #workbenchOverlay.wb-typing[data-editor="entry"] .wb-pad,
+  #workbenchOverlay.wb-typing[data-editor="entry"] label[for="wbPad"] {display:none;}
+  #workbenchOverlay.wb-typing[data-editor="entry"] .wb-bit {flex:1;height:0;min-height:80px;margin:0;}
+  #workbenchOverlay.wb-typing .wb-details[open] {max-height:58%;}
+
+  .notebook-tools {display:flex;flex-wrap:wrap;gap:4px 16px;padding:4px 0 14px;margin-bottom:14px;border-bottom:1px solid var(--rule);}
+  .notebook-tools button {display:inline-flex;align-items:center;min-height:44px;border:0;border-radius:0;padding:0;background:transparent;color:var(--ink);font:16px var(--serif);}
+  .write-intro {font:18px var(--serif);color:var(--muted);margin:8px 0 20px;}
+  .write-entry {display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--rule);border-radius:0;background:transparent;padding:18px 0;color:var(--ink);}
+  .write-entry-text {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font:22px/1.35 'Caveat','Bradley Hand',cursive;}
+  .write-entry-status {display:block;font:14px var(--serif);color:var(--muted);margin-top:8px;}
+
+  .study-panel {display:flex;flex-direction:column;gap:10px;}
+  .study-choices {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);}
+  .study-choices select {flex:1;min-width:0;min-height:44px;border:0;border-bottom:1px solid var(--rule);border-radius:0;background:transparent;color:var(--ink);font:16px var(--serif);}
+  .study-original {font-size:16px;color:var(--muted);}
+  .study-original summary {cursor:pointer;padding:8px 0;}
+  .study-original p {max-height:130px;overflow:auto;margin:6px 0;white-space:pre-wrap;color:var(--ink);}
+  .study-prompt {font:22px/1.35 var(--serif);margin:12px 0 0;}
+  .study-prompts {display:flex;gap:20px;}
+  .study-prompts button {background:transparent;border:0;padding:6px 0;min-height:44px;font:14px var(--serif);color:var(--muted);}
+  .study-writing {width:100%;min-height:260px;resize:none;box-shadow:none;}
+  .study-footer {display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .study-status {font-size:14px;color:var(--muted);}
+  .study-keep {margin-left:auto;min-height:44px;background:var(--accent);color:var(--onaccent);border:0;border-radius:8px;padding:10px 16px;font:14px var(--serif);}
+  .study-keep:disabled {opacity:.45;cursor:default;}
+  .study-panel.study-typing {position:fixed;z-index:105;left:0;right:0;top:var(--study-top);height:var(--study-height);max-width:620px;margin:0 auto;padding:10px 20px;background:var(--page);gap:6px;}
+  .study-typing .study-writing {flex:1;min-height:60px;height:0;}
+  .study-typing .study-prompt {font-size:18px;margin:0;max-height:100px;overflow:auto;flex-shrink:0;}
+  .study-typing .study-choices {display:none;}
+  .study-typing .study-original p {max-height:60px;}
+  .study-typing .study-prompts,.study-typing .study-footer {flex-shrink:0;}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -710,6 +772,7 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="section-row" id="sectionRow"></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search stuff, questions, sermons…" autocomplete="off" />
   </div>
@@ -752,14 +815,14 @@
   <p class="empty" id="empty" style="display:none"></p>
 
   <div class="backup">
-    <button class="notes-tab" id="notesOpen">🗒 notes</button>
-    <button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">📊</button>
-    <button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">👑</button>
-    <button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">📖</button>
-    <button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">🙏</button>
-    <button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">🪨</button>
-    <button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">🧭</button>
-    <button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">🗝️</button>
+    
+    
+    
+    
+    
+    
+    
+    
     <button class="notes-tab" id="utilBtn" title="More">⚙ more</button>
     <span class="sync-chip" id="syncStatus"></span>
     <span class="backup-note" id="authWho"></span>
@@ -985,7 +1048,7 @@
   <div class="notes-overlay" id="workbenchOverlay">
     <div class="notes-inner">
       <div class="notes-head">
-        <h2>Workbench</h2>
+        <h2>Write Now</h2>
         <div class="wb-browse" id="wbBrowse" style="display:none">
           <button class="wb-arrow" id="wbPrev" aria-label="previous">‹</button>
           <span class="wb-browse-pos" id="wbBrowsePos"></span>
@@ -993,11 +1056,13 @@
         </div>
         <button class="notes-close" id="wbClose">done</button>
       </div>
-      <div class="wb-label">the entry</div>
+      <div class="wb-writing">
+      <label for="wbBit" class="wb-label">The entry</label>
       <textarea class="notes-canvas wb-bit" id="wbBit" placeholder="the entry as it stands…"></textarea>
-      <div class="wb-attached" id="wbAttached"></div>
-      <div class="wb-label">working it out</div>
+      <label for="wbPad" class="wb-label">Working notes</label>
       <textarea class="notes-canvas wb-pad" id="wbPad" placeholder="scriptures, thoughts, where it leads…"></textarea>
+      </div>
+      <details class="wb-details"><summary>Entry details <span>Tags · Scriptures · Speakers</span></summary><div class="wb-attached" id="wbAttached"></div></details>
       <div class="wb-meta" id="wbMeta"></div>
     </div>
   </div>
@@ -1873,21 +1938,103 @@
     addToSermon(state.sets[0]);
   };
 
+  var studyPrompts = {
+    fresh: [
+      "What has stayed with you today? Start with what happened, then explore why it matters.",
+      "What would you like to bring honestly to God today—even if you have no neat conclusion?",
+      "Choose a phrase from your scripture study. What do you notice when you slow down over it?",
+      "Where did you notice kindness today? What did it ask of you, or make possible?",
+      "What question are you carrying about faith? What do you understand, and what remains open?",
+      "Think of someone you struggled to love. What might seeing them as Christ does change?"
+    ],
+    entry: [
+      "What was happening when you wrote this? What did you leave unsaid?",
+      "What does this stir in you now? What feels true, and what still needs questioning?",
+      "What scripture or experience comes alongside this thought? How does it deepen or challenge it?",
+      "How does this connect with Jesus Christ—with His character, teachings, or the way He treated people?",
+      "If you lived this more fully, what would change in one ordinary interaction?",
+      "What would you like to ask God about this? Write the question before reaching for an answer."
+    ]
+  };
+  var studyDrafts = {}, studyKey = "fresh";
+  try { var storedStudy=JSON.parse(localStorage.getItem("goodplates-study-drafts")||"{}"); studyDrafts=storedStudy.drafts||{}; studyKey=storedStudy.key||"fresh"; } catch(e){}
+  function storeStudyDrafts(){
+    try {localStorage.setItem("goodplates-study-drafts",JSON.stringify({key:studyKey,drafts:studyDrafts}));}catch(e){}
+  }
+  function renderStudy(host){
+    host.innerHTML="";
+    var entries=(state.truths||[]).concat(state.bits||[]);
+    var source=studyKey === "fresh" ? null : entries.find(function(b){return b.id===studyKey;});
+    if(studyKey!=="fresh" && !source) studyKey="fresh";
+    var draft=studyDrafts[studyKey] || (studyDrafts[studyKey]={text:"",prompt:0});
+    var prompts=source ? studyPrompts.entry : studyPrompts.fresh;
+    var panel=el("section","study-panel");host.appendChild(panel);
+    var choices=el("div","study-choices");
+    var label=el("label",null,"Start with");label.htmlFor="studySource";choices.appendChild(label);
+    var select=el("select");select.id="studySource";var fresh=el("option",null,"A fresh page");fresh.value="fresh";select.appendChild(fresh);
+    entries.slice().sort(function(a,b){return (b.touched||b.created||0)-(a.touched||a.created||0);}).forEach(function(b){var opt=el("option",null,b.text.slice(0,100));opt.value=b.id;select.appendChild(opt);});
+    select.value=studyKey;select.onchange=function(){studyKey=select.value;storeStudyDrafts();renderStudy(host);};choices.appendChild(select);panel.appendChild(choices);
+    if(source){var original=el("details","study-original");original.appendChild(el("summary",null,"The entry"));original.appendChild(el("p",null,source.text));panel.appendChild(original);}
+    var prompt=el("p","study-prompt",prompts[draft.prompt % prompts.length]);prompt.id="studyPrompt";panel.appendChild(prompt);
+    var actions=el("div","study-prompts");
+    var next=el("button",null,"Another prompt");next.onclick=function(){draft.prompt=(draft.prompt+1)%prompts.length;prompt.textContent=prompts[draft.prompt];storeStudyDrafts();};actions.appendChild(next);
+    var free=el("button",null,"Just write");free.onclick=function(){prompt.textContent="Write what is on your heart.";draft.unguided=true;storeStudyDrafts();};actions.appendChild(free);
+    if(draft.unguided)prompt.textContent="Write what is on your heart.";
+    next.addEventListener("click",function(){draft.unguided=false;storeStudyDrafts();});panel.appendChild(actions);
+    var area=el("textarea","notes-canvas study-writing");area.id="studyWriting";area.setAttribute("aria-label","Journal writing");area.setAttribute("aria-describedby","studyPrompt");area.placeholder="Start wherever you are…";area.value=draft.text;panel.appendChild(area);
+    var footer=el("div","study-footer"),status=el("span","study-status");status.setAttribute("role","status");
+    var keep=el("button","study-keep",source ? "Keep with entry" : "Keep in Notebook");keep.disabled=!draft.text.trim();
+    area.oninput=function(){draft.text=area.value;storeStudyDrafts();keep.disabled=!draft.text.trim();status.textContent="";};
+    keep.onclick=function(){
+      var text=area.value.trim();if(!text)return;
+      var now=Date.now();
+      if(source){
+        source.workshop=(source.workshop ? source.workshop+"\n\n" : "")+text;
+        source.touched=now;
+      }else{
+        state.truths.unshift({id:"journal-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,7),text:text,created:now,touched:now,tags:[],refs:[],voices:[]});
+      }
+      save();draft.text="";area.value="";keep.disabled=true;storeStudyDrafts();status.textContent=source ? "Kept with entry" : "Kept in Notebook";area.focus({preventScroll:true});
+    };
+    footer.appendChild(status);footer.appendChild(keep);panel.appendChild(footer);
+    syncStudyViewport();
+  }
+  function syncStudyViewport(){
+    var panel=document.querySelector(".study-panel"),vv=window.visualViewport;if(!panel)return;
+    var typing=vv && workspaceMode==="write" && panel.contains(document.activeElement) && innerHeight-vv.height>100;
+    panel.classList.toggle("study-typing",!!typing);
+    if(vv){panel.style.setProperty("--study-height",vv.height+"px");panel.style.setProperty("--study-top",vv.offsetTop+"px");}
+  }
+  if(window.visualViewport){visualViewport.addEventListener("resize",syncStudyViewport);visualViewport.addEventListener("scroll",syncStudyViewport);}
+  document.addEventListener("focusin",syncStudyViewport);
+  document.addEventListener("focusout",function(){setTimeout(syncStudyViewport,0);});
+
   function render() {
     if (stageFilter !== "home") workspaceMode = "notebook";
     document.body.dataset.mode = workspaceMode;
     document.querySelectorAll("[data-mode]").forEach(function(btn) {
       if (btn.tagName === "BUTTON") btn.setAttribute("aria-pressed", String(btn.dataset.mode === workspaceMode));
     });
-    document.getElementById("composer").hidden = workspaceMode === "notebook";
+    document.getElementById("composer").hidden = workspaceMode !== "capture";
+    document.getElementById("notebookTools").hidden = workspaceMode !== "notebook";
     document.getElementById("sectionRow").hidden = workspaceMode !== "notebook";
-    document.getElementById("addBtn").textContent = workspaceMode === "write" ? "Save & develop" : "Save";
+    document.getElementById("addBtn").textContent = "Save";
 
     document.body.classList.toggle("home-view", stageFilter === "home");
 
     // section row
     var srow = document.getElementById("sectionRow");
     srow.innerHTML = "";
+    if(workspaceMode === "write") {
+      document.getElementById("searchRow").style.display="none";
+      document.getElementById("searchOut").innerHTML="";
+      document.getElementById("wisdom").style.display="none";
+      document.getElementById("d3Host").style.display="none";
+      document.getElementById("empty").style.display="none";
+      var writingList=document.getElementById("list");writingList.innerHTML="";
+      renderStudy(writingList);
+      return;
+    }
     function sectionCard(key, label, count) {
       var btn = el("button", "section-card" + (stageFilter === key ? " active" : ""));
       btn.appendChild(el("span", "sc-label", label));
@@ -2173,8 +2320,8 @@
       };
       footR.appendChild(rBtn);
       var wbBtn = el("button", "foot-btn", "📝");
-      wbBtn.title = "Open the workbench";
-      wbBtn.setAttribute("aria-label", "workbench");
+      wbBtn.title = "Open Write Now";
+      wbBtn.setAttribute("aria-label", "Write Now");
       wbBtn.onclick = function (e) { e.stopPropagation(); openWorkbench(b.id); };
       footR.appendChild(wbBtn);
       foot.appendChild(footR);
@@ -2669,6 +2816,7 @@
     if (!b) { workbenchId = null; workbenchKind = "bit"; return; }
     document.getElementById("wbBit").value = b.text;
     document.getElementById("wbPad").value = b.workshop || "";
+    document.querySelector(".wb-details").open=false;
     renderWbAttached(b);
     var m = document.getElementById("wbMeta");
     if (workbenchKind === "truth") {
@@ -2679,7 +2827,7 @@
     renderBrowseNav();
     document.getElementById("workbenchOverlay").classList.add("open");
     // don't steal focus mid-browse — you're reading, not editing yet
-    if (!browseDeck) setTimeout(function () { document.getElementById("wbBit").focus(); }, 0);
+    syncWorkbenchViewport();
   }
   function saveWorkbench() {
     if (!workbenchId) return;
@@ -2697,20 +2845,57 @@
   function renderWbAttached(b) {
     var host = document.getElementById("wbAttached");
     host.innerHTML = "";
-    function row(label, chips, cls) {
-      if (!chips.length) return;
-      var r = el("div", "wb-att-row");
-      r.appendChild(el("span", "wb-att-label", label));
-      chips.forEach(function (txt) {
-        r.appendChild(el("span", "wb-att-chip " + cls, txt));
-      });
-      host.appendChild(r);
+    function changed(){ b.touched=Date.now(); save(); }
+    function section(title){
+      var group=el("div","wb-detail-group");
+      group.appendChild(el("div","wb-label",title)); host.appendChild(group); return group;
     }
-    row("scripture", entryRefs(b).map(refLabel), "wb-att-ref");
-    host.appendChild(buildVoiceLine(b));
-    row("tags", (b.tags || []).slice(), "wb-att-tag");
-    if (b.grateful) row("", ["❦ gratitude"], "wb-att-grat");
+    function editableList(title, values, label, remove, add, placeholder){
+      var group=section(title), chips=el("div","wb-detail-chips");group.appendChild(chips);
+      function paint(){
+        chips.innerHTML="";
+        values().forEach(function(value){
+          var chip=el("span","wb-detail-chip"), text=label(value);
+          chip.appendChild(el("span",null,text));
+          var drop=el("button",null,"×");drop.type="button";drop.setAttribute("aria-label","Remove "+text);
+          drop.onclick=function(){remove(value);changed();paint();};
+          chip.appendChild(drop);chips.appendChild(chip);
+        });
+      }
+      var form=el("form","wb-detail-form"), input=el("input"), submit=el("button",null,"Add");
+      input.type="text";input.placeholder=placeholder;input.setAttribute("aria-label","Add "+title.toLowerCase());
+      submit.type="submit";
+      var error=el("span","wb-detail-error");error.setAttribute("role","status");
+      form.appendChild(input);form.appendChild(submit);group.appendChild(form);group.appendChild(error);
+      form.onsubmit=function(e){
+        e.preventDefault(); var value=input.value.trim();if(!value)return;
+        if(!add(value)){error.textContent="Use a reference such as Alma 32:21.";input.setAttribute("aria-invalid","true");return;}
+        input.removeAttribute("aria-invalid");error.textContent="";input.value="";changed();paint();input.focus();
+      };
+      paint();
+    }
+    editableList("Tags",function(){return b.tags||[];},function(t){return t;},
+      function(t){b.tags=(b.tags||[]).filter(function(v){return v!==t;});},
+      function(t){if(!b.tags)b.tags=[];if(b.tags.indexOf(t)===-1)b.tags.push(t);return true;},"Add a tag");
+    syncRefs(b);
+    editableList("Scriptures",function(){return entryRefs(b);},refLabel,
+      function(r){dropRef(b,r);},function(v){return addRefFromInput(b,v);},"Alma 32:21");
+    section("Speakers").appendChild(buildVoiceLine(b));
+    var gratitude=el("button","wb-gratitude");
+    function paintGratitude(){gratitude.textContent=b.grateful ? "✓ Gratitude" : "Gratitude";gratitude.setAttribute("aria-pressed",String(!!b.grateful));}
+    gratitude.onclick=function(){if(b.grateful)delete b.grateful;else b.grateful=true;changed();paintGratitude();};
+    paintGratitude();host.appendChild(gratitude);
   }
+  function syncWorkbenchViewport(){
+    var overlay=document.getElementById("workbenchOverlay"), vv=window.visualViewport;
+    if(!vv)return;
+    overlay.style.top=vv.offsetTop+"px";overlay.style.height=vv.height+"px";
+    var active=document.activeElement;
+    overlay.classList.toggle("wb-typing",overlay.contains(active) && innerHeight-vv.height>100);
+    overlay.dataset.editor=active.id === "wbBit" ? "entry" : active.id === "wbPad" ? "notes" : "details";
+  }
+  if(window.visualViewport){visualViewport.addEventListener("resize",syncWorkbenchViewport);visualViewport.addEventListener("scroll",syncWorkbenchViewport);}
+  document.getElementById("workbenchOverlay").addEventListener("focusin",syncWorkbenchViewport);
   document.getElementById("wbBit").oninput = saveWorkbench;
   document.getElementById("wbPad").oninput = saveWorkbench;
   document.getElementById("wbPrev").onclick = function () { saveWorkbench(); browseGo(-1); };
@@ -3578,8 +3763,8 @@
         footR.appendChild(mined);
       }
       var twb = el("button", "foot-btn", "📝");
-      twb.setAttribute("aria-label", "workbench");
-      twb.title = "Open the workbench";
+      twb.setAttribute("aria-label", "Write Now");
+      twb.title = "Open Write Now";
       twb.onclick = function (e) { e.stopPropagation(); openWorkbench(t.id, "truth"); };
       footR.appendChild(twb);
       foot.appendChild(footR);
