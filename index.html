@@ -748,6 +748,29 @@
   .study-typing .study-original p {max-height:60px;}
   .study-typing .study-prompts,.study-typing .study-footer {flex-shrink:0;}
 
+  /* Attachment editing stays inside one fixed toolbar footprint. */
+  #composer .cap-attach {position:relative;height:96px;min-height:96px;max-height:96px;flex:0 0 96px;overflow:auto;align-content:start;padding:4px 0;}
+  #composer .cap-attach:has(.ref-input) {overflow:hidden;}
+  #composer .cap-attach:has(.ref-input) > .ref-line:not(:has(.ref-input)) {display:none !important;}
+  #composer .cap-attach > .ref-line:has(.ref-input) {position:absolute;inset:4px 0;display:flex;align-content:start;align-items:center;gap:4px 8px;overflow:auto;margin:0;}
+  #composer .cap-attach .ref-input {flex:1;min-width:140px;max-width:100%;height:44px;}
+  #composer .cap-attach .voice-suggest {display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;width:100%;min-height:36px;margin:0;align-items:center;}
+  #composer .cap-attach .voice-suggest > * {flex-shrink:0;}
+  body.capture-keyboard #composer .cap-attach {height:96px;min-height:96px;max-height:96px;flex:0 0 96px;}
+
+  /* Lock the page once per keyboard session, not once per focused field. */
+  body.capture-keyboard {position:fixed;top:var(--capture-scroll,0px);left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none;}
+  body.capture-keyboard #composer {padding-top:max(12px,env(safe-area-inset-top));padding-bottom:8px;overflow:hidden;box-shadow:0 0 0 100vmax var(--page),inset 0 0 100px rgba(110,70,30,.10);}
+  body.capture-keyboard #composer .capture {flex:1 1 0;min-height:0;overflow:hidden;}
+  body.capture-keyboard #composer #draft {flex:1 1 0;min-height:0;height:0;overscroll-behavior:contain;}
+  #composer .capture-end {height:52px;min-height:52px;flex:0 0 52px;}
+  #composer .cap-attach > .ref-line:has(.ref-input) {display:grid !important;grid-template-columns:minmax(0,1fr);grid-auto-rows:44px;align-content:start;gap:0;}
+  #composer .cap-attach > .ref-line:has(.ref-input) > .ref-chip,
+  #composer .cap-attach > .ref-line:has(.ref-input) > .ref-drop {display:none;}
+  #composer .cap-attach .ref-input {width:100%;min-width:0;max-width:100%;margin:0;}
+  #composer .cap-attach .voice-suggest {height:44px;min-height:44px;overscroll-behavior:contain;padding:0 2px;}
+  #composer .voice-pick {min-height:40px;}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2390,7 +2413,7 @@
       };
       input.onblur = commitCap;
       row.appendChild(input);
-      setTimeout(function () { input.focus(); }, 0);
+      setTimeout(function () { input.focus({preventScroll:true}); }, 0);
     } else {
       var add = el("button", "ref-add", pendingRefs.length ? "+ scripture" : "Scripture");
       add.title = "Attach a scripture — it won't be added to your text";
@@ -2454,7 +2477,7 @@
           capVoiceEditing = false;
           renderCapVoices();
         });
-      setTimeout(function () { input.focus(); }, 0);
+      setTimeout(function () { input.focus({preventScroll:true}); }, 0);
     } else {
       var add = el("button", "ref-add", pendingVoices.length ? "+ speaker" : "Speaker");
       add.title = "Attach who said it — it won't be added to your text";
@@ -2524,21 +2547,52 @@
   hideKeyboard.onclick=function(){
     var active=document.activeElement;
     if(active && typeof active.blur === "function") active.blur();
-    document.body.classList.remove("capture-keyboard");
+    queueCaptureViewport();
   };
   document.getElementById("capGrat").addEventListener("mousedown",function(e){e.preventDefault();});
   draft.addEventListener("input",function(){document.getElementById("captureStatus").textContent="";});
-  function syncCaptureViewport(){
-    var vv=window.visualViewport;
-    var composer=document.getElementById("composer");
-    var focused=composer.contains(document.activeElement);
-    var open=focused && vv && window.innerHeight-vv.height>100;
-    document.body.classList.toggle("capture-keyboard",!!open);
-    if(vv){ composer.style.setProperty("--capture-height",vv.height+"px"); composer.style.setProperty("--capture-top",vv.offsetTop+"px"); }
+  var captureLocked=false, captureScrollY=0, captureFrame=0, captureReleaseTimer=0;
+  function releaseCaptureViewport(){
+    if(!captureLocked)return;
+    captureLocked=false;
+    document.body.classList.remove("capture-keyboard");
+    document.body.style.removeProperty("--capture-scroll");
+    window.scrollTo(0,captureScrollY);
   }
-  if(window.visualViewport){visualViewport.addEventListener("resize",syncCaptureViewport);visualViewport.addEventListener("scroll",syncCaptureViewport);}
-  document.addEventListener("focusin",syncCaptureViewport);
-  document.addEventListener("focusout",function(){setTimeout(syncCaptureViewport,0);});
+  function syncCaptureViewport(){
+    captureFrame=0;
+    var vv=window.visualViewport, composer=document.getElementById("composer");
+    if(!vv)return;
+    var focused=composer.contains(document.activeElement);
+    var keyboardOpen=window.innerHeight-vv.height>100;
+    // A brief blur while replacing an attachment field is not a closed keyboard.
+    var keepOpen=workspaceMode==="capture" && keyboardOpen && (focused||captureLocked);
+    if(keepOpen){
+      clearTimeout(captureReleaseTimer);
+      if(!captureLocked){
+        captureLocked=true;
+        document.body.style.setProperty("--capture-scroll",(-captureScrollY)+"px");
+        document.body.classList.add("capture-keyboard");
+      }
+      composer.style.setProperty("--capture-height",Math.round(vv.height)+"px");
+      composer.style.setProperty("--capture-top",Math.round(vv.offsetTop)+"px");
+    }else if(captureLocked){
+      clearTimeout(captureReleaseTimer);
+      // Let the native keyboard finish closing before restoring the page.
+      captureReleaseTimer=setTimeout(function(){
+        if(workspaceMode!=="capture" || window.innerHeight-window.visualViewport.height<=100)releaseCaptureViewport();
+      },180);
+    }
+  }
+  function queueCaptureViewport(){
+    if(!captureFrame)captureFrame=requestAnimationFrame(syncCaptureViewport);
+  }
+  if(window.visualViewport){visualViewport.addEventListener("resize",queueCaptureViewport);visualViewport.addEventListener("scroll",queueCaptureViewport);}
+  document.addEventListener("focusin",function(e){
+    if(!captureLocked && document.getElementById("composer").contains(e.target))captureScrollY=window.scrollY;
+    queueCaptureViewport();
+  });
+  document.addEventListener("focusout",queueCaptureViewport);
 
   renderCapRefs();
   renderCapVoices();
@@ -3209,8 +3263,7 @@
         });
       });
       groups = Object.keys(byName).sort(function (a, b) {
-        if (byName[b].length !== byName[a].length) return byName[b].length - byName[a].length;
-        return a.localeCompare(b);
+        return lastName(a).localeCompare(lastName(b)) || a.localeCompare(b);
       }).map(function (n) { return { name: n, items: byName[n] }; });
       note.textContent = groups.length
         ? groups.length + (groups.length === 1 ? " voice" : " voices")
