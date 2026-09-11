@@ -771,6 +771,11 @@
   #composer .cap-attach .voice-suggest {height:44px;min-height:44px;overscroll-behavior:contain;padding:0 2px;}
   #composer .voice-pick {min-height:40px;}
 
+  /* Show choices first: the legacy full-width label hid them offscreen. */
+  #composer .cap-attach .voice-suggest-label {display:none;}
+  #composer .cap-attach .voice-suggest {border:0;padding:0;gap:8px;justify-content:flex-start;min-width:0;scroll-padding-inline:2px;}
+  #composer .cap-attach .voice-pick {flex:0 0 auto;min-height:40px;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:14px var(--serif);padding:6px 10px;}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -1597,6 +1602,7 @@
   // A live suggestion row under a speaker input. mousedown-preventDefault so
   // tapping a chip doesn't blur-commit the half-typed text first.
   function attachVoiceSuggest(input, row, getExclude, onPick) {
+    row.setAttribute("aria-label", "Matching speakers");
     function paint() {
       row.innerHTML = "";
       var picks = voiceSuggestions(input.value, getExclude());
@@ -1607,6 +1613,7 @@
         input.value.trim() ? "matches" : "tap to add"));
       picks.forEach(function (name) {
         var chip = el("button", "voice-pick", name);
+        chip.onpointerdown = function (e) { e.preventDefault(); };
         chip.onmousedown = function (e) { e.preventDefault(); };
         chip.onclick = function (e) {
           e.preventDefault(); e.stopPropagation();
