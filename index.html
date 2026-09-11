@@ -669,6 +669,23 @@
   body.capture-keyboard .cap-dest {margin:0 0 8px;}
   body.capture-keyboard .capture-end {flex-shrink:0;}
 
+  /* Capture keeps the same paper and restrained tools while typing. */
+  #composer .capture {margin-bottom:0;}
+  #composer #draft {box-shadow:none;}
+  #composer .cap-attach {gap:0 16px;padding:6px 0;border-bottom:1px solid var(--rule);align-items:center;}
+  #composer .ref-add {border:0;border-radius:0;background:transparent;padding:0 2px;min-height:44px;color:var(--ink);font:14px var(--serif);}
+  #composer .ref-add:hover, #composer .grat-btn.on {color:var(--accent);background:transparent;}
+  #composer .ref-input {width:180px;max-width:100%;min-height:44px;border:0;border-bottom:1px solid var(--accent);border-radius:0;background:transparent;padding:8px 2px;font:16px var(--serif);box-shadow:none;}
+  #composer .ref-input:focus-visible {outline:0;border-bottom-width:2px;}
+  #composer .ref-line:has(input) {flex-basis:100%;}
+  #composer .voice-suggest {flex-basis:100%;}
+  #composer .capture-end {display:flex;min-height:44px;margin-top:8px;flex-shrink:0;}
+  #composer #captureDone {border:0;background:transparent;color:var(--muted);padding:0 6px;font:14px var(--serif);margin-left:auto;}
+  #composer #addBtn {margin-left:auto;min-height:44px;padding:0 22px;background:var(--accent);color:var(--onaccent);border:0;font:600 14px var(--mono);letter-spacing:.03em;}
+  body.capture-keyboard #composer {max-width:620px;margin:0 auto;padding:12px 20px 8px;background-color:var(--page);background-image:inherit;box-shadow:inset 0 0 100px rgba(110,70,30,.10);}
+  body.capture-keyboard #composer .cap-attach {max-height:38%;}
+  body.capture-keyboard #composer #draft {height:0;}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -701,7 +718,7 @@
   <section id="composer" aria-label="Capture"><span class="cap-dest" id="capDest">capture → stuff</span>
   <div class="capture">
     <textarea id="draft" rows="3"></textarea>
-    <button class="add-btn" id="addBtn">Save</button>
+
   </div>
   <div class="cap-attach">
     <div class="ref-line cap-refs" id="capRefs"></div>
@@ -709,7 +726,7 @@
     <div class="ref-line cap-refs" id="capGrat"></div>
   </div>
 
-  <div class="capture-end"><span id="captureStatus" role="status"></span><button type="button" id="captureDone">Hide keyboard</button></div></section>
+  <div class="capture-end"><span id="captureStatus" role="status"></span><button type="button" id="captureDone">Hide keyboard</button><button class="add-btn" id="addBtn">Save</button></div></section>
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
   <div id="copyToast" class="copy-toast">copied</div>
@@ -2228,7 +2245,7 @@
       row.appendChild(input);
       setTimeout(function () { input.focus(); }, 0);
     } else {
-      var add = el("button", "ref-add", pendingRefs.length ? "+" : "+ scripture");
+      var add = el("button", "ref-add", pendingRefs.length ? "+ scripture" : "Scripture");
       add.title = "Attach a scripture — it won't be added to your text";
       add.onclick = function () { capRefEditing = true; renderCapRefs(); };
       row.appendChild(add);
@@ -2243,7 +2260,7 @@
   function renderCapGrat() {
     var row = document.getElementById("capGrat");
     row.innerHTML = "";
-    var btn = el("button", "ref-add grat-btn" + (pendingGrateful ? " on" : ""), pendingGrateful ? "❦ gratitude" : "+ gratitude");
+    var btn = el("button", "ref-add grat-btn" + (pendingGrateful ? " on" : ""), pendingGrateful ? "✓ Gratitude" : "Gratitude");
     btn.title = "Mark this as a gratitude";
     btn.onclick = function () { pendingGrateful = !pendingGrateful; renderCapGrat(); };
     row.appendChild(btn);
@@ -2292,7 +2309,7 @@
         });
       setTimeout(function () { input.focus(); }, 0);
     } else {
-      var add = el("button", "ref-add", pendingVoices.length ? "+" : "+ speaker");
+      var add = el("button", "ref-add", pendingVoices.length ? "+ speaker" : "Speaker");
       add.title = "Attach who said it — it won't be added to your text";
       add.onclick = function () { capVoiceEditing = true; renderCapVoices(); };
       row.appendChild(add);
