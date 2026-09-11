@@ -651,8 +651,11 @@
   #composer .cap-attach {display:flex;flex-wrap:wrap;gap:8px;margin:0;}
   #composer .ref-line {margin:0;flex-wrap:wrap;}
   #composer .ref-add, .speaker-fields button {min-height:40px;font-size:14px;}
-  .capture-end {display:flex;justify-content:space-between;align-items:center;margin-top:10px;min-height:40px;}
-  .capture-end button {background:transparent;color:var(--muted);border:0;font-size:14px;padding:10px;}
+  .capture-end {display:none;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;}
+  .capture-end:has(#captureStatus:not(:empty)), body.capture-keyboard .capture-end {display:flex;}
+  #captureDone {display:none;margin-left:auto;}
+  body.capture-keyboard #captureDone {display:inline-flex;align-items:center;min-height:44px;}
+  .capture-end button {background:transparent;color:var(--ink);border:1px solid var(--rule);border-radius:8px;font:14px var(--mono);padding:8px 12px;}
   #captureStatus {font:14px var(--mono);color:var(--muted);}
   body:not([data-mode="notebook"]) .backup > button:not(#utilBtn) {display:none;}
   .speaker-fields {flex-basis:100%;width:100%;}
@@ -706,7 +709,7 @@
     <div class="ref-line cap-refs" id="capGrat"></div>
   </div>
 
-  <div class="capture-end"><span id="captureStatus" role="status"></span><button id="captureDone">Done</button></div></section>
+  <div class="capture-end"><span id="captureStatus" role="status"></span><button type="button" id="captureDone">Hide keyboard</button></div></section>
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
   <div id="copyToast" class="copy-toast">copied</div>
@@ -2350,7 +2353,15 @@
       render();
     };
   });
-  document.getElementById("captureDone").onclick=function(){document.activeElement.blur();};
+  var hideKeyboard = document.getElementById("captureDone");
+  // Keep focus on the editor until click, so blur reaches the actual input.
+  hideKeyboard.onpointerdown=function(e){e.preventDefault();};
+  hideKeyboard.onmousedown=function(e){e.preventDefault();};
+  hideKeyboard.onclick=function(){
+    var active=document.activeElement;
+    if(active && typeof active.blur === "function") active.blur();
+    document.body.classList.remove("capture-keyboard");
+  };
   document.getElementById("capGrat").addEventListener("mousedown",function(e){e.preventDefault();});
   draft.addEventListener("input",function(){document.getElementById("captureStatus").textContent="";});
   function syncCaptureViewport(){
@@ -2388,7 +2399,11 @@
     document.getElementById("tourGate").classList.add("open");
   };
   draft.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addBit();
+    if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return;
+    var send = workspaceMode === "capture" ? !e.shiftKey : (e.metaKey || e.ctrlKey) && !e.shiftKey;
+    if (!send) return;
+    e.preventDefault();
+    if (!e.repeat) document.getElementById("addBtn").click();
   });
 
   // ——— daily habit calendars ———
