@@ -640,6 +640,32 @@
   .habit-cell.marked-good { background: var(--accent); color: var(--onaccent); border-color: var(--accent); }
   .habit-cell.marked-bad { background: var(--accent2); color: var(--onaccent); border-color: var(--accent2); }
   .habit-rename { margin-top: 8px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; cursor: pointer; padding: 0; }
+
+  [hidden] { display:none !important; }
+  .main-modes { display:flex; gap:6px; margin:20px 0; }
+  .main-modes button { flex:1; min-height:46px; border:1px solid var(--rule); border-radius:8px; background:var(--card); color:var(--ink); font:14px var(--mono); }
+  .main-modes button[aria-pressed="true"] {background:var(--accent);color:var(--onaccent);}
+  #composer .capture {flex-direction:column; margin-bottom:12px; min-height:0;}
+  #composer #draft {width:100%;box-sizing:border-box;min-height:180px;resize:none;}
+  #composer .add-btn {min-height:44px;}
+  #composer .cap-attach {display:flex;flex-wrap:wrap;gap:8px;margin:0;}
+  #composer .ref-line {margin:0;flex-wrap:wrap;}
+  #composer .ref-add, .speaker-fields button {min-height:40px;font-size:14px;}
+  .capture-end {display:flex;justify-content:space-between;align-items:center;margin-top:10px;min-height:40px;}
+  .capture-end button {background:transparent;color:var(--muted);border:0;font-size:14px;padding:10px;}
+  #captureStatus {font:14px var(--mono);color:var(--muted);}
+  body:not([data-mode="notebook"]) .backup > button:not(#utilBtn) {display:none;}
+  .speaker-fields {flex-basis:100%;width:100%;}
+  .speaker-field {display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;}
+  .speaker-field input {min-width:0;flex:1;font-size:16px;}
+  body.capture-keyboard {overflow:hidden;}
+  body.capture-keyboard #composer {position:fixed;z-index:100;top:var(--capture-top,0px);left:0;right:0;height:var(--capture-height);box-sizing:border-box;background:var(--card);padding:12px 16px;display:flex;flex-direction:column;}
+  body.capture-keyboard #composer .capture {flex:1;min-height:60px;}
+  body.capture-keyboard #composer #draft {flex:1;min-height:40px;overflow:auto;}
+  body.capture-keyboard #composer .cap-attach {max-height:35%;overflow:auto;flex-shrink:0;}
+  body.capture-keyboard .cap-dest {margin:0 0 8px;}
+  body.capture-keyboard .capture-end {flex-shrink:0;}
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -662,16 +688,17 @@
 
 
 
+  <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="section-row" id="sectionRow"></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search stuff, questions, sermons…" autocomplete="off" />
   </div>
   <div id="searchOut"></div>
 
-  <span class="cap-dest" id="capDest">capture → stuff</span>
+  <section id="composer" aria-label="Capture"><span class="cap-dest" id="capDest">capture → stuff</span>
   <div class="capture">
     <textarea id="draft" rows="3"></textarea>
-    <button class="add-btn" id="addBtn">Add</button>
+    <button class="add-btn" id="addBtn">Save</button>
   </div>
   <div class="cap-attach">
     <div class="ref-line cap-refs" id="capRefs"></div>
@@ -679,6 +706,7 @@
     <div class="ref-line cap-refs" id="capGrat"></div>
   </div>
 
+  <div class="capture-end"><span id="captureStatus" role="status"></span><button id="captureDone">Done</button></div></section>
   <div class="wisdom" id="wisdom" style="display:none"></div>
 
   <div id="copyToast" class="copy-toast">copied</div>
@@ -1043,6 +1071,7 @@
   var APP_VERSION = "v1.4.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
+  var workspaceMode = "capture";
   var tagEditing = null;
   var textEditing = null;
   var expandedBit = null;
@@ -1497,59 +1526,50 @@
     return row;
   }
 
-  // The speaker row, sitting under the scripture row on an open card.
-  var voiceEditing = null;
+  // Contributor edits are local to this entry, with explicit save/cancel.
   function buildVoiceLine(x) {
     var row = el("div", "ref-line voice-line");
-    var voices = entryVoices(x);
-    voices.forEach(function (v) {
+    entryVoices(x).forEach(function(v) {
       var chip = el("button", "ref-chip voice-chip", v);
-      chip.title = "Everything you've written quoting " + v;
-      chip.onclick = function (e) { e.stopPropagation(); openVoiceView(v); };
+      chip.onclick = function(e) { e.stopPropagation(); openVoiceView(v); };
       row.appendChild(chip);
-      if (voiceEditing === x.id) {
-        var drop = el("button", "ref-drop", "✕");
-        drop.onmousedown = function (ev) { ev.preventDefault(); };
-        drop.title = "Remove this speaker";
-        drop.onclick = function (e) {
-          e.stopPropagation();
-          dropVoice(x, v);
-          save(); render();
-        };
-        row.appendChild(drop);
-      }
     });
-    if (voiceEditing === x.id) {
-      var input = el("input", "ref-input voice-input");
-      input.placeholder = "Elder Holland";
-      var commitVoice = function () {
-        var val = input.value.trim();
-        if (val) addVoiceFromInput(x, val);
-        voiceEditing = null;
-        save(); render();
+    var edit = el("button", "ref-add", entryVoices(x).length ? "Edit speakers" : "+ speaker");
+    edit.onclick = function(e) {
+      e.stopPropagation();
+      edit.hidden = true;
+      var originals = entryVoices(x).slice();
+      var fields = el("div", "speaker-fields");
+      row.appendChild(fields);
+      function field(value) {
+        var line = el("div", "speaker-field");
+        var input = el("input", "ref-input voice-input");
+        input.value = value; input.placeholder = "Speaker name";
+        input.setAttribute("aria-label", "Speaker name");
+        var remove = el("button", "ref-add", "Remove");
+        remove.onclick = function(ev) { ev.stopPropagation(); line.remove(); };
+        line.appendChild(input); line.appendChild(remove); fields.appendChild(line);
+        var suggestions = el("div", "voice-suggest"); line.appendChild(suggestions);
+        attachVoiceSuggest(input, suggestions, function(){ return []; }, function(name){input.value=name; suggestions.innerHTML="";});
+        return input;
+      }
+      originals.forEach(field);
+      if (!originals.length) field("");
+      var more = el("button", "ref-add", "+ speaker");
+      more.onclick = function(ev){ev.stopPropagation(); field("").focus();};
+      var done = el("button", "ref-add", "Save speakers");
+      var cancel = el("button", "ref-add", "Cancel");
+      function refresh(){ row.replaceWith(buildVoiceLine(x)); }
+      done.onclick = function(ev){
+        ev.stopPropagation(); x.voices=[];
+        fields.querySelectorAll("input").forEach(function(i){if(i.value.trim()) addVoiceFromInput(x,i.value);});
+        x.touched=Date.now(); save(); refresh();
       };
-      input.onkeydown = function (e) {
-        if (e.key === "Enter") commitVoice();
-        if (e.key === "Escape") { voiceEditing = null; render(); }
-      };
-      input.onblur = commitVoice;
-      row.appendChild(input);
-      var sug = el("div", "voice-suggest");
-      row.appendChild(sug);
-      attachVoiceSuggest(input, sug,
-        function () { return entryVoices(x); },
-        function (name) {
-          addVoiceFromInput(x, name);
-          voiceEditing = null;
-          save(); render();
-        });
-      setTimeout(function () { input.focus(); }, 0);
-    } else {
-      var add = el("button", "ref-add", voices.length ? "+" : "+ speaker");
-      add.title = "Attach who said it";
-      add.onclick = function (e) { e.stopPropagation(); voiceEditing = x.id; render(); };
-      row.appendChild(add);
-    }
+      cancel.onclick = function(ev){ev.stopPropagation(); refresh();};
+      row.appendChild(more); row.appendChild(done); row.appendChild(cancel);
+      fields.querySelector("input").focus();
+    };
+    row.appendChild(edit);
     return row;
   }
 
@@ -1834,6 +1854,15 @@
   };
 
   function render() {
+    if (stageFilter !== "home") workspaceMode = "notebook";
+    document.body.dataset.mode = workspaceMode;
+    document.querySelectorAll("[data-mode]").forEach(function(btn) {
+      if (btn.tagName === "BUTTON") btn.setAttribute("aria-pressed", String(btn.dataset.mode === workspaceMode));
+    });
+    document.getElementById("composer").hidden = workspaceMode === "notebook";
+    document.getElementById("sectionRow").hidden = workspaceMode !== "notebook";
+    document.getElementById("addBtn").textContent = workspaceMode === "write" ? "Save & develop" : "Save";
+
     document.body.classList.toggle("home-view", stageFilter === "home");
 
     // section row
@@ -1844,13 +1873,13 @@
       btn.appendChild(el("span", "sc-label", label));
       btn.appendChild(el("span", "sc-count", String(count)));
       btn.onclick = function () {
-        stageFilter = stageFilter === key ? "home" : key;
+        stageFilter = key;
         setOpen = null;
         render();
       };
       srow.appendChild(btn);
     }
-    sectionCard("pool", "stuff", (state.truths || []).length);
+    sectionCard("pool", "truths", (state.truths || []).length);
     sectionCard("bit", "questions", state.bits.length);
     sectionCard("sets", "sermons", (state.sets || []).length);
     sectionCard("daily3", "daily 3", "✓");
@@ -1863,9 +1892,10 @@
     if (typeof syncAutoRefsLabel === "function") syncAutoRefsLabel();
     var searchRow = document.getElementById("searchRow");
     var searchOut = document.getElementById("searchOut");
-    searchRow.style.display = stageFilter === "home" ? "" : "none";
-    document.getElementById("wisdom").style.display = stageFilter === "home" ? "" : "none";
-    if (stageFilter !== "home") searchOut.innerHTML = "";
+    searchRow.style.display = workspaceMode === "notebook" ? "" : "none";
+    renderSearch();
+    document.getElementById("wisdom").style.display = "none";
+    if (workspaceMode !== "notebook") searchOut.innerHTML = "";
 
     var _d3=document.getElementById("d3Host");
     if (stageFilter === "daily3") {
@@ -1884,7 +1914,7 @@
       document.getElementById("list").innerHTML = "";
       capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex"; capGratRow.style.display = "flex";
       capDest.style.display = "";
-      capDest.textContent = "capture → stuff";
+      capDest.textContent = workspaceMode === "write" ? "Start a thought, then develop it" : "Capture";
       renderSearch();
       return;
     }
@@ -1894,7 +1924,7 @@
       if (stageFilter === "pool") {
         capWrap.style.display = ""; capRefsRow.style.display = "flex"; capVoicesRow.style.display = "flex"; capGratRow.style.display = "flex";
         capDest.style.display = "";
-        capDest.textContent = "capture → stuff";
+        capDest.textContent = workspaceMode === "write" ? "Start a thought, then develop it" : "Capture";
         renderTruths();
       } else {
         capWrap.style.display = "none"; capRefsRow.style.display = "none"; capVoicesRow.style.display = "none"; capGratRow.style.display = "none";
@@ -2302,7 +2332,39 @@
     draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
     save(); render();
   }
-  document.getElementById("addBtn").onclick = addBit;
+  document.getElementById("addBtn").onmousedown = function(e){e.preventDefault();};
+  document.getElementById("addBtn").onclick = function(){
+    if (!draft.value.trim()) return;
+    // Commit an unfinished attachment before saving the entry.
+    document.querySelectorAll("#composer .ref-input").forEach(function(input){ if(input.onblur) input.onblur(); });
+    if(capRefEditing) return;
+    addBit();
+    document.getElementById("captureStatus").textContent = "Saved";
+    if(workspaceMode === "write") openWorkbench(state.truths[0].id, "truth");
+    else draft.focus({preventScroll:true});
+  };
+  document.querySelectorAll(".main-modes button").forEach(function(btn){
+    btn.onclick=function(){
+      workspaceMode=btn.dataset.mode;
+      stageFilter=workspaceMode === "notebook" ? "pool" : "home";
+      render();
+    };
+  });
+  document.getElementById("captureDone").onclick=function(){document.activeElement.blur();};
+  document.getElementById("capGrat").addEventListener("mousedown",function(e){e.preventDefault();});
+  draft.addEventListener("input",function(){document.getElementById("captureStatus").textContent="";});
+  function syncCaptureViewport(){
+    var vv=window.visualViewport;
+    var composer=document.getElementById("composer");
+    var focused=composer.contains(document.activeElement);
+    var open=focused && vv && window.innerHeight-vv.height>100;
+    document.body.classList.toggle("capture-keyboard",!!open);
+    if(vv){ composer.style.setProperty("--capture-height",vv.height+"px"); composer.style.setProperty("--capture-top",vv.offsetTop+"px"); }
+  }
+  if(window.visualViewport){visualViewport.addEventListener("resize",syncCaptureViewport);visualViewport.addEventListener("scroll",syncCaptureViewport);}
+  document.addEventListener("focusin",syncCaptureViewport);
+  document.addEventListener("focusout",function(){setTimeout(syncCaptureViewport,0);});
+
   renderCapRefs();
   renderCapVoices();
   renderCapGrat();
@@ -2613,7 +2675,7 @@
       host.appendChild(r);
     }
     row("scripture", entryRefs(b).map(refLabel), "wb-att-ref");
-    row("said by", entryVoices(b).slice(), "wb-att-voice");
+    host.appendChild(buildVoiceLine(b));
     row("tags", (b.tags || []).slice(), "wb-att-tag");
     if (b.grateful) row("", ["❦ gratitude"], "wb-att-grat");
   }
@@ -3678,7 +3740,7 @@
   function renderSearch() {
     var out = document.getElementById("searchOut");
     out.innerHTML = "";
-    if (stageFilter !== "home") return;
+    if (workspaceMode !== "notebook") return;
     var box = document.getElementById("searchBox");
     var q = box.value.trim().toLowerCase();
     if (!q) {
@@ -3753,6 +3815,7 @@
   searchBoxEl.onblur = function () { searchFocused = false; setTimeout(renderSearch, 150); };
   document.querySelector(".bannerband").style.cursor = "pointer";
   document.querySelector(".bannerband").onclick = function () {
+    workspaceMode = "capture";
     stageFilter = "home";
     setOpen = null;
     render();
