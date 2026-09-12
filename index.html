@@ -841,7 +841,7 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="insightBtn">Insights</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search stuff, questions, sermons…" autocomplete="off" />
   </div>
@@ -1222,7 +1222,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.5.0";
+  var APP_VERSION = "v1.5.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var workspaceMode = "capture";
@@ -2479,6 +2479,8 @@
   var capVoiceEditing = false;
   // Gratitude is a stamp, not a field — no value, no typing. Tap it on, tap
   // it off; it just rides along with the entry.
+  var pendingInsight = false;
+  function isInsight(entry){return (entry.tags||[]).some(function(t){return t.toLowerCase()==="insight";});}
   var pendingGrateful = false;
   function renderCapGrat() {
     var row = document.getElementById("capGrat");
@@ -2487,6 +2489,9 @@
     btn.title = "Mark this as a gratitude";
     btn.onclick = function () { pendingGrateful = !pendingGrateful; renderCapGrat(); };
     row.appendChild(btn);
+    var insight=el("button","ref-add grat-btn"+(pendingInsight ? " on" : ""),pendingInsight ? "✓ Insight" : "Insight");
+    insight.setAttribute("aria-pressed",String(pendingInsight));
+    insight.onclick=function(){pendingInsight=!pendingInsight;renderCapGrat();};row.appendChild(insight);
   }
   function renderCapVoices() {
     var row = document.getElementById("capVoices");
@@ -2549,11 +2554,12 @@
       if (!state.truths) state.truths = [];
       var t0 = { id: Date.now().toString(36), text: text, created: Date.now(), refs: refs, voices: voices };
       if (grateful) t0.grateful = true;
+      if (pendingInsight) t0.tags=["insight"];
       state.truths.unshift(t0);
       draft.value = "";
       pendingRefs = []; capRefEditing = false; renderCapRefs();
       pendingVoices = []; capVoiceEditing = false; renderCapVoices();
-      pendingGrateful = false; renderCapGrat();
+      pendingGrateful = false; pendingInsight = false; renderCapGrat();
       save(); render();
       return;
     }
@@ -2567,11 +2573,12 @@
       statusAt: Date.now()
     };
     if (grateful) b0.grateful = true;
+    if (pendingInsight) b0.tags.push("insight");
     state.bits.unshift(b0);
     draft.value = "";
     pendingRefs = []; capRefEditing = false; renderCapRefs();
     pendingVoices = []; capVoiceEditing = false; renderCapVoices();
-    pendingGrateful = false; renderCapGrat();
+    pendingGrateful = false; pendingInsight = false; renderCapGrat();
     draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
     save(); render();
   }
@@ -2992,6 +2999,13 @@
     function paintGratitude(){gratitude.textContent=b.grateful ? "✓ Gratitude" : "Gratitude";gratitude.setAttribute("aria-pressed",String(!!b.grateful));}
     gratitude.onclick=function(){if(b.grateful)delete b.grateful;else b.grateful=true;changed();paintGratitude();};
     paintGratitude();host.appendChild(gratitude);
+    var insight=el("button","wb-gratitude",isInsight(b) ? "✓ Insight" : "Insight");
+    insight.setAttribute("aria-pressed",String(isInsight(b)));
+    insight.onclick=function(){
+      if(isInsight(b))b.tags=(b.tags||[]).filter(function(t){return t.toLowerCase()!=="insight";});
+      else {if(!b.tags)b.tags=[];b.tags.push("insight");}
+      changed();renderWbAttached(b);
+    };host.appendChild(insight);
   }
   function syncWorkbenchViewport(){
     var overlay=document.getElementById("workbenchOverlay"), vv=window.visualViewport;
@@ -3338,14 +3352,16 @@
         : "Nothing marked yet \u2014 attach a reference with + scripture while you write.";
 
     } else {
-      title.textContent = "Hand of God";
-      var grat = allEntries().filter(function (e) { return e.grateful; })
+      title.textContent = kind === "insight" ? "Insights" : "Hand of God";
+      var grat = allEntries().filter(function (e) { return kind === "insight" ? isInsight(e) : e.grateful; })
         .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
       groups = [{ name: null, items: grat }];
       note.textContent = grat.length
         ? grat.length + (grat.length === 1 ? " moment" : " moments")
         : "Nothing marked yet \u2014 tap + gratitude while you write, or run \ud83d\udd6f\ufe0f prepare.";
     }
+
+    if(kind === "insight") note.textContent=grat.length ? grat.length+" insight"+(grat.length===1?"":"s") : "Mark an entry as Insight to find it here.";
 
     groups.forEach(function (g) {
       if (!g.items.length) return;
@@ -3381,6 +3397,7 @@
   }
   document.getElementById("voicesBtn").onclick = function () { openBrowse("voices"); };
   document.getElementById("refsBtn").onclick = function () { openBrowse("refs"); };
+  document.getElementById("insightBtn").onclick = function(){openBrowse("insight");};
   document.getElementById("gratBtn").onclick = function () { openBrowse("grat"); };
   document.getElementById("browseClose").onclick = function () {
     browseReturn = null;
