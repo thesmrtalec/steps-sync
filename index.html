@@ -776,6 +776,47 @@
   #composer .cap-attach .voice-suggest {border:0;padding:0;gap:8px;justify-content:flex-start;min-width:0;scroll-padding-inline:2px;}
   #composer .cap-attach .voice-pick {flex:0 0 auto;min-height:40px;max-width:100%;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--rule);border-radius:6px;background:var(--card);color:var(--ink);font:14px var(--serif);padding:6px 10px;}
 
+  body:not([data-mode="notebook"]) .notebook-rail {display:none;}
+  /* Wide layouts are isolated from portrait phones. */
+  @media (min-width: 1000px), (min-width: 700px) and (orientation: landscape) {
+    .wrap {max-width:1240px;padding:0 32px 32px;}
+    .bannerband {padding:20px 0 16px;}
+    .main-modes {margin:16px 0 24px;}
+    body[data-mode="capture"] #composer:not([hidden]) {display:grid;grid-template-columns:minmax(0,1fr) 240px;grid-template-rows:auto 1fr auto;gap:12px 28px;}
+    body[data-mode="capture"] #composer .cap-dest {grid-column:1/-1;}
+    body[data-mode="capture"] #composer .capture {grid-column:1;grid-row:2/4;}
+    body[data-mode="capture"] #composer #draft {min-height:clamp(220px,48vh,520px);}
+    body[data-mode="capture"] #composer .cap-attach {grid-column:2;grid-row:2;}
+    body[data-mode="capture"] #composer .capture-end {grid-column:2;grid-row:3;}
+    body[data-mode="notebook"] .wrap {display:grid;grid-template-columns:220px minmax(0,1fr);column-gap:32px;align-content:start;}
+    body[data-mode="notebook"] .bannerband,body[data-mode="notebook"] .main-modes,body[data-mode="notebook"] .backup {grid-column:1/-1;}
+    body[data-mode="notebook"] .notebook-rail {grid-column:1;grid-row:3/8;align-self:start;}
+    body[data-mode="notebook"] #sectionRow {grid-column:1;grid-row:3;display:flex;flex-direction:column;}
+    body[data-mode="notebook"] #notebookTools {grid-column:1;grid-row:4/8;align-self:start;flex-direction:column;align-items:flex-start;}
+    body[data-mode="notebook"] #searchRow {grid-column:2;grid-row:3;align-self:start;}
+    body[data-mode="notebook"] #searchOut {grid-column:2;grid-row:4;}
+    body[data-mode="notebook"] #list {grid-column:2;grid-row:5;min-width:0;}
+    body[data-mode="notebook"] #d3Host {grid-column:2;grid-row:5;min-width:0;}
+    body[data-mode="notebook"] #empty {grid-column:2;grid-row:6;}
+    .study-panel {display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,2fr);grid-template-rows:auto auto 1fr auto;gap:12px 32px;min-height:420px;}
+    .study-choices {grid-column:1;grid-row:1;flex-wrap:wrap;}
+    .study-original {grid-column:1;grid-row:2;}
+    .study-prompt {grid-column:1;grid-row:3;align-self:start;}
+    .study-prompts {grid-column:1;grid-row:4;align-self:end;}
+    .study-writing {grid-column:2;grid-row:1/4;min-height:360px;}
+    .study-footer {grid-column:2;grid-row:4;}
+    #workbenchOverlay .notes-inner {max-width:1200px;display:grid;grid-template-columns:minmax(0,1fr) 260px;grid-template-rows:auto 1fr auto;gap:12px 24px;}
+    #workbenchOverlay .notes-head {grid-column:1/-1;}
+    #workbenchOverlay .wb-writing {grid-column:1;grid-row:2;}
+    #workbenchOverlay .wb-details {grid-column:2;grid-row:2;max-height:none;margin-top:0;}
+    #workbenchOverlay .wb-meta {grid-column:1/-1;grid-row:3;}
+    .notes-inner {max-width:1000px;}
+    body.capture-keyboard #composer:not([hidden]) {max-width:1240px;grid-template-columns:minmax(0,1fr) 220px;grid-template-rows:auto 1fr auto;gap:8px 20px;}
+    body.capture-keyboard #composer #draft {min-height:0;}
+    .study-panel.study-typing {display:flex;max-width:1000px;min-height:0;}
+    #workbenchOverlay.wb-typing .notes-inner {display:flex;}
+  }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -799,8 +840,8 @@
 
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
-  <div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div>
+  <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search stuff, questions, sermons…" autocomplete="off" />
   </div>
@@ -1181,7 +1222,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.4.0";
+  var APP_VERSION = "v1.5.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var workspaceMode = "capture";
@@ -1219,6 +1260,11 @@
     state.notesPin = data.notesPin || null;
     state.anchors = data.anchors || [];
     state.creed = data.creed || null;
+    // Persistent feature fields must be registered here and round-trip tested.
+    state.daily3 = data.daily3 ? JSON.parse(JSON.stringify(data.daily3)) : {day:todayKeyStr(),picks:[],going:false};
+    state.daily3.day = d3DateKey(state.daily3.day) || todayKeyStr();
+    state.d3History = d3MigrateHistory(data.d3History || {});
+    state.d3Seeds = data.d3Seeds ? JSON.parse(JSON.stringify(data.d3Seeds)) : {};
     state.updatedAt = data.updatedAt || 0;
   }
   function load() {
@@ -2076,7 +2122,7 @@
       };
       srow.appendChild(btn);
     }
-    sectionCard("pool", "truths", (state.truths || []).length);
+    sectionCard("pool", "entries", (state.truths || []).length);
     sectionCard("bit", "questions", state.bits.length);
     sectionCard("sets", "sermons", (state.sets || []).length);
     sectionCard("daily3", "daily 3", "✓");
@@ -3249,7 +3295,7 @@
   // once, grouped, so you can see who you keep returning to and what you\'ve
   // marked. Everything is derived — no new fields.
   function allEntries() {
-    return (state.truths || []).concat(state.questions || []);
+    return (state.truths || []).concat(state.bits || []);
   }
   var browseOpenGroups = {}, browseKindNow = null, browseReturn = null;
   function openBrowse(kind) {
@@ -3324,7 +3370,7 @@
         row.onclick = function () {
           browseReturn = kind;   // so closing the entry brings you back here
           document.getElementById("browseOverlay").classList.remove("open");
-          openWorkbench(e.id, (state.questions || []).indexOf(e) !== -1 ? "bit" : "truth");
+          openWorkbench(e.id, (state.bits || []).indexOf(e) !== -1 ? "bit" : "truth");
         };
         items.appendChild(row);
       });
@@ -3651,7 +3697,7 @@
     list.innerHTML = "";
     var all = state.truths || [];
     if (all.length === 0) {
-      list.appendChild(el("p", "empty", "Nothing true yet. Suspicious."));
+      list.appendChild(el("p", "empty", "Nothing captured yet."));
       return;
     }
     list.appendChild(buildLensRow(all));
@@ -4849,7 +4895,19 @@
     state.d3Seeds[key].push(text);
   }
 
-  function d3Today(){ var d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+  function d3DateKey(value){
+    if(typeof value === "string" && /^\d{4}-\d{1,2}-\d{1,2}$/.test(value))return value;
+    var ts=Number(value);return ts && Number.isFinite(ts) ? dayKeyOf(ts) : null;
+  }
+  function d3MigrateHistory(history){
+    var out={};
+    Object.keys(history).forEach(function(key){
+      var day=d3DateKey(key);if(!day || !Array.isArray(history[key]))return;
+      out[day]=(out[day]||[]).concat(history[key]);
+    });
+    return out;
+  }
+  function d3Today(){ return todayKeyStr(); }
   function d3(){
     if(!state.daily3) state.daily3={ day:0, picks:[], going:false };
     if(state.daily3.day!==d3Today()){ state.daily3={ day:d3Today(), picks:[], going:false }; }
@@ -4865,9 +4923,10 @@
   }
   // which hats haven't been TOUCHED in the last 7 days (by completion)
   function d3Neglected(){
-    var now=d3Today(), seen={};
+    var now=new Date(), seen={};
     for(var i=0;i<7;i++){
-      var day=String(now - i*86400000);
+      var date=new Date(now);date.setDate(date.getDate()-i);
+      var day=dayKeyOf(date.getTime());
       (state.d3History[day]||[]).forEach(function(k){ seen[k]=1; });
     }
     return HATS.filter(function(h){ return !seen[h.key]; });
@@ -4885,16 +4944,6 @@
     if(stillChoosing){
       var firstRound = !s.going;
       host.appendChild(el("div","d3-kicker", s.going ? "Go again \u2014 pick any hat, double up if you want" : "Which 3 hats matter most today?"));
-
-      // neglect nudge
-      var neg=d3Neglected();
-      if(neg.length && neg.length<7){
-        var names=neg.map(function(h){return h.label;});
-        var msg = names.length===1
-          ? names[0]+" hasn't come up all week."
-          : names.slice(0,3).join(", ")+(names.length>3?" and others":"")+" haven't come up all week.";
-        host.appendChild(el("div","d3-nudge",msg));
-      }
 
       // in go-again mode, count only the NEW (non-retired, not-yet-started) picks
       var live=s.picks.filter(function(p){return !p.started;});
