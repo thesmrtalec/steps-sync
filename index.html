@@ -817,6 +817,18 @@
     #workbenchOverlay.wb-typing .notes-inner {display:flex;}
   }
 
+  /* Four equal toolbar slots; gratitude and insight share a DOM wrapper only. */
+  #composer .cap-attach:not(:has(.ref-input)) {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:8px;align-items:start;}
+  #composer .cap-attach:not(:has(.ref-input)) #capRefs {grid-column:1;min-width:0;}
+  #composer .cap-attach:not(:has(.ref-input)) #capVoices {grid-column:2;min-width:0;}
+  #composer .cap-attach:not(:has(.ref-input)) #capGrat {grid-column:3/5;display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;}
+  #composer .cap-attach:not(:has(.ref-input)) .ref-add {width:100%;text-align:center;white-space:nowrap;padding:0;}
+  #composer .cap-attach:not(:has(.ref-input)) .ref-chip {max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+  @media (min-width:1000px), (min-width:700px) and (orientation:landscape) {
+    #composer .cap-attach:not(:has(.ref-input)) {grid-template-columns:repeat(2,minmax(0,1fr));}
+    #composer .cap-attach:not(:has(.ref-input)) #capGrat {grid-column:1/3;}
+  }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
