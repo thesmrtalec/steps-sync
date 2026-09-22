@@ -1858,6 +1858,21 @@
       navigator.clipboard.writeText(str).then(function () { flashCopied(); buzz(); }, function () {});
     }
   }
+  function clipboardEntryText(entry) {
+    if (!entry) return "";
+    var parts = [];
+    var body = (entry.text || "").trim();
+    if (body) parts.push(body);
+
+    var voices = entryVoices(entry).slice();
+    if (voices.length) parts.push("— " + voices.join(" · "));
+
+    var refs = syncRefs(entry).slice().sort(refSort);
+    if (refs.length) parts.push(refs.map(refLabel).join(" · "));
+
+    return parts.join("\n\n");
+  }
+
   function attachLongPressCopy(node, getText) {
     node.style.webkitUserSelect = "none";
     node.style.userSelect = "none";
@@ -2316,7 +2331,7 @@
         if (swipeOpenCard === card) { closeSwipe(); return; }
         expandedBit = isOpen ? null : b.id; render();
       };
-      attachLongPressCopy(p, function () { return b.text; });
+      attachLongPressCopy(p, function () { return clipboardEntryText(b); });
       card.appendChild(p);
 
       if (!isOpen) {
@@ -3834,7 +3849,7 @@
         if (swipeOpenCard === card) { closeSwipe(); return; }
         expandedTruth = isOpen ? null : t.id; render();
       };
-      attachLongPressCopy(p, function () { return t.text; });
+      attachLongPressCopy(p, function () { return clipboardEntryText(t); });
       card.appendChild(p);
 
       if (!isOpen) {
