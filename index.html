@@ -733,6 +733,11 @@
   .study-original {font-size:16px;color:var(--muted);}
   .study-original summary {cursor:pointer;padding:8px 0;}
   .study-original p {max-height:130px;overflow:auto;margin:6px 0;white-space:pre-wrap;color:var(--ink);}
+  .study-source-tabs {display:flex;gap:6px;margin:2px 0 0;}
+  .study-source-tab {background:transparent;border:1px solid var(--rule);border-radius:999px;padding:4px 11px;min-height:32px;font:11px var(--mono);letter-spacing:.04em;color:var(--muted);}
+  .study-source-tab.on {background:var(--accent);border-color:var(--accent);color:var(--onaccent);font-weight:700;}
+  .study-pb-quote {margin:10px 0 0;padding:11px 13px;border-left:3px solid var(--accent);background:var(--card);font:16px/1.5 var(--serif);color:var(--ink);}
+  .study-pb-kicker {display:block;margin-bottom:5px;font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
   .study-prompt {font:22px/1.35 var(--serif);margin:12px 0 0;}
   .study-prompts {display:flex;gap:20px;}
   .study-prompts button {background:transparent;border:0;padding:6px 0;min-height:44px;font:14px var(--serif);color:var(--muted);}
@@ -2059,6 +2064,31 @@
       "What would you like to ask God about this? Write the question before reaching for an answer."
     ]
   };
+  var pbPrompts = [
+    {q:"Always strive to and seek to be a disciple of our Lord and Savior, Jesus Christ.",p:"What would discipleship actually require of you today—not in theory, but in one decision?"},
+    {q:"Serve your family, serve your fellowman and you will be blessed to find joy and happiness.",p:"Who is close enough to you to serve today, and what would useful service look like instead of performative service?"},
+    {q:"Avoid pride but seek rather to be one who is humble and meek, like our Savior, one whose desires are to do the will of our Father in Heaven.",p:"Where is pride making something harder than it needs to be?"},
+    {q:"Use the many blessings that come from the Lord as they are intended. Remember where they come from.",p:"What have you been given lately, and what might it be for?"},
+    {q:"You should seek to be one who is a student of the gospel and a student of the scriptures.",p:"What are you currently pretending you already understand?"},
+    {q:"You will need to seek the Lord’s guidance and direction many times in your life.",p:"What are you trying to solve entirely by force that may need prayer, listening, or patience?"},
+    {q:"Yours is to be obedient. Yours is to work hard. Yours is to strive your best to listen to the spirit.",p:"Which of those three is the actual assignment in front of you right now: obey, work, or listen?"},
+    {q:"Our Father in Heaven would have you receive a good education.",p:"What do you need to learn next—not for credentials, but because it would make you more capable?"},
+    {q:"Your children will look to you for love, they will look to you to be taught the gospel of Jesus Christ, and they will look to you for testimony.",p:"What are your children learning from the version of you they are seeing this week?"},
+    {q:"You will be blessed with rich opportunities of service in Father in Heaven’s kingdom.",p:"What opportunity to serve is already in front of you that you may be treating as an interruption?"},
+    {q:"You will always be able to keep a proper perspective of life and be able to understand the things of God are the things that come first and all else is not as important.",p:"What has quietly become more important than it deserves to be?"},
+    {q:"Our Father in Heaven would have you focus your life around the temple and you would serve the Lord in His holy house.",p:"What would it mean for the temple to organize your life rather than simply appear on your calendar?"},
+    {q:"Go to the temple often to worship and to be with the Lord to feel of His strength, of His guidance, and the inspiration you need in your life.",p:"What guidance are you hungry enough for to deliberately make room to receive?"},
+    {q:"Your life of service will be one that will refine you, one that will purify you and one that will in every way help you accomplish your life’s work here in mortality.",p:"Where might the irritating part of service be the refining part?"}
+  ];
+  function studyPromptDeck(source,mode){
+    var general=(source ? studyPrompts.entry : studyPrompts.fresh).map(function(p){return {kind:"general",p:p};});
+    var pb=pbPrompts.map(function(x){return {kind:"pb",q:x.q,p:x.p};});
+    if(mode==="pb") return pb;
+    if(mode==="general") return general;
+    var mixed=[],n=Math.max(general.length,pb.length);
+    for(var i=0;i<n;i++){if(i<general.length)mixed.push(general[i]);if(i<pb.length)mixed.push(pb[i]);}
+    return mixed;
+  }
   var studyDrafts = {}, studyKey = "fresh";
   try { var storedStudy=JSON.parse(localStorage.getItem("goodplates-study-drafts")||"{}"); studyDrafts=storedStudy.drafts||{}; studyKey=storedStudy.key||"fresh"; } catch(e){}
   function storeStudyDrafts(){
@@ -2069,8 +2099,9 @@
     var entries=(state.truths||[]).concat(state.bits||[]);
     var source=studyKey === "fresh" ? null : entries.find(function(b){return b.id===studyKey;});
     if(studyKey!=="fresh" && !source) studyKey="fresh";
-    var draft=studyDrafts[studyKey] || (studyDrafts[studyKey]={text:"",prompt:0});
-    var prompts=source ? studyPrompts.entry : studyPrompts.fresh;
+    var draft=studyDrafts[studyKey] || (studyDrafts[studyKey]={text:"",prompt:0,promptSource:"all"});
+    if(!draft.promptSource)draft.promptSource="all";
+    var prompts=studyPromptDeck(source,draft.promptSource);
     var panel=el("section","study-panel");host.appendChild(panel);
     var choices=el("div","study-choices");
     var label=el("label",null,"Start with");label.htmlFor="studySource";choices.appendChild(label);
@@ -2078,12 +2109,26 @@
     entries.slice().sort(function(a,b){return (b.touched||b.created||0)-(a.touched||a.created||0);}).forEach(function(b){var opt=el("option",null,b.text.slice(0,100));opt.value=b.id;select.appendChild(opt);});
     select.value=studyKey;select.onchange=function(){studyKey=select.value;storeStudyDrafts();renderStudy(host);};choices.appendChild(select);panel.appendChild(choices);
     if(source){var original=el("details","study-original");original.appendChild(el("summary",null,"The entry"));original.appendChild(el("p",null,source.text));panel.appendChild(original);}
-    var prompt=el("p","study-prompt",prompts[draft.prompt % prompts.length]);prompt.id="studyPrompt";panel.appendChild(prompt);
+    var sourceTabs=el("div","study-source-tabs");
+    [["all","All"],["pb","PB"],["general","General"]].forEach(function(pair){
+      var b=el("button","study-source-tab"+(draft.promptSource===pair[0]?" on":""),pair[1]);
+      b.type="button";b.onclick=function(){draft.promptSource=pair[0];draft.prompt=0;draft.unguided=false;storeStudyDrafts();renderStudy(host);};sourceTabs.appendChild(b);
+    });
+    panel.appendChild(sourceTabs);
+    var quoteHost=el("div");panel.appendChild(quoteHost);
+    var prompt=el("p","study-prompt");prompt.id="studyPrompt";panel.appendChild(prompt);
+    function paintPrompt(){
+      prompts=studyPromptDeck(source,draft.promptSource);
+      if(!prompts.length)return;
+      var item=prompts[draft.prompt % prompts.length];quoteHost.innerHTML="";
+      if(item.kind==="pb" && !draft.unguided){var q=el("blockquote","study-pb-quote");q.appendChild(el("span","study-pb-kicker","Patriarchal blessing"));q.appendChild(document.createTextNode(item.q));quoteHost.appendChild(q);}
+      prompt.textContent=draft.unguided ? "Write what is on your heart." : item.p;
+    }
+    paintPrompt();
     var actions=el("div","study-prompts");
-    var next=el("button",null,"Another prompt");next.onclick=function(){draft.prompt=(draft.prompt+1)%prompts.length;prompt.textContent=prompts[draft.prompt];storeStudyDrafts();};actions.appendChild(next);
-    var free=el("button",null,"Just write");free.onclick=function(){prompt.textContent="Write what is on your heart.";draft.unguided=true;storeStudyDrafts();};actions.appendChild(free);
-    if(draft.unguided)prompt.textContent="Write what is on your heart.";
-    next.addEventListener("click",function(){draft.unguided=false;storeStudyDrafts();});panel.appendChild(actions);
+    var next=el("button",null,"Another prompt");next.onclick=function(){draft.unguided=false;draft.prompt=(draft.prompt+1)%prompts.length;storeStudyDrafts();paintPrompt();};actions.appendChild(next);
+    var free=el("button",null,"Just write");free.onclick=function(){draft.unguided=true;storeStudyDrafts();paintPrompt();};actions.appendChild(free);
+    panel.appendChild(actions);
     var area=el("textarea","notes-canvas study-writing");area.id="studyWriting";area.setAttribute("aria-label","Journal writing");area.setAttribute("aria-describedby","studyPrompt");area.placeholder="Start wherever you are…";area.value=draft.text;panel.appendChild(area);
     var footer=el("div","study-footer"),status=el("span","study-status");status.setAttribute("role","status");
     var keep=el("button","study-keep",source ? "Keep with entry" : "Keep in Notebook");keep.disabled=!draft.text.trim();
@@ -2095,7 +2140,9 @@
         source.workshop=(source.workshop ? source.workshop+"\n\n" : "")+text;
         source.touched=now;
       }else{
-        state.truths.unshift({id:"journal-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,7),text:text,created:now,touched:now,tags:[],refs:[],voices:[]});
+        var currentDeck=studyPromptDeck(source,draft.promptSource),currentItem=currentDeck[draft.prompt % currentDeck.length];
+        var autoTags=currentItem && currentItem.kind==="pb" ? ["pb"] : [];
+        state.truths.unshift({id:"journal-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,7),text:text,created:now,touched:now,tags:autoTags,refs:[],voices:[]});
       }
       save();draft.text="";area.value="";keep.disabled=true;storeStudyDrafts();status.textContent=source ? "Kept with entry" : "Kept in Notebook";area.focus({preventScroll:true});
     };
