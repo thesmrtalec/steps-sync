@@ -166,8 +166,8 @@
     cursor: pointer; padding: 0; }
   .swipe-kill { right: 0; background: var(--accent2); color: #fff; }
   .swipe-promote { left: 0; background: var(--accent); color: var(--onaccent); font-size: 12px; }
-  /* right side can hold two stacked actions (move across / send to sermon) —
-     unlike the bits app, both stuff and questions can reach sermons */
+  /* right side can hold two stacked actions (move across / send to talk / lesson) —
+     unlike the bits app, both stuff and questions can reach talks / lessons */
   .swipe-act-col { position: absolute; top: 0; bottom: 0; left: 0; width: 56px; display: flex; flex-direction: column; }
   .swipe-act-col .swipe-act { position: static; width: 100%; flex: 1; font-size: 10.5px; line-height: 1.2; padding: 2px; text-align: center; }
   .swipe-act-col .swipe-act:first-child { border-bottom: 1px solid rgba(0,0,0,.15); }
@@ -301,8 +301,8 @@
   .copy-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--page); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 60; }
   .copy-toast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
 
-  .sermon-pick-row { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--cardshadow); cursor: pointer; }
-  .sermon-pick-row p { flex: 1; margin: 0; font-size: 15px; color: var(--ink); }
+  .talkLesson-pick-row { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--cardshadow); cursor: pointer; }
+  .talkLesson-pick-row p { flex: 1; margin: 0; font-size: 15px; color: var(--ink); }
   .tag-cloud { display: flex; flex-wrap: wrap; gap: 9px; padding-top: 6px; }
   .section-row { display: flex; gap: 10px; margin: 2px 0 14px; }
   .section-card { flex: 1; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 9px 12px 7px; text-align: left; cursor: pointer; box-shadow: var(--cardshadow); }
@@ -471,15 +471,6 @@
   .note-card { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 9px; padding: 12px 14px; margin-bottom: 9px; box-shadow: var(--cardshadow); cursor: pointer; }
   .note-card p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .note-card .note-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 7px; display: flex; align-items: center; }
-  .notes-lock { display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; }
-  .lock-face { text-align: center; width: 100%; max-width: 280px; }
-  .lock-emoji { font-size: 34px; margin-bottom: 10px; }
-  .lock-msg { font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 0 0 16px; letter-spacing: .04em; }
-  .lock-input { width: 100%; box-sizing: border-box; text-align: center; letter-spacing: .5em; font-size: 22px; font-family: var(--mono); padding: 12px; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); color: var(--ink); outline: none; }
-  .lock-input:focus { border-color: var(--accent); }
-  .lock-btns { margin-top: 14px; }
-  .lock-go { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-family: var(--mono); font-size: 14px; cursor: pointer; }
-  .lock-manage { margin-top: 18px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; text-decoration: underline; cursor: pointer; }
   .note-share { margin-left: auto; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 0 4px; }
   .note-share:hover { color: var(--accent2); }
   .note-del { margin-left: 10px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 0 4px; }
@@ -620,7 +611,7 @@
      flex column, so a tall child (three month grids, a long vault) overflows
      with nowhere to go — which reads as stuttery, snapping scroll on iOS.
      overscroll-behavior stops the gesture chaining to the page underneath. */
-  #habitBody, #boneList, #refList, #voiceList, #sermonPickList {
+  #habitBody, #boneList, #refList, #voiceList, #talkLessonPickList {
     flex: 1 1 auto; min-height: 0; overflow-y: auto;
     -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   #habitBody { padding-top: 4px; }
@@ -727,6 +718,25 @@
   .write-entry-text {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font:22px/1.35 'Caveat','Bradley Hand',cursive;}
   .write-entry-status {display:block;font:14px var(--serif);color:var(--muted);margin-top:8px;}
 
+  .write-mode-tabs {display:flex;gap:8px;margin:0 0 16px;border-bottom:1px solid var(--rule);}
+  .write-mode-tab {background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 4px 9px;min-height:44px;font:15px var(--serif);color:var(--muted);}
+  .write-mode-tab.on {color:var(--ink);border-bottom-color:var(--accent);font-weight:700;}
+  .journal-panel {display:flex;flex-direction:column;gap:10px;}
+  .journal-headline {display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  .journal-title {font:24px var(--serif);margin:0;color:var(--ink);}
+  .journal-date {font:11px var(--mono);color:var(--faint);letter-spacing:.06em;text-transform:uppercase;}
+  .journal-help {font:15px/1.5 var(--serif);color:var(--muted);margin:0 0 4px;}
+  .journal-writing {width:100%;min-height:360px;resize:vertical;box-shadow:none;}
+  .journal-actions {display:flex;align-items:center;gap:12px;}
+  .journal-save {min-height:44px;background:var(--accent);color:var(--onaccent);border:0;border-radius:8px;padding:10px 16px;font:14px var(--serif);}
+  .journal-save:disabled {opacity:.45;cursor:default;}
+  .journal-cancel {background:transparent;border:0;color:var(--muted);font:14px var(--serif);padding:10px 0;}
+  .journal-status {font:14px var(--serif);color:var(--muted);margin-left:auto;}
+  .journal-list {margin-top:18px;padding-top:16px;border-top:1px solid var(--rule);}
+  .journal-list-label {font:10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .journal-panel.study-typing {position:fixed;z-index:105;left:0;right:0;top:var(--study-top);height:var(--study-height);max-width:620px;margin:0 auto;padding:10px 20px;background:var(--page);gap:6px;}
+  .journal-panel.study-typing .journal-writing {flex:1;min-height:60px;height:0;resize:none;}
+  .journal-panel.study-typing .journal-help,.journal-panel.study-typing .journal-list {display:none;}
   .study-panel {display:flex;flex-direction:column;gap:10px;}
   .study-choices {display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);}
   .study-choices select {flex:1;min-width:0;min-height:44px;border:0;border-bottom:1px solid var(--rule);border-radius:0;background:transparent;color:var(--ink);font:16px var(--serif);}
@@ -736,8 +746,8 @@
   .study-source-tabs {display:flex;gap:6px;margin:2px 0 0;}
   .study-source-tab {background:transparent;border:1px solid var(--rule);border-radius:999px;padding:4px 11px;min-height:32px;font:11px var(--mono);letter-spacing:.04em;color:var(--muted);}
   .study-source-tab.on {background:var(--accent);border-color:var(--accent);color:var(--onaccent);font-weight:700;}
-  .study-pb-quote {margin:10px 0 0;padding:11px 13px;border-left:3px solid var(--accent);background:var(--card);font:16px/1.5 var(--serif);color:var(--ink);}
-  .study-pb-kicker {display:block;margin-bottom:5px;font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
+  .study-guidance-quote {margin:10px 0 0;padding:11px 13px;border-left:3px solid var(--accent);background:var(--card);font:16px/1.5 var(--serif);color:var(--ink);}
+  .study-guidance-kicker {display:block;margin-bottom:5px;font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);}
   .study-prompt {font:22px/1.35 var(--serif);margin:12px 0 0;}
   .study-prompts {display:flex;gap:20px;}
   .study-prompts button {background:transparent;border:0;padding:6px 0;min-height:44px;font:14px var(--serif);color:var(--muted);}
@@ -858,9 +868,9 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="insightBtn">Insights</button><button class="notes-tab" id="notesOpen">Notes</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="insightBtn">Insights</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
-    <input type="search" id="searchBox" placeholder="search stuff, questions, sermons…" autocomplete="off" />
+    <input type="search" id="searchBox" placeholder="search stuff, questions, talks / lessons…" autocomplete="off" />
   </div>
   <div id="searchOut"></div>
 
@@ -915,7 +925,6 @@
     <div class="util-menu" id="utilMenu" style="display:none">
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
-      <button id="pinManage">Journal PIN lock</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
       <input type="file" id="importFile" accept=".json" style="display:none" />
@@ -982,7 +991,7 @@
       <h2>The Good Plates</h2>
       <p class="wsub">small plates — a place for the little things, synced across your devices</p>
       <div class="welcome-row"><span class="wnum">1</span><p><b>Make an account</b> — email and password, just to sync your devices.</p></div>
-      <div class="welcome-row"><span class="wnum">2</span><p><b>Capture stuff</b> — tender mercies, study insights, anything worth keeping — and work it into questions and sermons.</p></div>
+      <div class="welcome-row"><span class="wnum">2</span><p><b>Capture stuff</b> — tender mercies, study insights, anything worth keeping — and work it into questions and talks / lessons.</p></div>
       <div class="welcome-row"><span class="wnum">3</span><p><b>Add to Home Screen</b> for the full-screen app. (iPhone: Share → Add to Home Screen.)</p></div>
       <button class="welcome-go" id="welcomeGo">Get started</button>
     </div>
@@ -1013,96 +1022,88 @@
         <div class="tourc-card">
           <div class="tourc-shot">
             <div class="mock">
-              <div class="mock-banner"><div class="mock-title">The Good Plates</div><div class="mock-sub">catch it now · preach it later</div></div>
-              <div class="mock-card"><p>“The Lord doesn't need people of extraordinary ability so much as of dependable, ordinary ability.”</p><div class="mock-cue">✝ Ether 12:27 · 👑 Neal A. Maxwell</div></div>
-              <div class="mock-card"><p>Ask them: when did you last feel Him near?</p></div>
+              <div class="mock-banner"><div class="mock-title">The Good Plates</div><div class="mock-sub">catch it now · use it later</div></div>
+              <div class="mock-card"><p>A thought worth keeping from conference.</p><div class="mock-cue">Alma 32:21 · speaker attached</div></div>
+              <div class="mock-card"><p>A question I want to come back to later.</p></div>
             </div>
           </div>
-          <h2 class="tourc-h">Catch it now, preach it later</h2>
-          <p class="tourc-p">Every truth, tender mercy, or question worth keeping goes here — so it's waiting for you when it's time to build a talk.</p>
-        </div>
-
-        <div class="tourc-card">
-          <div class="tourc-shot">
-            <div class="mock">
-              <div class="mock-tabs"><span class="mock-tab on">stuff</span><span class="mock-tab">questions</span><span class="mock-tab">sermons</span></div>
-              <div class="mock-row">
-                <div class="mock-box">Faith isn't the absence of doubt — it's what you do with it…</div>
-                <div class="mock-add">ADD</div>
-              </div>
-            </div>
-          </div>
-          <h2 class="tourc-h">1 · Catch it</h2>
-          <p class="tourc-p">Type it in the box and hit <b>add</b>. The tab you're on — <b>stuff</b> or <b>questions</b> — decides where it lands. That's the whole habit: write it down before it's gone.</p>
+          <h2 class="tourc-h">Catch it now, use it later</h2>
+          <p class="tourc-p">Save small things quickly, then come back when you have time to think, connect, write, or build a talk / lesson.</p>
         </div>
 
         <div class="tourc-card">
           <div class="tourc-shot">
             <div class="mock">
               <div class="mock-row">
-                <div class="mock-box">A line from this morning's study…</div>
-                <div class="mock-add">ADD</div>
+                <div class="mock-box">The part I don't want to forget…</div>
+                <div class="mock-add">SAVE</div>
               </div>
-              <div class="mock-attach"><span class="mock-chip">+ scripture</span><span class="mock-chip">+ speaker</span><span class="mock-chip">+ gratitude ❦</span></div>
+              <div class="mock-attach"><span class="mock-chip">+ scripture</span><span class="mock-chip">+ speaker</span><span class="mock-chip">+ gratitude</span></div>
             </div>
           </div>
-          <h2 class="tourc-h">2 · Keep it</h2>
-          <p class="tourc-p">Tap an entry to open it and add scriptures, thoughts, or where it leads. Mark <b>who said it</b> or <b>which verse</b> it ties to, and you can find it later by speaker or scripture.</p>
+          <h2 class="tourc-h">1 · Capture</h2>
+          <p class="tourc-p">Write the thought before it disappears. Add a scripture, speaker, or gratitude marker now if useful; otherwise just save it and keep listening.</p>
         </div>
 
         <div class="tourc-card">
           <div class="tourc-shot">
             <div class="mock">
-              <div class="mock-tabs"><span class="mock-tab">stuff</span><span class="mock-tab">questions</span><span class="mock-tab on">sermons</span></div>
-              <div class="mock-card"><p><span class="mock-grip">≡</span>Opening: the ordinary ability line</p></div>
-              <div class="mock-card"><p><span class="mock-grip">≡</span>The question about feeling Him near</p></div>
-              <div class="mock-card"><p><span class="mock-grip">≡</span>Close on Ether 12:27</p></div>
+              <div class="mock-tabs"><span class="mock-tab on">Guided</span><span class="mock-tab">Journal</span></div>
+              <div class="mock-card"><p>What would living this change in one ordinary interaction?</p></div>
+              <div class="mock-box" style="min-height:74px">Write long enough to discover what you actually think…</div>
             </div>
           </div>
-          <h2 class="tourc-h">3 · Preach it</h2>
-          <p class="tourc-p">Make a <b>sermon</b> and drag entries (the ≡ grip) into the order you want. It builds your reading list and voices automatically.</p>
+          <h2 class="tourc-h">2 · Write Now</h2>
+          <p class="tourc-p"><b>Guided</b> gives you a fresh page or starts from something you've saved. <b>Journal</b> is the long-form blank page for writing freely and keeping dated entries.</p>
         </div>
 
         <div class="tourc-card">
           <div class="tourc-shot">
-            <div class="mock-run">
-              <div class="rtxt">“The Lord doesn't need people of extraordinary ability…”</div>
-              <div class="rclock">0:42 · Ether 12:27</div>
+            <div class="mock">
+              <div class="mock-card"><p><b>The entry</b><br>A short thought from conference.</p></div>
+              <div class="mock-card"><p><b>Working notes</b><br>Connections, implications, questions, possible applications…</p></div>
+              <div class="mock-attach"><span class="mock-chip">tag</span><span class="mock-chip">scripture</span><span class="mock-chip">speaker</span></div>
+            </div>
+          </div>
+          <h2 class="tourc-h">3 · Workbench</h2>
+          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes, tags, scriptures, speakers, or gratitude as the idea grows.</p>
+        </div>
+
+        <div class="tourc-card">
+          <div class="tourc-shot">
+            <div class="mock">
+              <div class="mock-tabs"><span class="mock-tab on">Entries</span><span class="mock-tab">Questions</span><span class="mock-tab">Talks / lessons</span><span class="mock-tab">Daily 3</span></div>
+              <div class="mock-attach"><span class="mock-chip">Speakers</span><span class="mock-chip">Scriptures</span><span class="mock-chip">Gratitude</span><span class="mock-chip">Insights</span></div>
+            </div>
+          </div>
+          <h2 class="tourc-h">4 · Notebook</h2>
+          <p class="tourc-p">This is where the pile becomes useful. Browse entries and questions, collect material into talks / lessons, or open collections built from the details you've attached.</p>
+        </div>
+
+        <div class="tourc-card">
+          <div class="tourc-shot">
+            <div class="mock">
+              <div class="mock-card"><p><span class="mock-grip">≡</span>Opening thought</p></div>
+              <div class="mock-card"><p><span class="mock-grip">≡</span>Scripture + application</p></div>
+              <div class="mock-card"><p><span class="mock-grip">≡</span>Closing invitation</p></div>
             </div>
             <div style="text-align:center;margin-top:14px"><span class="mock-pill">▶ practice</span><span class="mock-pill ghost">↓ export pdf</span></div>
           </div>
-          <h2 class="tourc-h">Rehearse &amp; carry it</h2>
-          <p class="tourc-p"><b>Practice</b> runs it full-screen with a timer — tap a side to move, drag to read a long one. <b>Export pdf</b> gives you the whole thing to print or carry to the pulpit.</p>
+          <h2 class="tourc-h">5 · Build a talk / lesson</h2>
+          <p class="tourc-p">Pull in saved entries, arrange them, and keep the attached scriptures and speakers with the material. Practice full-screen when you want it, or export a PDF.</p>
         </div>
 
         <div class="tourc-card">
           <div class="tourc-shot">
             <div class="mock">
-              <div class="mock-foot">📊 <span>👑</span> 📖 🙏 🪨 🧭 🗝️</div>
+              <div class="mock-attach"><span class="mock-chip">Speakers</span><span class="mock-chip">Scriptures</span><span class="mock-chip">Gratitude</span><span class="mock-chip">Habits</span></div>
+              <div class="mock-attach"><span class="mock-chip">Light &amp; Truth</span><span class="mock-chip">Take stock</span><span class="mock-chip">Vault</span></div>
+              <div class="mock-card" style="margin-top:10px"><p>Swipe left to bury an entry. Restore it later from the Vault.</p></div>
             </div>
           </div>
-          <h2 class="tourc-h">The row along the bottom</h2>
-          <p class="tourc-p" style="max-width:340px;text-align:left">
-            <b>📊 Daily</b> — prayer &amp; habits.<br>
-            <b>👑 Speakers</b> — saved by who said it.<br>
-            <b>📖 Scriptures</b> — saved by verse.<br>
-            <b>🙏 Hand of God</b> — your gratitude moments.<br>
-            <b>🪨 Light &amp; Truth</b> — the few things you hold as true.<br>
-            <b>🧭 Take stock</b> — three quiet prompts.<br>
-            <b>🗝️ Vault</b> — buried entries; nothing's ever lost.
-          </p>
+          <h2 class="tourc-h">Find it again</h2>
+          <p class="tourc-p">Speaker and scripture collections are built from what you attach. The Notebook also holds gratitude, habits, Light &amp; Truth, Take stock, and the Vault. Sign in with the same account on each device to keep your data in sync.</p>
         </div>
-
-        <div class="tourc-card">
-          <div class="tourc-shot">
-            <div class="mock">
-              <div class="mock-card" style="margin:0"><p>Swipe ← to bury · swipe → for actions</p></div>
-            </div>
-          </div>
-          <h2 class="tourc-h">A couple last things</h2>
-          <p class="tourc-p">Swipe an entry <b>left</b> to bury it (it goes to the vault, not the trash). <b>Notes</b> is a blank page you can lock with a PIN. Sign in with the same email on every device and it all stays in step.</p>
-        </div>
-
       </div>
     </div>
     <div class="tourc-foot">
@@ -1152,33 +1153,6 @@
       <div class="wb-meta" id="wbMeta"></div>
     </div>
   </div>
-  <div class="notes-overlay" id="notesOverlay">
-    <div class="notes-inner">
-      <div class="notes-head">
-        <h2 id="notesTitle">Notes &amp; ideas</h2>
-        <button class="notes-close" id="notesClose">done</button>
-      </div>
-      <div id="notesLock" class="notes-lock" style="display:none">
-        <div class="lock-face">
-          <div class="lock-emoji">🔒</div>
-          <p class="lock-msg" id="lockMsg">Enter your PIN</p>
-          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" id="lockInput" class="lock-input" autocomplete="off" />
-          <div class="lock-btns">
-            <button id="lockGo" class="lock-go">Open</button>
-          </div>
-          <button id="lockManage" class="lock-manage"></button>
-        </div>
-      </div>
-      <div id="notesBody">
-        <textarea class="notes-canvas" id="notesCanvas" placeholder="Free journaling, brain-dumps, whatever…"></textarea>
-        <button class="notes-save" id="notesSave">Save note</button>
-        <div class="notes-index">
-          <div class="notes-index-label">earlier notes</div>
-          <div id="notesList"></div>
-        </div>
-      </div>
-    </div>
-  </div>
   <div class="notes-overlay" id="voiceOverlay">
     <div class="notes-inner">
       <div class="notes-head">
@@ -1197,14 +1171,14 @@
       <div id="refList"></div>
     </div>
   </div>
-  <div class="notes-overlay" id="sermonPickOverlay">
+  <div class="notes-overlay" id="talkLessonPickOverlay">
     <div class="notes-inner">
       <div class="notes-head">
-        <h2>Send to a sermon</h2>
-        <button class="notes-close" id="sermonPickClose">cancel</button>
+        <h2>Send to a talk / lesson</h2>
+        <button class="notes-close" id="talkLessonPickClose">cancel</button>
       </div>
-      <button class="bone-digup" id="sermonPickNew" style="margin-bottom:14px;">+ new sermon</button>
-      <div id="sermonPickList"></div>
+      <button class="bone-digup" id="talkLessonPickNew" style="margin-bottom:14px;">+ new talk / lesson</button>
+      <div id="talkLessonPickList"></div>
     </div>
   </div>
 </div>
@@ -1239,10 +1213,11 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.5.1";
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, notesPin: null, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var APP_VERSION = "v1.5.2";
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var workspaceMode = "capture";
+  var writeMode = "guided";
   var tagEditing = null;
   var textEditing = null;
   var expandedBit = null;
@@ -1274,7 +1249,6 @@
     state.poolMigrated = true;
     state.sets = data.sets || [];
     state.autoRefs = data.autoRefs === true;
-    state.notesPin = data.notesPin || null;
     state.anchors = data.anchors || [];
     state.creed = data.creed || null;
     // Persistent feature fields must be registered here and round-trip tested.
@@ -1615,7 +1589,7 @@
     scan(state.bits, "question");
     return out;
   }
-  function sermonVoices(s) {
+  function talkLessonVoices(s) {
     var seen = {}, out = [];
     (s.bitIds || []).forEach(function (id) {
       var f = findBitAnywhere(id);
@@ -1997,36 +1971,36 @@
     if (swipeOpenCard && !swipeOpenCard.parentNode.contains(e.target)) closeSwipe();
   }, true);
 
-  // ——— sermon picker: reachable from both stuff and questions ———
-  var sermonPickId = null;
-  function openSermonPicker(id) {
-    sermonPickId = id;
+  // ——— talk / lesson picker: reachable from both stuff and questions ———
+  var talkLessonPickId = null;
+  function openTalkLessonPicker(id) {
+    talkLessonPickId = id;
     closeSwipe();
-    renderSermonPicker();
-    document.getElementById("sermonPickOverlay").classList.add("open");
+    renderTalkLessonPicker();
+    document.getElementById("talkLessonPickOverlay").classList.add("open");
   }
-  function closeSermonPicker() {
-    sermonPickId = null;
-    document.getElementById("sermonPickOverlay").classList.remove("open");
+  function closeTalkLessonPicker() {
+    talkLessonPickId = null;
+    document.getElementById("talkLessonPickOverlay").classList.remove("open");
   }
-  function addToSermon(setObj) {
-    if (!sermonPickId) return;
-    if (setObj.bitIds.indexOf(sermonPickId) === -1) setObj.bitIds.push(sermonPickId);
+  function addToTalkLesson(setObj) {
+    if (!talkLessonPickId) return;
+    if (setObj.bitIds.indexOf(talkLessonPickId) === -1) setObj.bitIds.push(talkLessonPickId);
     setObj.updated = Date.now();
-    save(); closeSermonPicker(); render();
+    save(); closeTalkLessonPicker(); render();
   }
-  function renderSermonPicker() {
-    var list = document.getElementById("sermonPickList");
+  function renderTalkLessonPicker() {
+    var list = document.getElementById("talkLessonPickList");
     list.innerHTML = "";
     if (!state.sets) state.sets = [];
     if (state.sets.length === 0) {
-      list.appendChild(el("p", "empty", "No sermons yet — start one below."));
+      list.appendChild(el("p", "empty", "No talks / lessons yet — start one below."));
       return;
     }
     state.sets.forEach(function (s) {
-      var row = el("div", "sermon-pick-row");
-      row.appendChild(el("p", null, s.name || "untitled sermon"));
-      row.onclick = function () { addToSermon(s); };
+      var row = el("div", "talkLesson-pick-row");
+      row.appendChild(el("p", null, s.name || "untitled talk / lesson"));
+      row.onclick = function () { addToTalkLesson(s); };
       list.appendChild(row);
     });
   }
@@ -2038,12 +2012,12 @@
     document.getElementById("refOverlay").classList.remove("open");
     refViewing = null;
   };
-  document.getElementById("sermonPickClose").onclick = closeSermonPicker;
-  document.getElementById("sermonPickNew").onclick = function () {
+  document.getElementById("talkLessonPickClose").onclick = closeTalkLessonPicker;
+  document.getElementById("talkLessonPickNew").onclick = function () {
     var id = Date.now().toString(36);
     if (!state.sets) state.sets = [];
     state.sets.unshift({ id: id, name: "", bitIds: [], created: Date.now(), updated: Date.now() });
-    addToSermon(state.sets[0]);
+    addToTalkLesson(state.sets[0]);
   };
 
   var studyPrompts = {
@@ -2064,29 +2038,29 @@
       "What would you like to ask God about this? Write the question before reaching for an answer."
     ]
   };
-  var pbPrompts = [
-    {q:"Always strive to and seek to be a disciple of our Lord and Savior, Jesus Christ.",p:"What would discipleship actually require of you today—not in theory, but in one decision?"},
-    {q:"Serve your family, serve your fellowman and you will be blessed to find joy and happiness.",p:"Who is close enough to you to serve today, and what would useful service look like instead of performative service?"},
-    {q:"Avoid pride but seek rather to be one who is humble and meek, like our Savior, one whose desires are to do the will of our Father in Heaven.",p:"Where is pride making something harder than it needs to be?"},
-    {q:"Use the many blessings that come from the Lord as they are intended. Remember where they come from.",p:"What have you been given lately, and what might it be for?"},
-    {q:"You should seek to be one who is a student of the gospel and a student of the scriptures.",p:"What are you currently pretending you already understand?"},
-    {q:"You will need to seek the Lord’s guidance and direction many times in your life.",p:"What are you trying to solve entirely by force that may need prayer, listening, or patience?"},
-    {q:"Yours is to be obedient. Yours is to work hard. Yours is to strive your best to listen to the spirit.",p:"Which of those three is the actual assignment in front of you right now: obey, work, or listen?"},
-    {q:"Our Father in Heaven would have you receive a good education.",p:"What do you need to learn next—not for credentials, but because it would make you more capable?"},
-    {q:"Your children will look to you for love, they will look to you to be taught the gospel of Jesus Christ, and they will look to you for testimony.",p:"What are your children learning from the version of you they are seeing this week?"},
-    {q:"You will be blessed with rich opportunities of service in Father in Heaven’s kingdom.",p:"What opportunity to serve is already in front of you that you may be treating as an interruption?"},
-    {q:"You will always be able to keep a proper perspective of life and be able to understand the things of God are the things that come first and all else is not as important.",p:"What has quietly become more important than it deserves to be?"},
-    {q:"Our Father in Heaven would have you focus your life around the temple and you would serve the Lord in His holy house.",p:"What would it mean for the temple to organize your life rather than simply appear on your calendar?"},
-    {q:"Go to the temple often to worship and to be with the Lord to feel of His strength, of His guidance, and the inspiration you need in your life.",p:"What guidance are you hungry enough for to deliberately make room to receive?"},
-    {q:"Your life of service will be one that will refine you, one that will purify you and one that will in every way help you accomplish your life’s work here in mortality.",p:"Where might the irritating part of service be the refining part?"}
+  var guidancePrompts = [
+    {q:"Discipleship",p:"What would following Jesus Christ require of you today—not in theory, but in one decision?"},
+    {q:"Service",p:"Who is close enough to you to serve today, and what would genuinely useful service look like?"},
+    {q:"Humility",p:"Where might pride, defensiveness, or the need to be right be making something harder than it needs to be?"},
+    {q:"Stewardship",p:"What have you been given lately—time, ability, influence, opportunity—and what might it be for?"},
+    {q:"Learning",p:"What gospel principle or life skill do you need to understand more deeply instead of assuming you already do?"},
+    {q:"Seeking guidance",p:"What are you trying to solve entirely by force that may need more prayer, listening, counsel, or patience?"},
+    {q:"Obey · work · listen",p:"Which is the actual assignment in front of you right now: obey, work, or listen?"},
+    {q:"Growth",p:"What do you need to learn next because it would make you more capable of serving God and other people?"},
+    {q:"Family",p:"What are the people closest to you learning from the version of you they are seeing this week?"},
+    {q:"Church service",p:"What opportunity to serve is already in front of you that you may be treating as an interruption?"},
+    {q:"Perspective",p:"What has quietly become more important than it deserves to be?"},
+    {q:"Covenants",p:"What would it look like for your covenants to shape an ordinary decision today?"},
+    {q:"Revelation",p:"What guidance are you hungry enough for to deliberately make room to receive?"},
+    {q:"Refinement",p:"Where might the irritating or inconvenient part of service be the refining part?"}
   ];
   function studyPromptDeck(source,mode){
     var general=(source ? studyPrompts.entry : studyPrompts.fresh).map(function(p){return {kind:"general",p:p};});
-    var pb=pbPrompts.map(function(x){return {kind:"pb",q:x.q,p:x.p};});
-    if(mode==="pb") return pb;
+    var guidance=guidancePrompts.map(function(x){return {kind:"guidance",q:x.q,p:x.p};});
+    if(mode==="guidance") return guidance;
     if(mode==="general") return general;
-    var mixed=[],n=Math.max(general.length,pb.length);
-    for(var i=0;i<n;i++){if(i<general.length)mixed.push(general[i]);if(i<pb.length)mixed.push(pb[i]);}
+    var mixed=[],n=Math.max(general.length,guidance.length);
+    for(var i=0;i<n;i++){if(i<general.length)mixed.push(general[i]);if(i<guidance.length)mixed.push(guidance[i]);}
     return mixed;
   }
   var studyDrafts = {}, studyKey = "fresh";
@@ -2094,8 +2068,61 @@
   function storeStudyDrafts(){
     try {localStorage.setItem("goodplates-study-drafts",JSON.stringify({key:studyKey,drafts:studyDrafts}));}catch(e){}
   }
+  var journalEditing = null;
+  var journalDraft = "";
+  try { journalDraft = localStorage.getItem("goodplates-journal-draft") || ""; } catch(e){}
+  function storeJournalDraft(value){
+    journalDraft=value;
+    try { if(value) localStorage.setItem("goodplates-journal-draft",value); else localStorage.removeItem("goodplates-journal-draft"); } catch(e){}
+  }
+  function renderWriteModeTabs(host){
+    var tabs=el("div","write-mode-tabs");
+    [["guided","Guided"],["journal","Journal"]].forEach(function(pair){
+      var b=el("button","write-mode-tab"+(writeMode===pair[0]?" on":""),pair[1]);
+      b.type="button";b.setAttribute("aria-pressed",String(writeMode===pair[0]));
+      b.onclick=function(){writeMode=pair[0];journalEditing=null;render();};tabs.appendChild(b);
+    });
+    host.appendChild(tabs);
+  }
+  function renderJournal(host){
+    var panel=el("section","journal-panel");host.appendChild(panel);
+    var head=el("div","journal-headline");
+    head.appendChild(el("h2","journal-title",journalEditing ? "Edit journal entry" : "Journal"));
+    head.appendChild(el("span","journal-date",new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})));
+    panel.appendChild(head);
+    panel.appendChild(el("p","journal-help","A real blank page. Write the whole thought here — not just the part worth filing as an entry."));
+    var current=journalEditing ? (state.notes||[]).find(function(n){return n.id===journalEditing;}) : null;
+    if(journalEditing && !current) journalEditing=null;
+    var area=el("textarea","notes-canvas journal-writing");area.id="journalWriting";area.setAttribute("aria-label","Journal entry");area.placeholder="Write freely…";area.value=current ? current.text : journalDraft;panel.appendChild(area);
+    var actions=el("div","journal-actions"),saveBtn=el("button","journal-save",current ? "Update entry" : "Save entry"),status=el("span","journal-status");
+    saveBtn.disabled=!area.value.trim();
+    area.oninput=function(){saveBtn.disabled=!area.value.trim();status.textContent="";if(!journalEditing)storeJournalDraft(area.value);};
+    saveBtn.onclick=function(){
+      var t=area.value.trim();if(!t)return;var now=Date.now();if(!state.notes)state.notes=[];
+      if(journalEditing){state.notes=state.notes.map(function(n){return n.id===journalEditing?{id:n.id,text:t,updated:now}:n;});}
+      else {state.notes.unshift({id:"journal-"+now.toString(36),text:t,updated:now});}
+      save();journalEditing=null;storeJournalDraft("");status.textContent="Saved";render();
+    };
+    actions.appendChild(saveBtn);
+    if(current){var cancel=el("button","journal-cancel","Cancel edit");cancel.onclick=function(){journalEditing=null;render();};actions.appendChild(cancel);}
+    actions.appendChild(status);panel.appendChild(actions);
+    var wrap=el("div","journal-list"),lab=el("div","journal-list-label","Earlier journal entries");wrap.appendChild(lab);
+    var notes=(state.notes||[]).slice().sort(function(a,b){return b.updated-a.updated;});
+    if(!notes.length){wrap.appendChild(el("p","empty","No journal entries yet."));}
+    notes.forEach(function(note){
+      var card=el("div","note-card");card.appendChild(el("p",null,note.text));
+      var meta=el("div","note-date"),d=new Date(note.updated);
+      meta.appendChild(el("span",null,d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" · "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})));
+      var share=el("button","note-share","share pdf");share.title="Export this journal entry as a PDF";share.onclick=function(e){e.stopPropagation();sharePDF(note);};meta.appendChild(share);
+      var del=el("button","note-del","delete");del.onclick=function(e){e.stopPropagation();if(del.textContent==="delete"){del.textContent="sure?";setTimeout(function(){if(del)del.textContent="delete";},2500);return;}state.notes=state.notes.filter(function(n){return n.id!==note.id;});if(journalEditing===note.id)journalEditing=null;save();render();};meta.appendChild(del);
+      card.appendChild(meta);card.onclick=function(){journalEditing=note.id;render();setTimeout(function(){var a=document.getElementById("journalWriting");if(a)a.focus();},0);};wrap.appendChild(card);
+    });
+    panel.appendChild(wrap);
+  }
   function renderStudy(host){
     host.innerHTML="";
+    renderWriteModeTabs(host);
+    if(writeMode==="journal"){renderJournal(host);syncStudyViewport();return;}
     var entries=(state.truths||[]).concat(state.bits||[]);
     var source=studyKey === "fresh" ? null : entries.find(function(b){return b.id===studyKey;});
     if(studyKey!=="fresh" && !source) studyKey="fresh";
@@ -2110,7 +2137,7 @@
     select.value=studyKey;select.onchange=function(){studyKey=select.value;storeStudyDrafts();renderStudy(host);};choices.appendChild(select);panel.appendChild(choices);
     if(source){var original=el("details","study-original");original.appendChild(el("summary",null,"The entry"));original.appendChild(el("p",null,source.text));panel.appendChild(original);}
     var sourceTabs=el("div","study-source-tabs");
-    [["all","All"],["pb","PB"],["general","General"]].forEach(function(pair){
+    [["all","All"],["guidance","Guidance"],["general","General"]].forEach(function(pair){
       var b=el("button","study-source-tab"+(draft.promptSource===pair[0]?" on":""),pair[1]);
       b.type="button";b.onclick=function(){draft.promptSource=pair[0];draft.prompt=0;draft.unguided=false;storeStudyDrafts();renderStudy(host);};sourceTabs.appendChild(b);
     });
@@ -2121,7 +2148,7 @@
       prompts=studyPromptDeck(source,draft.promptSource);
       if(!prompts.length)return;
       var item=prompts[draft.prompt % prompts.length];quoteHost.innerHTML="";
-      if(item.kind==="pb" && !draft.unguided){var q=el("blockquote","study-pb-quote");q.appendChild(el("span","study-pb-kicker","Patriarchal blessing"));q.appendChild(document.createTextNode(item.q));quoteHost.appendChild(q);}
+      if(item.kind==="guidance" && !draft.unguided){var q=el("blockquote","study-guidance-quote");q.appendChild(el("span","study-guidance-kicker","Personal guidance"));q.appendChild(document.createTextNode(item.q));quoteHost.appendChild(q);}
       prompt.textContent=draft.unguided ? "Write what is on your heart." : item.p;
     }
     paintPrompt();
@@ -2129,28 +2156,22 @@
     var next=el("button",null,"Another prompt");next.onclick=function(){draft.unguided=false;draft.prompt=(draft.prompt+1)%prompts.length;storeStudyDrafts();paintPrompt();};actions.appendChild(next);
     var free=el("button",null,"Just write");free.onclick=function(){draft.unguided=true;storeStudyDrafts();paintPrompt();};actions.appendChild(free);
     panel.appendChild(actions);
-    var area=el("textarea","notes-canvas study-writing");area.id="studyWriting";area.setAttribute("aria-label","Journal writing");area.setAttribute("aria-describedby","studyPrompt");area.placeholder="Start wherever you are…";area.value=draft.text;panel.appendChild(area);
+    var area=el("textarea","notes-canvas study-writing");area.id="studyWriting";area.setAttribute("aria-label","Guided writing");area.setAttribute("aria-describedby","studyPrompt");area.placeholder="Start wherever you are…";area.value=draft.text;panel.appendChild(area);
     var footer=el("div","study-footer"),status=el("span","study-status");status.setAttribute("role","status");
     var keep=el("button","study-keep",source ? "Keep with entry" : "Keep in Notebook");keep.disabled=!draft.text.trim();
     area.oninput=function(){draft.text=area.value;storeStudyDrafts();keep.disabled=!draft.text.trim();status.textContent="";};
     keep.onclick=function(){
       var text=area.value.trim();if(!text)return;
       var now=Date.now();
-      if(source){
-        source.workshop=(source.workshop ? source.workshop+"\n\n" : "")+text;
-        source.touched=now;
-      }else{
-        var currentDeck=studyPromptDeck(source,draft.promptSource),currentItem=currentDeck[draft.prompt % currentDeck.length];
-        var autoTags=currentItem && currentItem.kind==="pb" ? ["pb"] : [];
-        state.truths.unshift({id:"journal-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,7),text:text,created:now,touched:now,tags:autoTags,refs:[],voices:[]});
-      }
+      if(source){source.workshop=(source.workshop ? source.workshop+"\n\n" : "")+text;source.touched=now;}
+      else{state.truths.unshift({id:"reflection-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,7),text:text,created:now,touched:now,tags:[],refs:[],voices:[]});}
       save();draft.text="";area.value="";keep.disabled=true;storeStudyDrafts();status.textContent=source ? "Kept with entry" : "Kept in Notebook";area.focus({preventScroll:true});
     };
     footer.appendChild(status);footer.appendChild(keep);panel.appendChild(footer);
     syncStudyViewport();
   }
   function syncStudyViewport(){
-    var panel=document.querySelector(".study-panel"),vv=window.visualViewport;if(!panel)return;
+    var panel=document.querySelector(".study-panel, .journal-panel"),vv=window.visualViewport;if(!panel)return;
     var typing=vv && workspaceMode==="write" && panel.contains(document.activeElement) && innerHeight-vv.height>100;
     panel.classList.toggle("study-typing",!!typing);
     if(vv){panel.style.setProperty("--study-height",vv.height+"px");panel.style.setProperty("--study-top",vv.offsetTop+"px");}
@@ -2198,7 +2219,7 @@
     }
     sectionCard("pool", "entries", (state.truths || []).length);
     sectionCard("bit", "questions", state.bits.length);
-    sectionCard("sets", "sermons", (state.sets || []).length);
+    sectionCard("sets", "talks / lessons", (state.sets || []).length);
     sectionCard("daily3", "daily 3", "✓");
 
     var capWrap = document.querySelector(".capture");
@@ -2327,7 +2348,7 @@
         } catch (e) {}
       }
 
-      // swipe shell: bury left, move-across + sermon stacked on the right
+      // swipe shell: bury left, move-across + talk / lesson stacked on the right
       var shell = el("div", "swipe-shell");
       var actL = el("button", "swipe-act swipe-kill", "🪦");
       actL.title = "Bury it — to the vault";
@@ -2336,11 +2357,11 @@
       var actMove = el("button", "swipe-act swipe-promote", "← stuff");
       actMove.title = "Not a question after all — send it back to stuff";
       actMove.onclick = function (e) { e.stopPropagation(); moveToStuff(); };
-      var actSermon = el("button", "swipe-act swipe-promote", "→ sermon");
-      actSermon.title = "Send to a sermon";
-      actSermon.onclick = function (e) { e.stopPropagation(); openSermonPicker(b.id); };
+      var actTalkLesson = el("button", "swipe-act swipe-promote", "→ talk/lesson");
+      actTalkLesson.title = "Send to a talk / lesson";
+      actTalkLesson.onclick = function (e) { e.stopPropagation(); openTalkLessonPicker(b.id); };
       actCol.appendChild(actMove);
-      actCol.appendChild(actSermon);
+      actCol.appendChild(actTalkLesson);
       shell.appendChild(actCol);
       shell.appendChild(actL);
 
@@ -2750,6 +2771,12 @@
     document.getElementById("utilMenu").style.display = "none";
     document.getElementById("tourGate").classList.add("open");
   };
+  document.getElementById("journalShortcut").onclick = function () {
+    workspaceMode = "write";
+    writeMode = "journal";
+    stageFilter = "home";
+    render();
+  };
   draft.addEventListener("keydown", function (e) {
     if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return;
     var send = workspaceMode === "capture" ? !e.shiftKey : (e.metaKey || e.ctrlKey) && !e.shiftKey;
@@ -3111,11 +3138,11 @@
   };
 
   // ——— notes drawer ———
-  // Export an assembled sermon as a clean, readable PDF — the whole thing laid
-  // out to preach from: title, the readings/voices it draws on, then every entry
-  // in lineup order. Compact enough that a normal sermon lands on one page; a long
+  // Export an assembled talk / lesson as a clean, readable PDF — the whole thing laid
+  // out to teach from: title, the readings/voices it draws on, then every entry
+  // in lineup order. Compact enough that a normal talk / lesson lands on one page; a long
   // one paginates rather than shrinking to unreadable.
-  function sermonPDF(s) {
+  function talkLessonPDF(s) {
     try {
       var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
       if (!jsPDFLib) { alert("PDF export isn't available right now — check your connection and try again."); return; }
@@ -3140,11 +3167,11 @@
       }
       doc.setFont("times", "italic"); doc.setFontSize(10); doc.setTextColor(130);
       doc.text("The Good Plates", margin, 40);
-      var title = (s.name && s.name.trim()) ? s.name.trim() : "Untitled sermon";
+      var title = (s.name && s.name.trim()) ? s.name.trim() : "Untitled talk / lesson";
       para(title, { size: 20, style: "bold", lh: 1.2 });
       y += 6;
-      var readings = sermonReadings(s).map(refLabel);
-      var voices = sermonVoices(s);
+      var readings = talkLessonReadings(s).map(refLabel);
+      var voices = talkLessonVoices(s);
       if (readings.length) { para("Readings:  " + readings.join("   \u00b7   "), { size: 10.5, style: "italic", color: 90, lh: 1.35 }); }
       if (voices.length) { para("Voices:  " + voices.join("   \u00b7   "), { size: 10.5, style: "italic", color: 90, lh: 1.35 }); }
       if (readings.length || voices.length) { y += 4; ensure(1); doc.setDrawColor(200); doc.line(margin, y, pageW - margin, y); y += 16; }
@@ -3161,7 +3188,7 @@
         if (b.est) cue.push(fmtSec(b.est));
         if (cue.length) { y += 2; para(cue.join("   \u00b7   "), { font: "courier", size: 9, color: 140, lh: 1.3 }); }
       });
-      var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "sermon";
+      var slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "talk-lesson";
       var fname = "good-plates-" + slug + ".pdf";
       var blob = doc.output("blob");
       var file = new File([blob], fname, { type: "application/pdf" });
@@ -3195,11 +3222,11 @@
       doc.setTextColor(25);
       var lines = doc.splitTextToSize(note.text, width);
       doc.text(lines, margin, 80, { lineHeightFactor: 1.55 });
-      var fname = "good-plates-note-" + d.toISOString().slice(0, 10) + ".pdf";
+      var fname = "good-plates-journal-" + d.toISOString().slice(0, 10) + ".pdf";
       var blob = doc.output("blob");
       var file = new File([blob], fname, { type: "application/pdf" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: "The Good Plates — note" }).catch(function () {});
+        navigator.share({ files: [file], title: "The Good Plates — journal entry" }).catch(function () {});
       } else {
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
@@ -3211,173 +3238,6 @@
       alert("Couldn't build the PDF: " + (err && err.message ? err.message : err));
     }
   }
-  var noteEditing = null;
-  function renderNotes() {
-    var list = document.getElementById("notesList");
-    list.innerHTML = "";
-    var notes = (state.notes || []).slice().sort(function (a, b) { return b.updated - a.updated; });
-    if (notes.length === 0) { list.appendChild(el("p", "empty", "No notes yet.")); return; }
-    notes.forEach(function (note) {
-      var card = el("div", "note-card");
-      card.appendChild(el("p", null, note.text));
-      var meta = el("div", "note-date");
-      var d = new Date(note.updated);
-      meta.appendChild(el("span", null, d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " · " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })));
-      var share = el("button", "note-share", "share pdf");
-      share.title = "Export this note as a PDF";
-      share.onclick = function (e) {
-        e.stopPropagation();
-        sharePDF(note);
-      };
-      meta.appendChild(share);
-      var del = el("button", "note-del", "delete");
-      del.onclick = function (e) {
-        e.stopPropagation();
-        if (del.textContent === "delete") { del.textContent = "sure?"; setTimeout(function () { if (del) del.textContent = "delete"; }, 2500); return; }
-        state.notes = state.notes.filter(function (n) { return n.id !== note.id; });
-        save(); renderNotes();
-      };
-      meta.appendChild(del);
-      card.appendChild(meta);
-      card.onclick = function () {
-        noteEditing = note.id;
-        document.getElementById("notesCanvas").value = note.text;
-        document.getElementById("notesCanvas").focus();
-        document.getElementById("notesSave").textContent = "Update note";
-      };
-      list.appendChild(card);
-    });
-  }
-  function resetNoteEditor() {
-    noteEditing = null;
-    document.getElementById("notesCanvas").value = "";
-    document.getElementById("notesSave").textContent = "Save note";
-  }
-  // ——— notes PIN lock ———
-  // A curtain over the drawer, not encryption. It keeps the journal off a
-  // screen someone else is holding; it does not protect the stored data.
-  var notesUnlocked = false;
-  function showNotesBody() {
-    document.getElementById("notesLock").style.display = "none";
-    document.getElementById("notesBody").style.display = "";
-    if (!state.notes) state.notes = [];
-    resetNoteEditor(); renderNotes();
-  }
-  function showNotesLock(mode) {
-    var lock = document.getElementById("notesLock");
-    var body = document.getElementById("notesBody");
-    var msg = document.getElementById("lockMsg");
-    var inp = document.getElementById("lockInput");
-    var go = document.getElementById("lockGo");
-    var manage = document.getElementById("lockManage");
-    body.style.display = "none";
-    lock.style.display = "flex";
-    inp.value = "";
-    inp.dataset.mode = mode;
-    inp.dataset.stage = "";
-    inp.dataset.first = "";
-    if (mode === "set") {
-      msg.textContent = "Set a PIN for your journal (or skip)";
-      go.textContent = "Set PIN";
-      manage.textContent = "skip — no lock";
-      manage.style.display = "";
-    } else {
-      msg.textContent = "Enter your PIN";
-      go.textContent = "Open";
-      manage.textContent = "";
-      manage.style.display = "none";
-    }
-    setTimeout(function () { inp.focus(); }, 60);
-  }
-  function lockSubmit() {
-    var inp = document.getElementById("lockInput");
-    var msg = document.getElementById("lockMsg");
-    var val = (inp.value || "").trim();
-    var mode = inp.dataset.mode;
-    if (mode === "set") {
-      if (inp.dataset.stage === "confirm") {
-        if (val === inp.dataset.first) {
-          state.notesPin = val; save();
-          notesUnlocked = true; showNotesBody();
-        } else {
-          msg.textContent = "Didn't match. Pick a PIN again.";
-          inp.dataset.stage = ""; inp.dataset.first = ""; inp.value = "";
-        }
-        return;
-      }
-      if (val.length < 3) { msg.textContent = "Use at least 3 digits."; return; }
-      inp.dataset.first = val; inp.dataset.stage = "confirm";
-      msg.textContent = "Enter it again to confirm";
-      inp.value = "";
-      return;
-    }
-    if (val === state.notesPin) {
-      notesUnlocked = true; showNotesBody();
-    } else {
-      msg.textContent = "Nope. Try again.";
-      inp.value = "";
-    }
-  }
-  document.getElementById("lockGo").onclick = lockSubmit;
-  document.getElementById("lockInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); lockSubmit(); }
-  });
-  document.getElementById("lockManage").onclick = function () {
-    notesUnlocked = true; showNotesBody();
-  };
-  document.getElementById("notesOpen").onclick = function () {
-    document.getElementById("notesOverlay").classList.add("open");
-    if (state.notesPin) {
-      if (notesUnlocked) showNotesBody();
-      else showNotesLock("enter");
-    } else {
-      showNotesLock("set");
-    }
-  };
-  document.getElementById("notesClose").onclick = function () {
-    document.getElementById("notesOverlay").classList.remove("open");
-    if (state.notesPin) notesUnlocked = false;   // re-lock on close
-  };
-  document.getElementById("pinManage").onclick = function () {
-    document.getElementById("utilMenu").style.display = "none";
-    if (state.notesPin) {
-      var choice = prompt("Journal lock is ON.\nType a NEW pin to change it, or type REMOVE to turn the lock off.\n(Cancel to keep it as-is.)");
-      if (choice === null) return;
-      choice = choice.trim();
-      if (choice.toUpperCase() === "REMOVE") {
-        var cur = prompt("Enter your current PIN to remove the lock:");
-        if (cur !== null && cur.trim() === state.notesPin) {
-          state.notesPin = null; notesUnlocked = false; save();
-          alert("Lock removed.");
-        } else if (cur !== null) {
-          alert("PIN didn't match. Lock unchanged.");
-        }
-        return;
-      }
-      if (choice.length < 3 || /\D/.test(choice)) { alert("PIN must be at least 3 digits, numbers only."); return; }
-      state.notesPin = choice; notesUnlocked = false; save();
-      alert("PIN updated.");
-    } else {
-      var np = prompt("Set a PIN for your journal (at least 3 digits):");
-      if (np === null) return;
-      np = np.trim();
-      if (np.length < 3 || /\D/.test(np)) { alert("PIN must be at least 3 digits, numbers only."); return; }
-      state.notesPin = np; notesUnlocked = false; save();
-      alert("Your journal is now locked with a PIN.");
-    }
-  };
-  document.getElementById("notesSave").onclick = function () {
-    var t = document.getElementById("notesCanvas").value.trim();
-    if (!t) return;
-    if (!state.notes) state.notes = [];
-    if (noteEditing) {
-      state.notes = state.notes.map(function (n) { return n.id === noteEditing ? { id: n.id, text: t, updated: Date.now() } : n; });
-    } else {
-      state.notes.unshift({ id: Date.now().toString(36), text: t, updated: Date.now() });
-    }
-    save(); resetNoteEditor(); renderNotes();
-  };
-
   // ——— browse: speakers, scriptures, gratitude ———
   // The lens row filters the stuff list; these are the whole collection at
   // once, grouped, so you can see who you keep returning to and what you\'ve
@@ -3529,12 +3389,12 @@
   // ——— prepare ———
   // Not a workout. The bits circuit counts reps because output is the point;
   // here arriving is the point, so every phase runs on a clock and nothing
-  // is required. Three phases, each one of his own principles:
+  // is required. Three phases built around simple reflective principles:
   //   see        \u2192 gratitude
   //   understand \u2192 reflective writing
   //   live       \u2192 the time and roles he's been given
   // It hands you off at the end rather than trying to be the destination.
-  var CREED_DEFAULT = "Become the kind of man from whom good work naturally flows.";
+  var CREED_DEFAULT = "Become the kind of person from whom good work naturally flows.";
   var NORTH_DEFAULT = "Where is my energy most needed today?";
   var WRITE_PROMPTS = [
     "What are you actually thinking about?",
@@ -3824,7 +3684,7 @@
 
       // shell holds the swipe actions; face is what slides.
       // Left reveals bury. Right reveals two stacked moves — unlike the bits
-      // app, stuff can go to questions OR straight to a sermon.
+      // app, stuff can go to questions OR straight to a talk / lesson.
       var shell = el("div", "swipe-shell");
       var actL = el("button", "swipe-act swipe-kill", "🪦");
       actL.title = "Bury it — to the vault";
@@ -3858,11 +3718,11 @@
         t.touched = Date.now();
         closeSwipe(); save(); render();
       };
-      var actS = el("button", "swipe-act swipe-promote", "→ sermon");
-      actS.title = "Send straight to a sermon";
+      var actS = el("button", "swipe-act swipe-promote", "→ talk/lesson");
+      actS.title = "Send straight to a talk / lesson";
       actS.onclick = function (e) {
         e.stopPropagation();
-        // sermons hold entries by id — mirror it into questions so the
+        // talks / lessons hold entries by id — mirror it into questions so the
         // lineup can find it, then open the picker on that new copy
         var nid = Date.now().toString(36);
         var mirrored = {
@@ -3881,7 +3741,7 @@
         t.mined = (t.mined || 0) + 1;
         t.touched = Date.now();
         save();
-        openSermonPicker(nid);
+        openTalkLessonPicker(nid);
       };
       actCol.appendChild(actQ);
       actCol.appendChild(actS);
@@ -4195,7 +4055,7 @@
     });
     (state.sets || []).forEach(function (s) {
       if ((s.name || "").toLowerCase().indexOf(q) !== -1) {
-        results.push({ text: s.name || "untitled sermon", label: "sermon", open: function () { stageFilter = "sets"; setOpen = s.id; render(); } });
+        results.push({ text: s.name || "untitled talk / lesson", label: "talk/lesson", open: function () { stageFilter = "sets"; setOpen = s.id; render(); } });
       }
     });
     (state.notes || []).forEach(function (nt) {
@@ -4250,7 +4110,7 @@
     var v = cur + dir * step;
     return v < 10 ? 0 : v;
   }
-  // Sermons hold entries by id from anywhere — a talk is mostly mercies and
+  // Talks / lessons hold entries by id from anywhere — the strongest material often starts as mercies and
   // truths, so stuff belongs in the lineup directly, not mirrored through
   // questions first.
   function findBitAnywhere(id) {
@@ -4262,8 +4122,8 @@
     if (b) return { bit: b, buried: true, from: b.from === "stuff" ? "stuff" : "question" };
     return null;
   }
-  // Every reference in a sermon's lineup, deduped and in scriptural order.
-  function sermonReadings(s) {
+  // Every reference in a talk / lesson's lineup, deduped and in scriptural order.
+  function talkLessonReadings(s) {
     var seen = {}, out = [];
     (s.bitIds || []).forEach(function (id) {
       var f = findBitAnywhere(id);
@@ -4278,7 +4138,7 @@
     out.sort(refSort);
     return out;
   }
-  // ——— drag to reorder (sermon lineup) ———
+  // ——— drag to reorder (talk / lesson lineup) ———
   // Long-press to lift, so an ordinary scroll never grabs a row. The others
   // slide aside to show where it'll land; release to drop.
   function attachRowDrag(row, container, s) {
@@ -4371,20 +4231,20 @@
     if (setOpen) {
       var s = state.sets.find(function (x) { return x.id === setOpen; });
       if (!s) { setOpen = null; render(); return; }
-      var back = el("button", "set-back", "‹ all sermons");
+      var back = el("button", "set-back", "‹ all talks / lessons");
       back.onclick = function () { setOpen = null; setFind = ""; render(); };
       body.appendChild(back);
       var name = document.createElement("input");
       name.type = "text";
       name.className = "set-name";
       name.value = s.name || "";
-      name.placeholder = "name this sermon";
+      name.placeholder = "name this talk / lesson";
       name.onchange = function () { s.name = name.value.trim(); s.updated = Date.now(); save(); };
       body.appendChild(name);
       var find = document.createElement("input");
       find.type = "search";
       find.className = "set-search";
-      find.placeholder = "find in this sermon\u2026";
+      find.placeholder = "find in this talk / lesson\u2026";
       find.value = setFind;
       find.oninput = function () { setFind = find.value; render(); setTimeout(function () {
         var f = document.querySelector(".set-search"); if (f) { f.focus();
@@ -4404,13 +4264,13 @@
         practice.onclick = function () { openRun(s); };
         body.appendChild(practice);
         var expo = el("button", "set-export", "\u2193 export pdf");
-        expo.title = "Export this whole sermon as a PDF";
-        expo.onclick = function () { sermonPDF(s); };
+        expo.title = "Export this whole talk / lesson as a PDF";
+        expo.onclick = function () { talkLessonPDF(s); };
         body.appendChild(expo);
       }
 
       // reading list, assembled from the lineup in scriptural order
-      var readings = sermonReadings(s);
+      var readings = talkLessonReadings(s);
       if (readings.length) {
         var rl = el("div", "ref-readings");
         rl.appendChild(el("div", "ref-readings-label", "readings"));
@@ -4422,7 +4282,7 @@
         });
         body.appendChild(rl);
       }
-      var voices = sermonVoices(s);
+      var voices = talkLessonVoices(s);
       if (voices.length) {
         var vl = el("div", "ref-readings");
         vl.appendChild(el("div", "ref-readings-label", "voices"));
@@ -4438,7 +4298,7 @@
       s.bitIds.forEach(function (id, idx) {
         var f = findBitAnywhere(id);
         // filtering hides rows rather than reordering them, so the lineup you
-        // see is still the lineup you'd preach
+        // see is still the lineup you'd deliver
         if (setFind.trim()) {
           var q = setFind.trim().toLowerCase();
           var hay = (f.bit.text || "").toLowerCase();
@@ -4487,9 +4347,9 @@
         attachRowDrag(row, lineup, s);
       });
       body.appendChild(lineup);
-      if (s.bitIds.length === 0) body.appendChild(el("p", "empty", "Nothing in this sermon yet — tap anything below and it joins the lineup."));
+      if (s.bitIds.length === 0) body.appendChild(el("p", "empty", "Nothing in this talk / lesson yet — tap anything below and it joins the lineup."));
 
-      // Both stuff and questions can join a sermon directly. A talk is mostly
+      // Both stuff and questions can join a talk / lesson directly. A talk / lesson is mostly
       // mercies and truths, so stuff leads.
       var availStuff = (state.truths || []).filter(function (t) { return s.bitIds.indexOf(t.id) === -1; });
       var availQ = state.bits.filter(function (b) { return s.bitIds.indexOf(b.id) === -1; });
@@ -4518,10 +4378,10 @@
         availQ.forEach(addable);
       }
       if (!availStuff.length && !availQ.length) {
-        body.appendChild(el("p", "empty", "Everything you've written is already in this sermon."));
+        body.appendChild(el("p", "empty", "Everything you've written is already in this talk / lesson."));
       }
     } else {
-      var nw = el("button", "bone-digup", "+ new sermon");
+      var nw = el("button", "bone-digup", "+ new talk / lesson");
       nw.style.marginBottom = "14px";
       nw.onclick = function () {
         var id = Date.now().toString(36);
@@ -4531,13 +4391,13 @@
       };
       body.appendChild(nw);
       if (state.sets.length === 0) {
-        body.appendChild(el("p", "empty", "No sermons yet — tap + new sermon, then tap entries to string them together."));
+        body.appendChild(el("p", "empty", "No talks / lessons yet — tap + new talk / lesson, then tap entries to string them together."));
         return;
       }
       state.sets.forEach(function (s) {
         var card = el("div", "bone-card");
         card.style.cursor = "pointer";
-        card.appendChild(el("p", null, s.name || "untitled sermon"));
+        card.appendChild(el("p", null, s.name || "untitled talk / lesson"));
         var total = 0, untimed = 0, n = 0;
         s.bitIds.forEach(function (id) {
           var f = findBitAnywhere(id);
@@ -4562,14 +4422,14 @@
     }
   }
 
-  // ——— sermon practice runner (ported from the bits app) ———
+  // ——— talk / lesson practice runner (ported from the bits app) ———
   // Rehearsal, not performance: full entry on the card, a clock counting up from
   // zero on each entry (resets when you advance), and a scorecard at the end
   // showing what you ACTUALLY took vs. the time you'd called. Nothing is saved.
   var runState = { set: null, bits: [], i: 0, actual: [], marks: [], startedAt: 0, setStartedAt: 0, tick: null, done: false, editing: false };
   function openRun(sset) {
     var bits = sset.bitIds.map(findBitAnywhere).filter(Boolean).map(function (f) { return f.bit; });
-    if (!bits.length) { alert("Nothing to practice — add some entries to this sermon first."); return; }
+    if (!bits.length) { alert("Nothing to practice — add some entries to this talk / lesson first."); return; }
     runState.set = sset; runState.bits = bits; runState.marks = [];
     runState.i = 0; runState.actual = []; runState.done = false; runState.editing = false; runState.editsMade = false;
     runState.setStartedAt = Date.now(); runState.startedAt = Date.now();
@@ -4584,7 +4444,7 @@
     document.getElementById("runOverlay").classList.remove("open");
     document.body.style.overflow = "";
     // edits made in practice write to the live entry; repaint so every other
-    // view (cards, sermon lineup, browse) reflects the new text, not the old.
+    // view (cards, talk / lesson lineup, browse) reflects the new text, not the old.
     if (runState.editsMade) { runState.editsMade = false; render(); }
   }
   function setRunMark(kind) {
@@ -4904,77 +4764,88 @@
   })();
   // ============================================================================
   //  DAILY 3 — pick the 3 hats that matter most today, move the needle, check off.
-  //  Hats are ROLES. The warning is who you become when you wear it badly.
+  //  Hats are ROLES. The warning is a common way that role can drift.
   //  No streaks, no engine. Small & simple. Do it, check it, get out.
   // ============================================================================
   var HATS = [
-    { key:"bishop",  label:"Bishop",  warn:"complacent" },
-    { key:"dad",     label:"Dad",     warn:"distracted" },
-    { key:"husband", label:"Husband", warn:"needy" },
-    { key:"son",     label:"Son",     warn:"rude" },
-    { key:"friend",  label:"Friend",  warn:"fair-weather" },
-    { key:"comic",   label:"Comic",   warn:"scared" },
-    { key:"man",     label:"Man",     warn:"weak" }
+    { key:"calling", label:"Calling", warn:"drift" },
+    { key:"parent",  label:"Parent",  warn:"distraction" },
+    { key:"spouse",  label:"Spouse",  warn:"inattention" },
+    { key:"family",  label:"Family",  warn:"distance" },
+    { key:"friend",  label:"Friend",  warn:"neglect" },
+    { key:"craft",   label:"Craft",   warn:"avoidance" },
+    { key:"self",    label:"Self",    warn:"autopilot" }
   ];
+  // Older personal builds used narrower role names. Remap them so existing
+  // Daily 3 data still opens cleanly in this shared version.
+  var D3_ROLE_MAP = {
+    bishop:"calling", dad:"parent", husband:"spouse", son:"family",
+    friend:"friend", comic:"craft", man:"self"
+  };
+  function d3RoleKey(k){ return D3_ROLE_MAP[k] || k; }
   function hatByKey(k){ for(var i=0;i<HATS.length;i++) if(HATS[i].key===k) return HATS[i]; return null; }
 
   // Fixed seed tasks per hat — small, concrete things that feed into positives.
-  // He can add his own; those live in state.d3Seeds[key] and merge on top.
+  // People can add their own; those live in state.d3Seeds[key] and merge on top.
   var SEEDS = {
-    bishop: [
-      "Text one ward member just to check in \u2014 no agenda.",
-      "Reach out to someone you haven't seen at church lately.",
-      "Thank a person who quietly serves and never gets noticed.",
-      "Follow up on one assignment you handed off.",
-      "Ask a counselor how they're actually doing.",
-      "Prepare one thought for the next meeting instead of winging it."
+    calling: [
+      "Check in with one person you serve — no agenda beyond listening.",
+      "Follow up on one assignment or commitment connected to your calling.",
+      "Thank someone whose service may be going unnoticed.",
+      "Prepare one useful thought or question for an upcoming meeting.",
+      "Act on one prompting or concern you have been postponing.",
+      "Pray specifically about one person or responsibility in your stewardship."
     ],
-    dad: [
-      "Put the phone down and give one kid your full attention for 15 minutes.",
-      "Ask a kid about something THEY care about, then just listen.",
-      "Do one thing on their terms \u2014 their game, their idea.",
-      "Teach one small skill you keep meaning to pass on.",
-      "Catch a kid doing something right and say so out loud.",
-      "Read or wrestle or build \u2014 something physical and present."
+    parent: [
+      "Put the phone away and give one child your full attention for 15 minutes.",
+      "Ask about something they care about, then stay with the answer.",
+      "Do one thing on their terms — their game, their idea, their pace.",
+      "Teach one small skill you have been meaning to pass on.",
+      "Notice something they did well and say it out loud.",
+      "Read, play, build, walk, or talk — something present and unhurried."
     ],
-    husband: [
-      "Do one chore she'd normally have to ask for.",
-      "Ask about her day and actually stay in the answer.",
-      "Say the specific thing you appreciate, not a generic thanks.",
-      "Take one thing off her plate today without being asked.",
-      "Plan or protect time that's just the two of you.",
-      "Give without keeping score."
+    spouse: [
+      "Do one task your spouse would otherwise have to carry.",
+      "Ask about their day and give the answer your full attention.",
+      "Say one specific thing you appreciate about them.",
+      "Take one thing off their plate without being asked.",
+      "Protect a little time to be together without multitasking.",
+      "Give something today without keeping score."
     ],
-    son: [
-      "Call or text a parent \u2014 not for anything, just to connect.",
-      "Ask about their day before talking about yours.",
-      "Say thank you for something they did that you took for granted.",
-      "Offer help with a thing they've been putting off."
+    family: [
+      "Call or text a family member simply to connect.",
+      "Ask how they are doing before talking about yourself.",
+      "Thank a family member for something you have taken for granted.",
+      "Offer practical help with something they are carrying.",
+      "Repair one small tension instead of letting it sit.",
+      "Make one ordinary family interaction more intentional."
     ],
     friend: [
-      "Reach out to a friend you've gone quiet on.",
-      "Show up for someone without being asked.",
-      "Follow up on something a friend told you was weighing on them.",
-      "Make a plan instead of saying 'we should hang out sometime.'"
+      "Reach out to a friend you have gone quiet on.",
+      "Show up for someone without waiting to be asked.",
+      "Follow up on something a friend said was weighing on them.",
+      "Make a real plan instead of saying 'we should get together sometime.'",
+      "Celebrate something good that happened for someone else.",
+      "Say the thank-you or apology you have been putting off."
     ],
-    comic: [
-      "Write for 10 minutes even if it's garbage.",
-      "Test one bit out loud, on someone, today.",
-      "Capture the funny thing before you forget it.",
-      "Watch a set and steal a structure, not a joke.",
-      "Book, confirm, or plan the next stage time.",
-      "Do the scary version of the bit, not the safe one."
+    craft: [
+      "Spend 10 focused minutes practicing the thing you want to get better at.",
+      "Finish one small piece instead of endlessly improving the plan.",
+      "Capture one idea before you lose it.",
+      "Study someone excellent at the craft and notice one technique they use.",
+      "Share, test, submit, or show one piece of work to another person.",
+      "Do the slightly uncomfortable version that will actually help you grow."
     ],
-    man: [
+    self: [
       "Do the hard thing first, before it grows.",
       "Move your body on purpose today.",
       "Keep one promise you made to yourself.",
-      "Say the true thing even though it's easier not to.",
-      "Sit with the discomfort for five minutes instead of numbing it.",
-      "Finish something you started."
+      "Say the true thing even when avoiding it would be easier.",
+      "Make ten quiet minutes for prayer, reflection, or scripture study.",
+      "Finish one thing you have left hanging."
     ]
   };
-  // full pool for a hat: fixed seeds + his own additions
+  // full pool for a hat: fixed seeds + personal additions
   function d3SeedPool(key){
     var mine = (state.d3Seeds && state.d3Seeds[key]) ? state.d3Seeds[key] : [];
     return (SEEDS[key]||[]).concat(mine);
@@ -4994,12 +4865,31 @@
     var out={};
     Object.keys(history).forEach(function(key){
       var day=d3DateKey(key);if(!day || !Array.isArray(history[key]))return;
-      out[day]=(out[day]||[]).concat(history[key]);
+      out[day]=(out[day]||[]).concat(history[key].map(d3RoleKey));
     });
     return out;
   }
+  function d3MigrateRoles(){
+    if(state.daily3 && Array.isArray(state.daily3.picks)){
+      state.daily3.picks.forEach(function(p){ p.key=d3RoleKey(p.key); });
+    }
+    if(state.d3History){
+      Object.keys(state.d3History).forEach(function(day){
+        if(Array.isArray(state.d3History[day])) state.d3History[day]=state.d3History[day].map(d3RoleKey);
+      });
+    }
+    if(state.d3Seeds){
+      Object.keys(D3_ROLE_MAP).forEach(function(oldKey){
+        var newKey=D3_ROLE_MAP[oldKey];
+        if(oldKey===newKey || !state.d3Seeds[oldKey]) return;
+        state.d3Seeds[newKey]=(state.d3Seeds[newKey]||[]).concat(state.d3Seeds[oldKey]);
+        delete state.d3Seeds[oldKey];
+      });
+    }
+  }
   function d3Today(){ return todayKeyStr(); }
   function d3(){
+    d3MigrateRoles();
     if(!state.daily3) state.daily3={ day:0, picks:[], going:false };
     if(state.daily3.day!==d3Today()){ state.daily3={ day:d3Today(), picks:[], going:false }; }
     if(!state.d3History) state.d3History={};   // { dayTs: [hatKey, ...completed] }
@@ -5048,7 +4938,7 @@
         top.appendChild(el("span","d3-hat-label",h.label));
         if(picked) top.appendChild(el("span","d3-hat-check","\u2713"));
         b.appendChild(top);
-        b.appendChild(el("span","d3-hat-warn","don't be "+h.warn));
+        b.appendChild(el("span","d3-hat-warn","watch for · "+h.warn));
         b.onclick=function(){
           if(picked){ s.picks=s.picks.filter(function(p){return !(p.key===h.key && !p.started);}); }
           else if(s.going || live.length<3){ s.picks.push({key:h.key,task:"",done:false,started:false}); }
@@ -5087,7 +4977,7 @@
       var card=el("div","d3-card"+(p.done?" done":""));
       var head=el("div","d3-card-head");
       head.appendChild(el("span","d3-card-label",h.label));
-      head.appendChild(el("span","d3-card-warn","don't be "+h.warn));
+      head.appendChild(el("span","d3-card-warn","watch for · "+h.warn));
       card.appendChild(head);
 
       if(!p.done){
