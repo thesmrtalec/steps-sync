@@ -174,21 +174,37 @@
   .swipe-face { position: relative; z-index: 1; margin-bottom: 0 !important;
     transition: transform .18s cubic-bezier(.2,.8,.3,1); touch-action: pan-y; background: var(--card); }
 
-  /* ——— expanded card footer: tags as a light line, not chips ——— */
-  .card-foot { display: flex; align-items: center; gap: 12px; margin-top: 10px;
-    padding-top: 9px; border-top: 1px solid var(--rule); }
-  .tag-line { flex: 1; min-width: 0; text-align: left; background: transparent; border: none;
-    font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--muted);
-    padding: 3px 0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tag-line.empty { color: var(--faint); opacity: .7; }
-  .tag-line-edit { flex: 1; min-width: 0; display: flex; gap: 6px; align-items: center; }
-  .foot-right { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+  /* ——— expanded entry: quiet details, then two clear actions ——— */
+  .entry-expanded-meta { margin-top: 15px; padding-top: 6px; border-top: 1px solid var(--rule); }
+  .entry-detail-row { display: grid; grid-template-columns: 78px minmax(0,1fr); gap: 12px; align-items: start;
+    padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .entry-detail-row:last-of-type { border-bottom: 0; }
+  .entry-detail-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--faint); padding-top: 5px; }
+  .entry-detail-body { min-width: 0; color: var(--ink); }
+  .entry-detail-body .ref-line { margin: 0; min-height: 28px; }
+  .entry-detail-body .ref-add { border: 0; border-radius: 0; padding: 3px 0; color: var(--muted); }
+  .entry-detail-body .ref-add:hover { color: var(--accent); background: transparent; }
+  .entry-detail-body .grat-line { margin: 0; }
+  .entry-detail-body .grat-btn.on { border: 0; color: var(--accent); }
+  .entry-tag-control { width: 100%; min-width: 0; text-align: left; background: transparent; border: 0; padding: 3px 0;
+    font-family: var(--serif); font-size: 15px; line-height: 1.45; color: var(--ink); cursor: pointer; }
+  .entry-tag-control.empty { color: var(--faint); }
+  .entry-tag-edit { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+  .entry-tag-edit .tag-input { min-height: 36px; width: 130px; border-radius: 7px; }
+  .entry-tag-edit .foot-mark { cursor: pointer; }
+  .entry-state-btn { background: transparent; border: 0; padding: 3px 0; font-family: var(--serif); font-size: 15px;
+    color: var(--ink); cursor: pointer; text-align: left; }
+  .entry-state-btn::after { content: "  ›"; color: var(--faint); }
+  .entry-detail-note { font-family: var(--mono); font-size: 10.5px; line-height: 1.45; color: var(--faint); padding: 8px 0 1px; }
+  .entry-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .entry-action { min-height: 46px; border-radius: 10px; padding: 0 14px; font-family: var(--mono); font-size: 12px;
+    letter-spacing: .04em; cursor: pointer; }
+  .entry-action-share { background: transparent; border: 1px solid var(--rule); color: var(--ink); }
+  .entry-action-share:hover { border-color: var(--accent); color: var(--accent); }
+  .entry-action-develop { background: var(--accent); border: 1px solid var(--accent); color: var(--onaccent); font-weight: 700; }
+  .entry-action-develop:hover { background: var(--accent2); border-color: var(--accent2); }
   .foot-mark { font-family: var(--mono); font-size: 11px; color: var(--faint); }
-  .foot-mark.stale { color: var(--accent2); }
-  .foot-btn { background: transparent; border: 1px solid var(--rule); border-radius: 7px;
-    padding: 3px 8px; font-size: 13px; line-height: 1.4; cursor: pointer; }
-  .foot-mark.revisit { color: var(--muted); }
-  .foot-stack { display: block; }
   .ref-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
   .ref-chip { background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; color: var(--accent2); cursor: pointer; white-space: nowrap; }
   .ref-chip:hover { border-color: var(--accent); color: var(--accent); }
@@ -198,7 +214,6 @@
   .ref-add:hover { color: var(--accent); border-color: var(--accent); }
   .ref-input { width: 130px; border: 1px solid var(--accent); border-radius: 999px; padding: 2px 10px; font-family: var(--mono); font-size: 11px; background: var(--card); color: var(--ink); }
   .ref-input.ref-bad { border-color: var(--accent2); }
-  /* the two attach buttons sit side by side, wrapping only if they must */
   .cap-attach { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin: -4px 0 12px; }
   .cap-refs { margin: 0; width: auto; }
   .cap-refs.voice-line { margin-top: 0; }
@@ -209,23 +224,15 @@
   .lens { background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 12px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
   .lens:hover { border-color: var(--accent); color: var(--accent); }
   .lens.on { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
-  .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-    margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--rule); }
-  .voice-suggest-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--faint); width: 100%; margin-bottom: 1px; }
-  /* squared off and un-italic, so it can't be mistaken for an attached chip */
-  .voice-pick { background: transparent; border: 1px dashed var(--rule); border-radius: 6px;
-    padding: 3px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted);
-    cursor: pointer; white-space: nowrap; }
+  .voice-suggest { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--rule); }
+  .voice-suggest-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); width: 100%; margin-bottom: 1px; }
+  .voice-pick { background: transparent; border: 1px dashed var(--rule); border-radius: 6px; padding: 3px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); cursor: pointer; white-space: nowrap; }
   .voice-pick:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
-  /* attached speakers get a filled pill so the difference is obvious */
   .voice-chip { background: var(--tagbg); border-color: transparent; color: var(--tagink); font-style: italic; }
   .voice-chip:hover { color: var(--accent); }
   .ref-readings { margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); }
   .ref-readings-label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
   .ref-readings .ref-chip { margin: 0 5px 5px 0; }
-  .foot-btn.react-btn { filter: none; opacity: .55; border-style: dashed; font-family: var(--mono); }
-  .foot-btn.react-btn.has-react { opacity: 1; border-style: solid; color: var(--accent); }
 
   .truth-card { position: relative; }
   .truth-card:not(.open) p { max-height: 3.1em; overflow: hidden; margin: 0; line-height: 1.3; }
@@ -498,6 +505,9 @@
   .share-head { background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 999px;
     padding: 5px 12px; font-family: var(--mono); font-size: 12px; }
   .share-head:hover { border-color: var(--accent); color: var(--accent); }
+  #workbenchOverlay .notes-head-actions button { width: 72px; min-width: 72px; min-height: 40px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; font-family: var(--mono); font-size: 12px; }
+  #workbenchOverlay .notes-head-actions .share-head { background: transparent; border: 1px solid var(--rule); color: var(--muted); }
+  #workbenchOverlay .notes-head-actions .notes-close { margin-left: 0; background: var(--accent); border: 1px solid var(--accent); color: var(--onaccent); font-weight: 700; }
   .entry-share-overlay { position: fixed; inset: 0; z-index: 400; display: none; background: var(--page);
     overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .entry-share-overlay.open { display: block; }
@@ -1181,7 +1191,7 @@
   <div class="notes-overlay" id="workbenchOverlay">
     <div class="notes-inner">
       <div class="notes-head">
-        <h2>Write Now</h2>
+        <h2>Workbench</h2>
         <div class="wb-browse" id="wbBrowse" style="display:none">
           <button class="wb-arrow" id="wbPrev" aria-label="previous">‹</button>
           <span class="wb-browse-pos" id="wbBrowsePos"></span>
@@ -2328,6 +2338,98 @@
   document.addEventListener("focusin",syncStudyViewport);
   document.addEventListener("focusout",function(){setTimeout(syncStudyViewport,0);});
 
+  // Expanded entry: metadata is one coherent block, actions are one coherent row.
+  function entryDetailRow(label, node) {
+    var row = el("div", "entry-detail-row");
+    row.appendChild(el("div", "entry-detail-label", label));
+    var body = el("div", "entry-detail-body");
+    if (typeof node === "string") body.textContent = node; else if (node) body.appendChild(node);
+    row.appendChild(body);
+    return row;
+  }
+
+  function buildEntryTagControl(x) {
+    if (tagEditing === x.id) {
+      var tp = el("div", "entry-tag-edit");
+      var input = el("input", "tag-input");
+      input.placeholder = "tag";
+      function commit() {
+        var v = input.value.trim().toLowerCase();
+        if (!x.tags) x.tags = [];
+        if (v && x.tags.indexOf(v) === -1) x.tags.push(v);
+        tagEditing = null;
+        save(); render();
+      }
+      input.onkeydown = function (e) { if (e.key === "Enter") commit(); };
+      input.onblur = commit;
+      tp.appendChild(input);
+      (x.tags || []).forEach(function (t) {
+        var chip = el("span", "foot-mark", t + "  ×");
+        chip.onmousedown = function (ev) { ev.preventDefault(); };
+        chip.onclick = function (e) {
+          e.stopPropagation();
+          x.tags = (x.tags || []).filter(function (v) { return v !== t; });
+          save(); render();
+        };
+        tp.appendChild(chip);
+      });
+      setTimeout(function () { input.focus(); }, 0);
+      return tp;
+    }
+    var button = el("button", "entry-tag-control");
+    button.textContent = (x.tags && x.tags.length) ? x.tags.join("  ·  ") : "+ add tags";
+    if (!(x.tags && x.tags.length)) button.classList.add("empty");
+    button.onclick = function (e) { e.stopPropagation(); tagEditing = x.id; render(); };
+    return button;
+  }
+
+  function buildQuestionState(x) {
+    var STATES = ["", "○", "◐", "●"];
+    var LABELS = { "": "Unmarked", "○": "Open question", "◐": "Sitting with it", "●": "Answered / settled" };
+    var btn = el("button", "entry-state-btn", LABELS[x.react || ""]);
+    btn.title = "Tap to change status";
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      var i = STATES.indexOf(x.react || "");
+      var next = STATES[(i + 1) % STATES.length];
+      if (next) x.react = next; else delete x.react;
+      x.touched = Date.now();
+      save(); render();
+    };
+    return btn;
+  }
+
+  function buildEntryActions(x, kind) {
+    var actions = el("div", "entry-actions");
+    var share = el("button", "entry-action entry-action-share", "Share");
+    share.onclick = function (e) { e.stopPropagation(); openEntryShare(x); };
+    var develop = el("button", "entry-action entry-action-develop", "Develop →");
+    develop.title = "Open in Workbench";
+    develop.onclick = function (e) { e.stopPropagation(); openWorkbench(x.id, kind); };
+    actions.appendChild(share); actions.appendChild(develop);
+    return actions;
+  }
+
+  function buildExpandedMeta(x, kind) {
+    var block = el("div", "entry-expanded-meta");
+    block.appendChild(entryDetailRow("Tags", buildEntryTagControl(x)));
+    block.appendChild(entryDetailRow("Scripture", buildRefLine(x)));
+    block.appendChild(entryDetailRow("Speaker", buildVoiceLine(x)));
+    block.appendChild(entryDetailRow("Gratitude", buildGratLine(x)));
+    if (kind === "bit") {
+      block.appendChild(entryDetailRow("Status", buildQuestionState(x)));
+      var rv = revisitDays(x);
+      if (rv > 0) block.appendChild(el("div", "entry-detail-note", "Not revisited in " + Math.floor(rv / 30) + " months · worth rereading"));
+    } else if (x.mined) {
+      block.appendChild(el("div", "entry-detail-note", "Carried into questions " + x.mined + "×"));
+    }
+    block.appendChild(buildEntryActions(x, kind));
+    return block;
+  }
+
+  function buildBitMeta(b) { return buildExpandedMeta(b, "bit"); }
+
+
   function render() {
     if (stageFilter !== "home") workspaceMode = "notebook";
     document.body.dataset.mode = workspaceMode;
@@ -2571,91 +2673,6 @@
       shell.appendChild(card);
       attachSwipe(shell, card);
       list.appendChild(shell);
-    }
-
-    // Open-card footer: tags as a light line, refs beneath, state + bench right.
-    function buildBitMeta(b) {
-      var foot = el("div", "card-foot");
-
-      if (tagEditing === b.id) {
-        var tp = el("div", "tag-line-edit");
-        var input = el("input", "tag-input");
-        input.placeholder = "tag";
-        function commit() {
-          var v = input.value.trim().toLowerCase();
-          if (v && b.tags.indexOf(v) === -1) b.tags.push(v);
-          tagEditing = null;
-          save(); render();
-        }
-        input.onkeydown = function (e) { if (e.key === "Enter") commit(); };
-        input.onblur = commit;
-        tp.appendChild(input);
-        (b.tags || []).forEach(function (t) {
-          var chip = el("span", "foot-mark", t + " ✕");
-          chip.style.cursor = "pointer";
-          chip.onmousedown = function (ev) { ev.preventDefault(); };
-          chip.onclick = function (e) {
-            e.stopPropagation();
-            b.tags = b.tags.filter(function (x) { return x !== t; });
-            save(); render();
-          };
-          tp.appendChild(chip);
-        });
-        foot.appendChild(tp);
-        setTimeout(function () { input.focus(); }, 0);
-      } else {
-        var tagLine = el("button", "tag-line");
-        tagLine.textContent = (b.tags && b.tags.length) ? b.tags.join("  ·  ") : "+ tag";
-        if (!(b.tags && b.tags.length)) tagLine.classList.add("empty");
-        tagLine.title = "Tap to edit tags";
-        tagLine.onclick = function (e) { e.stopPropagation(); tagEditing = b.id; render(); };
-        foot.appendChild(tagLine);
-      }
-
-      var footR = el("div", "foot-right");
-      var rv = revisitDays(b);
-      if (rv > 0) {
-        var st = el("span", "foot-mark revisit", "🕮");
-        st.title = "Not revisited in " + Math.floor(rv / 30) + " months — worth rereading";
-        footR.appendChild(st);
-      }
-      // where the question sits, not how a crowd took it
-      var STATES = ["", "○", "◐", "●"];
-      var STATE_TITLES = {
-        "": "Unmarked — tap to cycle",
-        "○": "Open question",
-        "◐": "Sitting with it",
-        "●": "Answered — it settled"
-      };
-      var rBtn = el("button", "foot-btn react-btn" + (b.react ? " has-react" : ""), b.react || "○");
-      rBtn.title = STATE_TITLES[b.react || ""];
-      rBtn.onclick = function (e) {
-        e.stopPropagation();
-        var ri = STATES.indexOf(b.react || "");
-        var next = STATES[(ri + 1) % STATES.length];
-        if (next) b.react = next; else delete b.react;
-        b.touched = Date.now();
-        save(); render();
-      };
-      footR.appendChild(rBtn);
-      var shareBtn = el("button", "foot-btn", "↗");
-      shareBtn.title = "Share full entry";
-      shareBtn.setAttribute("aria-label", "Share full entry");
-      shareBtn.onclick = function (e) { e.stopPropagation(); openEntryShare(b); };
-      footR.appendChild(shareBtn);
-      var wbBtn = el("button", "foot-btn", "📝");
-      wbBtn.title = "Open Write Now";
-      wbBtn.setAttribute("aria-label", "Write Now");
-      wbBtn.onclick = function (e) { e.stopPropagation(); openWorkbench(b.id); };
-      footR.appendChild(wbBtn);
-      foot.appendChild(footR);
-
-      var wrapFoot = el("div", "foot-stack");
-      wrapFoot.appendChild(foot);
-      wrapFoot.appendChild(buildRefLine(b));
-      wrapFoot.appendChild(buildVoiceLine(b));
-      wrapFoot.appendChild(buildGratLine(b));
-      return wrapFoot;
     }
 
     var empty = document.getElementById("empty");
@@ -3953,61 +3970,8 @@
         return;
       }
 
-      // OPEN: one quiet footer — tags as a light line, bench on the right.
-      var foot = el("div", "card-foot");
-      if (tagEditing === t.id) {
-        var tp = el("div", "tag-line-edit");
-        var tinput = el("input", "tag-input");
-        tinput.placeholder = "tag";
-        var commitT = function () {
-          var v = tinput.value.trim().toLowerCase();
-          if (!t.tags) t.tags = [];
-          if (v && t.tags.indexOf(v) === -1) t.tags.push(v);
-          tagEditing = null;
-          save(); render();
-        };
-        tinput.onkeydown = function (e) { if (e.key === "Enter") commitT(); };
-        tinput.onblur = commitT;
-        tp.appendChild(tinput);
-        (t.tags || []).forEach(function (tg) {
-          var chip = el("span", "foot-mark", tg + " ✕");
-          chip.style.cursor = "pointer";
-          chip.onmousedown = function (ev) { ev.preventDefault(); };
-          chip.onclick = function (e) {
-            e.stopPropagation();
-            t.tags = t.tags.filter(function (x) { return x !== tg; });
-            save(); render();
-          };
-          tp.appendChild(chip);
-        });
-        foot.appendChild(tp);
-        setTimeout(function () { tinput.focus(); }, 0);
-      } else {
-        var tagLine = el("button", "tag-line");
-        tagLine.textContent = (t.tags && t.tags.length) ? t.tags.join("  ·  ") : "+ tag";
-        if (!(t.tags && t.tags.length)) tagLine.classList.add("empty");
-        tagLine.title = "Tap to edit tags";
-        tagLine.onclick = function (e) { e.stopPropagation(); tagEditing = t.id; render(); };
-        foot.appendChild(tagLine);
-      }
-
-      var footR = el("div", "foot-right");
-      if (t.mined) {
-        var mined = el("span", "foot-mark", "⛏ " + t.mined);
-        mined.title = "Carried into questions " + t.mined + "×";
-        footR.appendChild(mined);
-      }
-      var twb = el("button", "foot-btn", "📝");
-      twb.setAttribute("aria-label", "Write Now");
-      twb.title = "Open Write Now";
-      twb.onclick = function (e) { e.stopPropagation(); openWorkbench(t.id, "truth"); };
-      footR.appendChild(twb);
-      foot.appendChild(footR);
-
-      card.appendChild(foot);
-      card.appendChild(buildRefLine(t));
-      card.appendChild(buildVoiceLine(t));
-      card.appendChild(buildGratLine(t));
+      // OPEN: same metadata hierarchy and actions as questions.
+      card.appendChild(buildExpandedMeta(t, "truth"));
       shell.appendChild(card);
       attachSwipe(shell, card);
       list.appendChild(shell);
