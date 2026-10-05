@@ -498,8 +498,8 @@
   .share-head { background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 999px;
     padding: 5px 12px; font-family: var(--mono); font-size: 12px; }
   .share-head:hover { border-color: var(--accent); color: var(--accent); }
-  .entry-share-overlay { position: fixed; inset: 0; z-index: 95; display: none; background: var(--page);
-    overscroll-behavior: contain; }
+  .entry-share-overlay { position: fixed; inset: 0; z-index: 400; display: none; background: var(--page);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .entry-share-overlay.open { display: block; }
   .entry-share-shell { width: 100%; max-width: 680px; min-height: 100%; margin: 0 auto; padding: 18px 18px 116px; }
   .entry-share-top { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; }
@@ -1981,11 +1981,16 @@
   function openEntryShare(entry) {
     if (!entry) return;
     closeSwipe();
+    // Share must sit above Workbench, and on mobile the editor keyboard should
+    // get out of the way before the full-entry sheet takes over the viewport.
+    var active = document.activeElement;
+    if (active && typeof active.blur === "function") active.blur();
     sharingEntry = entry;
     renderEntryShare(entry);
     var overlay = document.getElementById("entryShareOverlay");
     overlay.classList.remove("screenshot");
     overlay.classList.add("open");
+    overlay.scrollTop = 0;
     overlay.setAttribute("aria-hidden", "false");
   }
   function closeEntryShare() {
