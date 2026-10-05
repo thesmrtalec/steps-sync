@@ -453,7 +453,7 @@
   .notes-overlay.open { display: flex; }
   .notes-inner { max-width: 620px; width: 100%; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .notes-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .wb-browse { display: flex; align-items: center; gap: 4px; margin-left: auto; margin-right: 10px; }
+  .wb-browse { display: flex; align-items: center; gap: 4px; margin-left: 8px; margin-right: 10px; }
   .wb-arrow { background: transparent; border: 1px solid var(--rule); border-radius: 7px;
     color: var(--muted); font-size: 17px; line-height: 1; padding: 2px 10px 4px; cursor: pointer; }
   .wb-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
@@ -491,6 +491,52 @@
   .wb-att-grat { color: var(--accent); border-color: var(--accent); }
   .wb-meta { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin: 14px 0 0; }
   .has-notes { font-family: var(--mono); font-size: 10px; color: var(--accent); opacity: .8; margin-left: 7px; }
+
+
+  /* ——— share entry ——— */
+  .notes-head-actions { margin-left: auto; display: flex; align-items: center; gap: 7px; }
+  .share-head { background: transparent; border: 1px solid var(--rule); color: var(--muted); border-radius: 999px;
+    padding: 5px 12px; font-family: var(--mono); font-size: 12px; }
+  .share-head:hover { border-color: var(--accent); color: var(--accent); }
+  .entry-share-overlay { position: fixed; inset: 0; z-index: 95; display: none; background: var(--page);
+    overscroll-behavior: contain; }
+  .entry-share-overlay.open { display: block; }
+  .entry-share-shell { width: 100%; max-width: 680px; min-height: 100%; margin: 0 auto; padding: 18px 18px 116px; }
+  .entry-share-top { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; }
+  .entry-share-kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .entry-share-close { margin-left: auto; background: transparent; border: 1px solid var(--rule); color: var(--muted);
+    border-radius: 999px; padding: 5px 14px; font-family: var(--mono); font-size: 12px; }
+  .entry-sheet { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 24px 22px;
+    box-shadow: var(--cardshadow); }
+  .entry-sheet-date { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 18px; }
+  .entry-sheet-text { font-family: var(--serif); font-size: clamp(22px, 5vw, 30px); line-height: 1.38; color: var(--ink);
+    white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 22px; }
+  .entry-sheet-section { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 14px; }
+  .entry-sheet-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 7px; }
+  .entry-sheet-value { font-family: var(--serif); font-size: 16px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .entry-sheet-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .entry-sheet-chip { display: inline-block; border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px;
+    font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .entry-sheet-chip.voice { background: var(--tagbg); border-color: var(--tagbg); color: var(--tagink); }
+  .entry-sheet-chip.ref { color: var(--accent2); }
+  .entry-sheet-chip.mark { color: var(--accent); border-color: var(--accent); }
+  .entry-share-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--page) 70%, transparent); display: flex; justify-content: center; gap: 9px; }
+  .entry-share-actions button { min-height: 46px; border-radius: 10px; padding: 0 16px; font-family: var(--mono); font-size: 12px;
+    letter-spacing: .04em; }
+  .entry-share-copy { background: var(--accent); color: var(--onaccent); border: 1px solid var(--accent); font-weight: 700; }
+  .entry-share-shot { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
+  .entry-share-overlay.screenshot { overflow-y: auto; }
+  .entry-share-overlay.screenshot .entry-share-shell { max-width: 760px; padding: max(28px, env(safe-area-inset-top)) 18px max(34px, env(safe-area-inset-bottom)); display: flex; min-height: 100%; align-items: flex-start; }
+  .entry-share-overlay.screenshot .entry-share-top,
+  .entry-share-overlay.screenshot .entry-share-actions { display: none; }
+  .entry-share-overlay.screenshot .entry-sheet { width: 100%; margin: 0 auto; border-radius: 18px; padding: 30px 26px; }
+  @media (min-width: 720px) {
+    .entry-share-overlay.screenshot .entry-share-shell { align-items: center; }
+    .entry-share-overlay.screenshot .entry-sheet { padding: 38px 42px; }
+  }
 
   /* ——— sync auth gate ——— */
   .auth-gate { position: fixed; inset: 0; background: var(--page); z-index: 80; display: none; align-items: center; justify-content: center; padding: 24px; }
@@ -1066,7 +1112,7 @@
             </div>
           </div>
           <h2 class="tourc-h">3 · Workbench</h2>
-          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes, tags, scriptures, speakers, or gratitude as the idea grows.</p>
+          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes and details as the idea grows; <b>Share</b> pulls the whole entry together for copy/paste or a clean screenshot.</p>
         </div>
 
         <div class="tourc-card">
@@ -1141,7 +1187,7 @@
           <span class="wb-browse-pos" id="wbBrowsePos"></span>
           <button class="wb-arrow" id="wbNext" aria-label="next">›</button>
         </div>
-        <button class="notes-close" id="wbClose">done</button>
+        <div class="notes-head-actions"><button class="share-head" id="wbShare" type="button">share</button><button class="notes-close" id="wbClose">done</button></div>
       </div>
       <div class="wb-writing">
       <label for="wbBit" class="wb-label">The entry</label>
@@ -1151,6 +1197,19 @@
       </div>
       <details class="wb-details"><summary>Entry details <span>Tags · Scriptures · Speakers</span></summary><div class="wb-attached" id="wbAttached"></div></details>
       <div class="wb-meta" id="wbMeta"></div>
+    </div>
+  </div>
+  <div class="entry-share-overlay" id="entryShareOverlay" aria-hidden="true">
+    <div class="entry-share-shell">
+      <div class="entry-share-top">
+        <span class="entry-share-kicker">Share entry</span>
+        <button class="entry-share-close" id="entryShareClose" type="button">done</button>
+      </div>
+      <article class="entry-sheet" id="entryShareSheet"></article>
+      <div class="entry-share-actions">
+        <button class="entry-share-copy" id="entryShareCopy" type="button">Copy full entry</button>
+        <button class="entry-share-shot" id="entryShareShot" type="button">Screenshot view</button>
+      </div>
     </div>
   </div>
   <div class="notes-overlay" id="voiceOverlay">
@@ -1213,7 +1272,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.5.2";
+  var APP_VERSION = "v1.5.3";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
   var stageFilter = "home";
   var workspaceMode = "capture";
@@ -1850,6 +1909,90 @@
     if (refs.length) parts.push(refs.map(refLabel).join(" · "));
 
     return parts.join("\n\n");
+  }
+
+
+  // Long-press stays intentionally light. Share is the canonical whole object:
+  // prose + attached context + working notes, ready to move somewhere else.
+  var sharingEntry = null;
+  function shareEntryDate(entry) {
+    var ts = entryDate(entry);
+    if (!ts) return "";
+    var d = new Date(ts);
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  }
+  function entryMarks(entry) {
+    var marks = [];
+    if (entry.grateful) marks.push("Gratitude");
+    var stateNames = {"○":"Open question","◐":"Sitting with it","●":"Answered"};
+    if (entry.react && stateNames[entry.react]) marks.push(stateNames[entry.react]);
+    return marks;
+  }
+  function fullEntryText(entry) {
+    if (!entry) return "";
+    var parts = [], body = (entry.text || "").trim();
+    if (body) parts.push(body);
+    var voices = entryVoices(entry).slice();
+    if (voices.length) parts.push("Speaker" + (voices.length > 1 ? "s" : "") + ": " + voices.join(" · "));
+    var refs = syncRefs(entry).slice().sort(refSort);
+    if (refs.length) parts.push("Scriptures: " + refs.map(refLabel).join(" · "));
+    var tags = (entry.tags || []).filter(function(t){ return String(t).trim(); });
+    if (tags.length) parts.push("Tags: " + tags.join(" · "));
+    var marks = entryMarks(entry);
+    if (marks.length) parts.push("Marked: " + marks.join(" · "));
+    var workshop = (entry.workshop || "").trim();
+    if (workshop) parts.push("Working notes\n" + workshop);
+    var when = shareEntryDate(entry);
+    if (when) parts.push("Date: " + when);
+    return parts.join("\n\n");
+  }
+  function sheetSection(label, value, kind) {
+    if (!value || (Array.isArray(value) && !value.length)) return null;
+    var sec = el("section", "entry-sheet-section");
+    sec.appendChild(el("div", "entry-sheet-label", label));
+    if (Array.isArray(value)) {
+      var chips = el("div", "entry-sheet-chips");
+      value.forEach(function(v){ chips.appendChild(el("span", "entry-sheet-chip" + (kind ? " "+kind : ""), v)); });
+      sec.appendChild(chips);
+    } else {
+      sec.appendChild(el("div", "entry-sheet-value", value));
+    }
+    return sec;
+  }
+  function renderEntryShare(entry) {
+    var sheet = document.getElementById("entryShareSheet");
+    sheet.innerHTML = "";
+    var when = shareEntryDate(entry);
+    if (when) sheet.appendChild(el("div", "entry-sheet-date", when));
+    sheet.appendChild(el("div", "entry-sheet-text", (entry.text || "").trim()));
+    var voices = entryVoices(entry).slice();
+    var refs = syncRefs(entry).slice().sort(refSort).map(refLabel);
+    var tags = (entry.tags || []).filter(function(t){ return String(t).trim(); });
+    var marks = entryMarks(entry);
+    var workshop = (entry.workshop || "").trim();
+    [
+      sheetSection(voices.length === 1 ? "Speaker" : "Speakers", voices, "voice"),
+      sheetSection("Scriptures", refs, "ref"),
+      sheetSection("Tags", tags, ""),
+      sheetSection("Marked", marks, "mark"),
+      sheetSection("Working notes", workshop, "")
+    ].forEach(function(node){ if(node) sheet.appendChild(node); });
+  }
+  function openEntryShare(entry) {
+    if (!entry) return;
+    closeSwipe();
+    sharingEntry = entry;
+    renderEntryShare(entry);
+    var overlay = document.getElementById("entryShareOverlay");
+    overlay.classList.remove("screenshot");
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+  }
+  function closeEntryShare() {
+    var overlay = document.getElementById("entryShareOverlay");
+    overlay.classList.remove("open", "screenshot");
+    overlay.setAttribute("aria-hidden", "true");
+    sharingEntry = null;
   }
 
   function attachLongPressCopy(node, getText) {
@@ -2490,6 +2633,11 @@
         save(); render();
       };
       footR.appendChild(rBtn);
+      var shareBtn = el("button", "foot-btn", "↗");
+      shareBtn.title = "Share full entry";
+      shareBtn.setAttribute("aria-label", "Share full entry");
+      shareBtn.onclick = function (e) { e.stopPropagation(); openEntryShare(b); };
+      footR.appendChild(shareBtn);
       var wbBtn = el("button", "foot-btn", "📝");
       wbBtn.title = "Open Write Now";
       wbBtn.setAttribute("aria-label", "Write Now");
@@ -3120,6 +3268,31 @@
   document.getElementById("workbenchOverlay").addEventListener("focusin",syncWorkbenchViewport);
   document.getElementById("wbBit").oninput = saveWorkbench;
   document.getElementById("wbPad").oninput = saveWorkbench;
+  document.getElementById("wbShare").onclick = function () {
+    saveWorkbench();
+    openEntryShare(benchFind());
+  };
+  document.getElementById("entryShareClose").onclick = closeEntryShare;
+  document.getElementById("entryShareCopy").onclick = function (e) {
+    e.stopPropagation();
+    if (sharingEntry) copyText(fullEntryText(sharingEntry));
+  };
+  document.getElementById("entryShareShot").onclick = function (e) {
+    e.stopPropagation();
+    var overlay = document.getElementById("entryShareOverlay");
+    overlay.classList.add("screenshot");
+    overlay.scrollTop = 0;
+  };
+  document.getElementById("entryShareOverlay").onclick = function (e) {
+    if (this.classList.contains("screenshot")) {
+      this.classList.remove("screenshot");
+      e.preventDefault();
+    }
+  };
+  document.getElementById("entryShareSheet").onclick = function (e) {
+    // In normal share view the sheet is inert; in screenshot view a tap restores controls.
+    if (!document.getElementById("entryShareOverlay").classList.contains("screenshot")) e.stopPropagation();
+  };
   document.getElementById("wbPrev").onclick = function () { saveWorkbench(); browseGo(-1); };
   document.getElementById("wbNext").onclick = function () { saveWorkbench(); browseGo(1); };
   document.getElementById("wbClose").onclick = function () {
@@ -5060,6 +5233,15 @@
   }
 
 })();
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "Escape") return;
+    var shareOverlay = document.getElementById("entryShareOverlay");
+    if (shareOverlay && shareOverlay.classList.contains("open")) {
+      if (shareOverlay.classList.contains("screenshot")) shareOverlay.classList.remove("screenshot");
+      else closeEntryShare();
+    }
+  });
+
 </script>
 </body>
 </html>
