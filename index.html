@@ -935,17 +935,29 @@
     #workbenchOverlay.wb-typing .notes-inner {display:flex;}
   }
 
-  /* Four equal toolbar slots; gratitude and insight share a DOM wrapper only. */
-  #composer .cap-attach:not(:has(.ref-input)) {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:8px;align-items:start;}
+  /* Capture metadata: scripture + speaker + gratitude + one context choice. */
+  #composer .cap-attach:not(:has(.ref-input)) {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));column-gap:8px;align-items:start;}
   #composer .cap-attach:not(:has(.ref-input)) #capRefs {grid-column:1;min-width:0;}
   #composer .cap-attach:not(:has(.ref-input)) #capVoices {grid-column:2;min-width:0;}
-  #composer .cap-attach:not(:has(.ref-input)) #capGrat {grid-column:3/5;display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;}
+  #composer .cap-attach:not(:has(.ref-input)) #capGrat {grid-column:3/6;display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:0;}
   #composer .cap-attach:not(:has(.ref-input)) .ref-add {width:100%;text-align:center;white-space:nowrap;padding:0;}
   #composer .cap-attach:not(:has(.ref-input)) .ref-chip {max-width:100%;overflow:hidden;text-overflow:ellipsis;}
   @media (min-width:1000px), (min-width:700px) and (orientation:landscape) {
     #composer .cap-attach:not(:has(.ref-input)) {grid-template-columns:repeat(2,minmax(0,1fr));}
     #composer .cap-attach:not(:has(.ref-input)) #capGrat {grid-column:1/3;}
   }
+
+  /* Appearance is independent from notebook scheme. */
+  .appearance-block { padding: 9px 6px 11px; border-bottom: 1px solid var(--rule); margin-bottom: 2px; }
+  .appearance-picker { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-top: 7px; }
+  .appearance-choice { min-height: 34px; border: 1px solid var(--rule); border-radius: 8px; background: var(--page); color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+  .appearance-choice.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .context-control { display:flex; gap:6px; flex-wrap:wrap; }
+  .context-choice { border:1px solid var(--rule); border-radius:999px; background:transparent; color:var(--muted); padding:4px 10px; font-family:var(--mono); font-size:11px; }
+  .context-choice.on { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb,var(--accent) 8%,transparent); }
+  .browse-context-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 12px; }
+  .browse-context-tabs button { border:1px solid var(--rule); border-radius:999px; background:transparent; color:var(--muted); padding:5px 11px; font-family:var(--mono); font-size:10.5px; }
+  .browse-context-tabs button.on { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb,var(--accent) 8%,transparent); }
 
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -971,9 +983,9 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="insightBtn">Insights</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="contextBtn">Insights &amp; Questions</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
-    <input type="search" id="searchBox" placeholder="search stuff, questions, talks / lessons…" autocomplete="off" />
+    <input type="search" id="searchBox" placeholder="search entries, context, talks / lessons…" autocomplete="off" />
   </div>
   <div id="searchOut"></div>
 
@@ -1030,6 +1042,10 @@
         <span class="theme-label">Notebook</span>
         <div class="theme-picker" id="themePicker" aria-label="Notebook theme"></div>
       </div>
+      <div class="appearance-block">
+        <span class="theme-label">Appearance</span>
+        <div class="appearance-picker" id="appearancePicker" aria-label="Day or night appearance"></div>
+      </div>
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
       <button id="exportBtn">Export backup</button>
@@ -1045,6 +1061,7 @@
         <button class="notes-close" id="browseClose">done</button>
       </div>
       <p class="bone-note" id="browseNote"></p>
+      <div id="browseSubnav"></div>
       <div class="notes-index" style="margin-top:10px">
         <div id="browseList"></div>
       </div>
@@ -1098,7 +1115,7 @@
       <h2>The Good Plates</h2>
       <p class="wsub">small plates — a place for the little things, synced across your devices</p>
       <div class="welcome-row"><span class="wnum">1</span><p><b>Make an account</b> — email and password, just to sync your devices.</p></div>
-      <div class="welcome-row"><span class="wnum">2</span><p><b>Capture stuff</b> — tender mercies, study insights, anything worth keeping — and work it into questions and talks / lessons.</p></div>
+      <div class="welcome-row"><span class="wnum">2</span><p><b>Capture stuff</b> — tender mercies, study insights, questions, anything worth keeping — then mark its context and develop it into talks / lessons when useful.</p></div>
       <div class="welcome-row"><span class="wnum">3</span><p><b>Add to Home Screen</b> for the full-screen app. (iPhone: Share → Add to Home Screen.)</p></div>
       <button class="welcome-go" id="welcomeGo">Get started</button>
     </div>
@@ -1179,12 +1196,12 @@
         <div class="tourc-card">
           <div class="tourc-shot">
             <div class="mock">
-              <div class="mock-tabs"><span class="mock-tab on">Entries</span><span class="mock-tab">Questions</span><span class="mock-tab">Talks / lessons</span><span class="mock-tab">Daily 3</span></div>
-              <div class="mock-attach"><span class="mock-chip">Speakers</span><span class="mock-chip">Scriptures</span><span class="mock-chip">Gratitude</span><span class="mock-chip">Insights</span></div>
+              <div class="mock-tabs"><span class="mock-tab on">Entries</span><span class="mock-tab">Talks / lessons</span><span class="mock-tab">Daily 3</span></div>
+              <div class="mock-attach"><span class="mock-chip">Speakers</span><span class="mock-chip">Scriptures</span><span class="mock-chip">Gratitude</span><span class="mock-chip">Insights &amp; Questions</span></div>
             </div>
           </div>
           <h2 class="tourc-h">4 · Notebook</h2>
-          <p class="tourc-p">This is where the pile becomes useful. Browse entries and questions, collect material into talks / lessons, or open collections built from the details you've attached.</p>
+          <p class="tourc-p">This is where the pile becomes useful. Browse journal entries, collect material into talks / lessons, or open collections built from the context and details you've attached.</p>
         </div>
 
         <div class="tourc-card">
@@ -1209,7 +1226,7 @@
             </div>
           </div>
           <h2 class="tourc-h">Find it again</h2>
-          <p class="tourc-p">Speaker and scripture collections are built from what you attach. The Notebook also holds gratitude, habits, Light &amp; Truth, Take stock, and the Vault. Sign in with the same account on each device to keep your data in sync.</p>
+          <p class="tourc-p">Speaker and scripture collections are built from what you attach. The Notebook also holds Insights &amp; Questions, gratitude, habits, Light &amp; Truth, Take stock, and the Vault. Sign in with the same account on each device to keep your data in sync.</p>
         </div>
       </div>
     </div>
@@ -1256,7 +1273,7 @@
       <label for="wbPad" class="wb-label">Working notes</label>
       <textarea class="notes-canvas wb-pad" id="wbPad" placeholder="scriptures, thoughts, where it leads…"></textarea>
       </div>
-      <details class="wb-details"><summary>Entry details <span>Tags · Scriptures · Speakers</span></summary><div class="wb-attached" id="wbAttached"></div></details>
+      <details class="wb-details"><summary>Entry details <span>Context · Tags · Scriptures · Speakers</span></summary><div class="wb-attached" id="wbAttached"></div></details>
       <div class="wb-meta" id="wbMeta"></div>
     </div>
   </div>
@@ -1295,9 +1312,10 @@
         <label class="post-opt"><input id="postOptDate" type="checkbox" checked><span>Date</span></label>
         <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Scriptures</span></label>
         <label class="post-opt"><input id="postOptVoices" type="checkbox" checked><span>Speakers</span></label>
-        <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Working notes</span></label>
+        <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Notes</span></label>
+        <label class="post-opt" id="postOptContextWrap"><input id="postOptContext" type="checkbox" checked><span>Context</span></label>
+        <label class="post-opt" id="postOptGratitudeWrap"><input id="postOptGratitude" type="checkbox" checked><span>Gratitude</span></label>
         <label class="post-opt"><input id="postOptTags" type="checkbox"><span>Tags</span></label>
-        <label class="post-opt"><input id="postOptMarks" type="checkbox"><span>Markers</span></label>
         <label class="post-opt"><input id="postOptBrand" type="checkbox"><span>Good Plates mark</span></label>
       </div>
       <div class="post-preview-head"><strong>Preview</strong><span class="post-notice" id="postNotice"></span></div>
@@ -1368,47 +1386,55 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.7.1";
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var APP_VERSION = "v1.8.1";
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
-  // Notebook schemes: each palette changes the whole material, not just the accent.
-  // Explicit schemes intentionally ignore OS light/dark so a chosen notebook stays itself.
+  // Notebook scheme and viewing appearance are separate choices. Each notebook
+  // has a deliberately designed day and night palette; Auto follows the device.
   var THEMES = {
-    midnight: { label:"Midnight", page:"#141925", card:"#222a3d", ink:"#efe6cd", muted:"#9a9077", faint:"#7d7560", rule:"#323b52", accent:"#cf9b4a", accent2:"#e9bc6b", onaccent:"#1b1407", tagbg:"#2e3850", tagink:"#aeb7cd", edge:"#0a0d14", wash:"rgba(233,188,107,.13)", shadow:"none", stConcept:"#8a93ab", stBit:"#cf9b4a", stReady:"#e9bc6b", stProven:"#efe6cd" },
-    parchment:{ label:"Parchment", page:"#e8d9b8", card:"#f7eed9", ink:"#2a2622", muted:"#7f705d", faint:"#a08e72", rule:"#d3c19c", accent:"#9d3c2d", accent2:"#6f2d24", onaccent:"#fbf2df", tagbg:"#e2d2ad", tagink:"#65553f", edge:"#c9b488", wash:"rgba(126,74,34,.08)", shadow:"inset 0 0 100px rgba(110,70,30,.08)", stConcept:"#8a7c68", stBit:"#9d3c2d", stReady:"#6f2d24", stProven:"#2a2622" },
-    library: { label:"Library", page:"#171812", card:"#25271f", ink:"#eee6d2", muted:"#a79d82", faint:"#7d765f", rule:"#3b3f31", accent:"#a7a56c", accent2:"#c7aa63", onaccent:"#14150f", tagbg:"#30352a", tagink:"#bcc1a7", edge:"#0b0d09", wash:"rgba(199,170,99,.10)", shadow:"none", stConcept:"#929984", stBit:"#a7a56c", stReady:"#c7aa63", stProven:"#eee6d2" },
-    bluepencil:{ label:"Blue Pencil", page:"#e9eef0", card:"#f7f9f8", ink:"#26313a", muted:"#667782", faint:"#89979d", rule:"#c8d2d6", accent:"#4f7184", accent2:"#355568", onaccent:"#f7fbfc", tagbg:"#dde6e9", tagink:"#526b75", edge:"#bec9cd", wash:"rgba(79,113,132,.08)", shadow:"inset 0 0 90px rgba(60,90,110,.05)", stConcept:"#75858d", stBit:"#4f7184", stReady:"#355568", stProven:"#26313a" },
-    moss:    { label:"Moss", page:"#151a14", card:"#242b21", ink:"#ece9d7", muted:"#9ca18a", faint:"#777e68", rule:"#384034", accent:"#8fa36f", accent2:"#b2ba7e", onaccent:"#11170d", tagbg:"#2f382b", tagink:"#b4bca5", edge:"#0b100a", wash:"rgba(143,163,111,.11)", shadow:"none", stConcept:"#87927b", stBit:"#8fa36f", stReady:"#b2ba7e", stProven:"#ece9d7" },
-    wine:    { label:"Wine", page:"#1b151a", card:"#2b222b", ink:"#f0e5dc", muted:"#a58d98", faint:"#7f6974", rule:"#443441", accent:"#b56d84", accent2:"#d298a9", onaccent:"#1a0d12", tagbg:"#3a2d38", tagink:"#c8afbb", edge:"#0d090c", wash:"rgba(181,109,132,.10)", shadow:"none", stConcept:"#9d8791", stBit:"#b56d84", stReady:"#d298a9", stProven:"#f0e5dc" },
-    tide:    { label:"Tide", page:"#102023", card:"#1b3033", ink:"#e4eeea", muted:"#89a29d", faint:"#66837e", rule:"#2d484b", accent:"#67a59f", accent2:"#8dc2ba", onaccent:"#081312", tagbg:"#254044", tagink:"#abc2bd", edge:"#071012", wash:"rgba(103,165,159,.12)", shadow:"none", stConcept:"#7f9995", stBit:"#67a59f", stReady:"#8dc2ba", stProven:"#e4eeea" },
-    carbon:  { label:"Carbon", page:"#111214", card:"#202226", ink:"#efefeb", muted:"#9a9a95", faint:"#71716d", rule:"#34363a", accent:"#c4bda9", accent2:"#e3dcc8", onaccent:"#111214", tagbg:"#2b2d31", tagink:"#babbb7", edge:"#08090a", wash:"rgba(255,255,255,.045)", shadow:"none", stConcept:"#8f9092", stBit:"#c4bda9", stReady:"#e3dcc8", stProven:"#efefeb" }
+    midnight: { label:"Midnight",
+      day:{page:"#e7e3d8",card:"#f5f1e7",ink:"#2b313a",muted:"#73736c",faint:"#98958a",rule:"#cbc6b8",accent:"#9a7420",accent2:"#70551a",onaccent:"#fff8e9",tagbg:"#ddd8cc",tagink:"#5f6469",edge:"#c1bcaf",wash:"rgba(154,116,32,.07)",shadow:"inset 0 0 90px rgba(50,55,65,.035)",stConcept:"#7e8285",stBit:"#9a7420",stReady:"#70551a",stProven:"#2b313a"},
+      night:{page:"#141925",card:"#222a3d",ink:"#efe6cd",muted:"#9a9077",faint:"#7d7560",rule:"#323b52",accent:"#cf9b4a",accent2:"#e9bc6b",onaccent:"#1b1407",tagbg:"#2e3850",tagink:"#aeb7cd",edge:"#0a0d14",wash:"rgba(233,188,107,.13)",shadow:"none",stConcept:"#8a93ab",stBit:"#cf9b4a",stReady:"#e9bc6b",stProven:"#efe6cd"} },
+    parchment:{ label:"Parchment",
+      day:{page:"#e8d9b8",card:"#f7eed9",ink:"#2a2622",muted:"#7f705d",faint:"#a08e72",rule:"#d3c19c",accent:"#9d3c2d",accent2:"#6f2d24",onaccent:"#fbf2df",tagbg:"#e2d2ad",tagink:"#65553f",edge:"#c9b488",wash:"rgba(126,74,34,.08)",shadow:"inset 0 0 100px rgba(110,70,30,.08)",stConcept:"#8a7c68",stBit:"#9d3c2d",stReady:"#6f2d24",stProven:"#2a2622"},
+      night:{page:"#1b1713",card:"#2b241d",ink:"#f0e5d2",muted:"#aa947a",faint:"#806f5d",rule:"#44372d",accent:"#c76a55",accent2:"#e08a6f",onaccent:"#1b100c",tagbg:"#382e25",tagink:"#c9b39b",edge:"#0d0a08",wash:"rgba(224,138,111,.09)",shadow:"none",stConcept:"#958473",stBit:"#c76a55",stReady:"#e08a6f",stProven:"#f0e5d2"} },
+    library:{ label:"Library",
+      day:{page:"#e7e6db",card:"#f4f2e8",ink:"#2b2e25",muted:"#747767",faint:"#959687",rule:"#c9c9b9",accent:"#777747",accent2:"#625f34",onaccent:"#f8f7ed",tagbg:"#dedfd1",tagink:"#5e6556",edge:"#bebfaf",wash:"rgba(119,119,71,.07)",shadow:"inset 0 0 80px rgba(75,78,55,.04)",stConcept:"#7f8375",stBit:"#777747",stReady:"#625f34",stProven:"#2b2e25"},
+      night:{page:"#171812",card:"#25271f",ink:"#eee6d2",muted:"#a79d82",faint:"#7d765f",rule:"#3b3f31",accent:"#a7a56c",accent2:"#c7aa63",onaccent:"#14150f",tagbg:"#30352a",tagink:"#bcc1a7",edge:"#0b0d09",wash:"rgba(199,170,99,.10)",shadow:"none",stConcept:"#929984",stBit:"#a7a56c",stReady:"#c7aa63",stProven:"#eee6d2"} },
+    bluepencil:{ label:"Blue Pencil",
+      day:{page:"#e9eef0",card:"#f7f9f8",ink:"#26313a",muted:"#667782",faint:"#89979d",rule:"#c8d2d6",accent:"#4f7184",accent2:"#355568",onaccent:"#f7fbfc",tagbg:"#dde6e9",tagink:"#526b75",edge:"#bec9cd",wash:"rgba(79,113,132,.08)",shadow:"inset 0 0 90px rgba(60,90,110,.05)",stConcept:"#75858d",stBit:"#4f7184",stReady:"#355568",stProven:"#26313a"},
+      night:{page:"#141b20",card:"#222d34",ink:"#e6eef1",muted:"#94a4ad",faint:"#71828a",rule:"#35454d",accent:"#6f95aa",accent2:"#91b2c3",onaccent:"#0d1519",tagbg:"#2d3a42",tagink:"#afc0c8",edge:"#0a0f12",wash:"rgba(111,149,170,.11)",shadow:"none",stConcept:"#86969e",stBit:"#6f95aa",stReady:"#91b2c3",stProven:"#e6eef1"} },
+    moss:{ label:"Moss",
+      day:{page:"#e5e8dd",card:"#f2f4eb",ink:"#283026",muted:"#6e7867",faint:"#90998a",rule:"#c8cdbf",accent:"#62784c",accent2:"#4b6039",onaccent:"#f5f7ef",tagbg:"#dce2d3",tagink:"#56654e",edge:"#bec4b5",wash:"rgba(98,120,76,.07)",shadow:"inset 0 0 80px rgba(65,85,55,.04)",stConcept:"#77826f",stBit:"#62784c",stReady:"#4b6039",stProven:"#283026"},
+      night:{page:"#151a14",card:"#242b21",ink:"#ece9d7",muted:"#9ca18a",faint:"#777e68",rule:"#384034",accent:"#8fa36f",accent2:"#b2ba7e",onaccent:"#11170d",tagbg:"#2f382b",tagink:"#b4bca5",edge:"#0b100a",wash:"rgba(143,163,111,.11)",shadow:"none",stConcept:"#87927b",stBit:"#8fa36f",stReady:"#b2ba7e",stProven:"#ece9d7"} },
+    wine:{ label:"Wine",
+      day:{page:"#eee3e7",card:"#faf2f4",ink:"#392932",muted:"#7d6671",faint:"#9e8992",rule:"#d6c6cc",accent:"#96536a",accent2:"#763d53",onaccent:"#fff5f7",tagbg:"#e6d7dc",tagink:"#6f5662",edge:"#cdbdc3",wash:"rgba(150,83,106,.07)",shadow:"inset 0 0 80px rgba(95,55,70,.04)",stConcept:"#88727c",stBit:"#96536a",stReady:"#763d53",stProven:"#392932"},
+      night:{page:"#1b151a",card:"#2b222b",ink:"#f0e5dc",muted:"#a58d98",faint:"#7f6974",rule:"#443441",accent:"#b56d84",accent2:"#d298a9",onaccent:"#1a0d12",tagbg:"#3a2d38",tagink:"#c8afbb",edge:"#0d090c",wash:"rgba(181,109,132,.10)",shadow:"none",stConcept:"#9d8791",stBit:"#b56d84",stReady:"#d298a9",stProven:"#f0e5dc"} },
+    tide:{ label:"Tide",
+      day:{page:"#e3ecea",card:"#f2f8f6",ink:"#233433",muted:"#617b77",faint:"#829994",rule:"#c3d2cf",accent:"#3f7e78",accent2:"#2f625e",onaccent:"#f2fbf8",tagbg:"#d6e5e1",tagink:"#506e69",edge:"#b9cbc7",wash:"rgba(63,126,120,.07)",shadow:"inset 0 0 80px rgba(40,95,90,.04)",stConcept:"#708984",stBit:"#3f7e78",stReady:"#2f625e",stProven:"#233433"},
+      night:{page:"#102023",card:"#1b3033",ink:"#e4eeea",muted:"#89a29d",faint:"#66837e",rule:"#2d484b",accent:"#67a59f",accent2:"#8dc2ba",onaccent:"#081312",tagbg:"#254044",tagink:"#abc2bd",edge:"#071012",wash:"rgba(103,165,159,.12)",shadow:"none",stConcept:"#7f9995",stBit:"#67a59f",stReady:"#8dc2ba",stProven:"#e4eeea"} },
+    carbon:{ label:"Carbon",
+      day:{page:"#e7e7e4",card:"#f5f5f2",ink:"#232426",muted:"#6f706c",faint:"#92928d",rule:"#ccccca",accent:"#777163",accent2:"#57534a",onaccent:"#fafaf7",tagbg:"#dededb",tagink:"#5e5f5c",edge:"#c0c0bd",wash:"rgba(65,65,65,.045)",shadow:"inset 0 0 80px rgba(35,35,35,.025)",stConcept:"#7c7d7a",stBit:"#777163",stReady:"#57534a",stProven:"#232426"},
+      night:{page:"#111214",card:"#202226",ink:"#efefeb",muted:"#9a9a95",faint:"#71716d",rule:"#34363a",accent:"#c4bda9",accent2:"#e3dcc8",onaccent:"#111214",tagbg:"#2b2d31",tagink:"#babbb7",edge:"#08090a",wash:"rgba(255,255,255,.045)",shadow:"none",stConcept:"#8f9092",stBit:"#c4bda9",stReady:"#e3dcc8",stProven:"#efefeb"} }
   };
-  var THEME_ALIASES = {
-    ember:"midnight", brass:"midnight", clay:"parchment", rust:"parchment", sage:"moss", slate:"bluepencil", plum:"wine", marquee:"wine", indigo:"bluepencil", ash:"carbon"
-  };
-  function normalizedTheme(key) {
-    if (THEMES[key]) return key;
-    if (THEME_ALIASES[key] && THEMES[THEME_ALIASES[key]]) return THEME_ALIASES[key];
-    return "midnight";
-  }
+  var THEME_ALIASES = {ember:"midnight",brass:"midnight",clay:"parchment",rust:"parchment",sage:"moss",slate:"bluepencil",plum:"wine",marquee:"wine",indigo:"bluepencil",ash:"carbon"};
+  function normalizedTheme(key) { if (THEMES[key]) return key; return THEME_ALIASES[key] || "midnight"; }
+  function normalizedAppearance(v){ return v === "day" || v === "night" ? v : "auto"; }
+  function nightAppearance(){ if(state.appearance === "night") return true; if(state.appearance === "day") return false; return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+  function themePalette(key, night){ var t=THEMES[normalizedTheme(key)] || THEMES.midnight; return night ? t.night : t.day; }
+  function resolvedPalette(){ return themePalette(state.theme, nightAppearance()); }
   function applyTheme() {
-    state.theme = normalizedTheme(state.theme);
-    var t = THEMES[state.theme] || THEMES.midnight;
-    var r = document.documentElement.style;
-    var vars = {
-      "--page":t.page, "--card":t.card, "--ink":t.ink, "--muted":t.muted, "--faint":t.faint,
-      "--rule":t.rule, "--accent":t.accent, "--accent2":t.accent2, "--onaccent":t.onaccent,
-      "--tagbg":t.tagbg, "--tagink":t.tagink, "--edge":t.edge, "--wash":t.wash, "--wrapshadow":t.shadow,
-      "--st-concept":t.stConcept, "--st-bit":t.stBit, "--st-ready":t.stReady, "--st-proven":t.stProven
-    };
-    Object.keys(vars).forEach(function(k){ r.setProperty(k, vars[k]); });
-    r.setProperty("--glow", state.theme === "midnight" ? "0 0 10px rgba(233,188,107,.32)" : "none");
-    r.setProperty("--cardshadow", (state.theme === "parchment" || state.theme === "bluepencil") ? "0 1px 3px rgba(40,35,28,.08)" : "0 2px 7px rgba(0,0,0,.24)");
-    document.documentElement.setAttribute("data-theme", state.theme);
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) { meta = document.createElement("meta"); meta.name = "theme-color"; document.head.appendChild(meta); }
-    meta.content = t.page;
+    state.theme = normalizedTheme(state.theme); state.appearance = normalizedAppearance(state.appearance);
+    var t = resolvedPalette(), r = document.documentElement.style;
+    var vars = {"--page":t.page,"--card":t.card,"--ink":t.ink,"--muted":t.muted,"--faint":t.faint,"--rule":t.rule,"--accent":t.accent,"--accent2":t.accent2,"--onaccent":t.onaccent,"--tagbg":t.tagbg,"--tagink":t.tagink,"--edge":t.edge,"--wash":t.wash,"--wrapshadow":t.shadow,"--st-concept":t.stConcept,"--st-bit":t.stBit,"--st-ready":t.stReady,"--st-proven":t.stProven};
+    Object.keys(vars).forEach(function(k){r.setProperty(k,vars[k]);});
+    r.setProperty("--glow", nightAppearance() && state.theme === "midnight" ? "0 0 10px rgba(233,188,107,.32)" : "none");
+    r.setProperty("--cardshadow", nightAppearance() ? "0 2px 7px rgba(0,0,0,.24)" : "0 1px 3px rgba(40,35,28,.08)");
+    document.documentElement.setAttribute("data-theme",state.theme); document.documentElement.setAttribute("data-appearance",nightAppearance()?"night":"day");
+    var meta=document.querySelector('meta[name="theme-color"]'); if(!meta){meta=document.createElement("meta");meta.name="theme-color";document.head.appendChild(meta);} meta.content=t.page;
   }
+  function entryContext(entry){ if(!entry)return ""; var c=String(entry.context||"").toLowerCase(); if(c === "insight" || c === "question")return c; if((entry.tags||[]).some(function(t){return String(t).toLowerCase()==="insight";}))return "insight"; return ""; }
+  function setEntryContext(entry,value){ if(!entry)return; entry.tags=(entry.tags||[]).filter(function(t){var q=String(t).toLowerCase();return q!=="insight" && q!=="question";}); if(value === "insight" || value === "question")entry.context=value; else delete entry.context; entry.touched=Date.now(); }
   var stageFilter = "home";
   var workspaceMode = "capture";
   var writeMode = "guided";
@@ -1417,42 +1443,24 @@
   var expandedBit = null;
 
   function hydrate(data) {
-    var toPool = [];
-    state.bits = (data.bits || []).filter(function (b) {
-      if (!b.tags) b.tags = [];
-      var s = b.status;
-      if (s === "bit" || s === "working" || s === "ready" || s === "proven") {
-        delete b.status;
-        return true;
-      }
-      if (s === undefined && data.poolMigrated) return true;
-      toPool.push(b);
-      return false;
-    });
-    state.notes = data.notes || [];
-    state.habits = data.habits || { pray: [], good: [], bad: [] };
-    if (!state.habits.pray) state.habits.pray = [];
-    if (!state.habits.good) state.habits.good = [];
-    if (!state.habits.bad) state.habits.bad = [];
-    state.habitLabels = data.habitLabels || { good: "good habit", bad: "bad habit" };
-    state.buried = data.buried || [];
-    state.truths = data.truths || [];
-    toPool.forEach(function (b) {
-      state.truths.push(b);   // keep the whole entry, not a lossy copy
-    });
-    state.poolMigrated = true;
-    state.sets = data.sets || [];
-    state.autoRefs = data.autoRefs === true;
-    state.theme = normalizedTheme(data.theme || "midnight");
-    applyTheme();
-    state.anchors = data.anchors || [];
-    state.creed = data.creed || null;
-    // Persistent feature fields must be registered here and round-trip tested.
-    state.daily3 = data.daily3 ? JSON.parse(JSON.stringify(data.daily3)) : {day:todayKeyStr(),picks:[],going:false};
-    state.daily3.day = d3DateKey(state.daily3.day) || todayKeyStr();
-    state.d3History = d3MigrateHistory(data.d3History || {});
-    state.d3Seeds = data.d3Seeds ? JSON.parse(JSON.stringify(data.d3Seeds)) : {};
-    state.updatedAt = data.updatedAt || 0;
+    var merged=[], seen={};
+    function keep(entry, fallbackContext){
+      if(!entry || !entry.id || seen[entry.id]) return;
+      entry.tags=(entry.tags||[]).filter(function(t){ if(String(t).toLowerCase()==="insight"){if(!entry.context)entry.context="insight";return false;} return String(t).toLowerCase()!=="question"; });
+      if(!entry.context && fallbackContext)entry.context=fallbackContext;
+      if(entry.context!=="insight" && entry.context!=="question")delete entry.context;
+      delete entry.status; merged.push(entry); seen[entry.id]=1;
+    }
+    (data.truths||[]).forEach(function(x){keep(x,"");});
+    (data.bits||[]).forEach(function(x){keep(x,"question");});
+    state.truths=merged; state.bits=[];
+    state.notes=data.notes||[];
+    state.habits=data.habits||{pray:[],good:[],bad:[]}; if(!state.habits.pray)state.habits.pray=[];if(!state.habits.good)state.habits.good=[];if(!state.habits.bad)state.habits.bad=[];
+    state.habitLabels=data.habitLabels||{good:"good habit",bad:"bad habit"};
+    state.buried=data.buried||[]; state.buried.forEach(function(x){x.tags=(x.tags||[]).filter(function(t){if(String(t).toLowerCase()==="insight"){if(!x.context)x.context="insight";return false;}return String(t).toLowerCase()!=="question";});if(!x.context&&x.from&&x.from!=="stuff")x.context="question";});
+    state.poolMigrated=true; state.sets=data.sets||[]; state.autoRefs=data.autoRefs===true; state.theme=normalizedTheme(data.theme||"midnight"); state.appearance=normalizedAppearance(data.appearance||"auto"); applyTheme();
+    state.anchors=data.anchors||[]; state.creed=data.creed||null;
+    state.daily3=data.daily3?JSON.parse(JSON.stringify(data.daily3)):{day:todayKeyStr(),picks:[],going:false}; state.daily3.day=d3DateKey(state.daily3.day)||todayKeyStr(); state.d3History=d3MigrateHistory(data.d3History||{}); state.d3Seeds=data.d3Seeds?JSON.parse(JSON.stringify(data.d3Seeds)):{}; state.updatedAt=data.updatedAt||0;
   }
   function load() {
     try {
@@ -2058,63 +2066,17 @@
     var d = new Date(ts);
     return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   }
-  function entryMarks(entry) {
-    var marks = [];
-    if (entry.grateful) marks.push("Gratitude");
-    var stateNames = {"○":"Open question","◐":"Sitting with it","●":"Answered"};
-    if (entry.react && stateNames[entry.react]) marks.push(stateNames[entry.react]);
-    return marks;
-  }
+  function contextLabel(entry){ var c=entryContext(entry); return c ? c.charAt(0).toUpperCase()+c.slice(1) : ""; }
   function fullEntryText(entry) {
-    if (!entry) return "";
-    var parts = [], body = (entry.text || "").trim();
-    if (body) parts.push(body);
-    var voices = entryVoices(entry).slice();
-    if (voices.length) parts.push("Speaker" + (voices.length > 1 ? "s" : "") + ": " + voices.join(" · "));
-    var refs = syncRefs(entry).slice().sort(refSort);
-    if (refs.length) parts.push("Scriptures: " + refs.map(refLabel).join(" · "));
-    var tags = (entry.tags || []).filter(function(t){ return String(t).trim(); });
-    if (tags.length) parts.push("Tags: " + tags.join(" · "));
-    var marks = entryMarks(entry);
-    if (marks.length) parts.push("Marked: " + marks.join(" · "));
-    var workshop = (entry.workshop || "").trim();
-    if (workshop) parts.push("Working notes\n" + workshop);
-    var when = shareEntryDate(entry);
-    if (when) parts.push("Date: " + when);
-    return parts.join("\n\n");
+    if (!entry) return ""; var parts=[], body=(entry.text||"").trim(); if(body)parts.push(body);
+    var ctx=contextLabel(entry); if(ctx)parts.push("Context: "+ctx);
+    var voices=entryVoices(entry).slice(); if(voices.length)parts.push("Speaker"+(voices.length>1?"s":"")+": "+voices.join(" · "));
+    var refs=syncRefs(entry).slice().sort(refSort); if(refs.length)parts.push("Scriptures: "+refs.map(refLabel).join(" · "));
+    var tags=(entry.tags||[]).filter(function(t){return String(t).trim();}); if(tags.length)parts.push("Tags: "+tags.join(" · "));
+    if(entry.grateful)parts.push("Gratitude"); var workshop=(entry.workshop||"").trim(); if(workshop)parts.push("Working notes\n"+workshop); var when=shareEntryDate(entry); if(when)parts.push("Date: "+when); return parts.join("\n\n");
   }
-  function sheetSection(label, value, kind) {
-    if (!value || (Array.isArray(value) && !value.length)) return null;
-    var sec = el("section", "entry-sheet-section");
-    sec.appendChild(el("div", "entry-sheet-label", label));
-    if (Array.isArray(value)) {
-      var chips = el("div", "entry-sheet-chips");
-      value.forEach(function(v){ chips.appendChild(el("span", "entry-sheet-chip" + (kind ? " "+kind : ""), v)); });
-      sec.appendChild(chips);
-    } else {
-      sec.appendChild(el("div", "entry-sheet-value", value));
-    }
-    return sec;
-  }
-  function renderEntryShare(entry) {
-    var sheet = document.getElementById("entryShareSheet");
-    sheet.innerHTML = "";
-    var when = shareEntryDate(entry);
-    if (when) sheet.appendChild(el("div", "entry-sheet-date", when));
-    sheet.appendChild(el("div", "entry-sheet-text", (entry.text || "").trim()));
-    var voices = entryVoices(entry).slice();
-    var refs = syncRefs(entry).slice().sort(refSort).map(refLabel);
-    var tags = (entry.tags || []).filter(function(t){ return String(t).trim(); });
-    var marks = entryMarks(entry);
-    var workshop = (entry.workshop || "").trim();
-    [
-      sheetSection(voices.length === 1 ? "Speaker" : "Speakers", voices, "voice"),
-      sheetSection("Scriptures", refs, "ref"),
-      sheetSection("Tags", tags, ""),
-      sheetSection("Marked", marks, "mark"),
-      sheetSection("Working notes", workshop, "")
-    ].forEach(function(node){ if(node) sheet.appendChild(node); });
-  }
+  function sheetSection(label,value,kind){ if(!value||(Array.isArray(value)&&!value.length))return null; var sec=el("section","entry-sheet-section");sec.appendChild(el("div","entry-sheet-label",label));if(Array.isArray(value)){var chips=el("div","entry-sheet-chips");value.forEach(function(v){chips.appendChild(el("span","entry-sheet-chip"+(kind?" "+kind:""),v));});sec.appendChild(chips);}else sec.appendChild(el("div","entry-sheet-value",value));return sec; }
+  function renderEntryShare(entry){ var sheet=document.getElementById("entryShareSheet");sheet.innerHTML="";var when=shareEntryDate(entry);if(when)sheet.appendChild(el("div","entry-sheet-date",when));sheet.appendChild(el("div","entry-sheet-text",(entry.text||"").trim()));var voices=entryVoices(entry).slice(),refs=syncRefs(entry).slice().sort(refSort).map(refLabel),tags=(entry.tags||[]).filter(function(t){return String(t).trim();}),workshop=(entry.workshop||"").trim(),ctx=contextLabel(entry);[sheetSection("Context",ctx?[ctx]:[],"mark"),sheetSection(voices.length===1?"Speaker":"Speakers",voices,"voice"),sheetSection("Scriptures",refs,"ref"),sheetSection("Tags",tags,""),sheetSection("Gratitude",entry.grateful?["Gratitude"]:[],"mark"),sheetSection("Working notes",workshop,"")].forEach(function(node){if(node)sheet.appendChild(node);}); }
   function openEntryShare(entry) {
     if (!entry) return;
     closeSwipe();
@@ -2144,12 +2106,12 @@
   var postEntry = null;
   var postMode = "journal";
   var postCanvases = [];
-  function postTheme() { return THEMES[normalizedTheme(state.theme)] || THEMES.midnight; }
+  function postTheme() { return resolvedPalette(); }
   function postCheckbox(id) { var n=document.getElementById(id); return !!(n && n.checked); }
   function postOptions() {
     return {
       date:postCheckbox("postOptDate"), refs:postCheckbox("postOptRefs"), voices:postCheckbox("postOptVoices"),
-      notes:postCheckbox("postOptNotes"), tags:postCheckbox("postOptTags"), marks:postCheckbox("postOptMarks"),
+      notes:postCheckbox("postOptNotes"), tags:postCheckbox("postOptTags"), context:postCheckbox("postOptContext"), grateful:postCheckbox("postOptGratitude"),
       brand:postCheckbox("postOptBrand")
     };
   }
@@ -2160,6 +2122,7 @@
     document.querySelectorAll("[data-post-mode]").forEach(function(b){ b.classList.toggle("on", b.dataset.postMode === postMode); });
     var ex = document.getElementById("postExcerpt"); if (ex) ex.value = (entry.text || "").trim();
     document.getElementById("postExcerptWrap").classList.remove("show");
+    var cw=document.getElementById("postOptContextWrap"), gw=document.getElementById("postOptGratitudeWrap"); if(cw)cw.style.display=entryContext(entry)?"":"none"; if(gw)gw.style.display=entry.grateful?"":"none";
     var overlay=document.getElementById("postOverlay");
     overlay.classList.add("open"); overlay.scrollTop=0; overlay.setAttribute("aria-hidden","false");
     renderPostMaker();
@@ -2215,11 +2178,12 @@
     var body=(mode==="excerpt" ? (document.getElementById("postExcerpt").value||"") : (entry.text||"")).trim();
     textLines(body, mode==="excerpt"?58:52, 'Georgia, Times New Roman, serif','ink', mode==="excerpt"?75:69,'400',false);
     gap(28);
+    if (opts.context && entryContext(entry)) section("Context", [contextLabel(entry)], true);
     if (opts.voices) section(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), false);
     if (opts.refs) section("Scriptures", syncRefs(entry).slice().sort(refSort).map(refLabel), true);
     if (opts.tags) section("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), true);
-    if (opts.marks) section("Marked", entryMarks(entry), true);
-    if (opts.notes) section("Working notes", (entry.workshop||"").trim(), false);
+    if (opts.grateful && entry.grateful) section("Gratitude", ["Gratitude"], true);
+    if (opts.notes) section("Notes", (entry.workshop||"").trim(), false);
     return lines;
   }
   function postPaginate(lines, maxH) {
@@ -2239,19 +2203,19 @@
   function postCarouselBlock(text, label, dateText, size) {
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
     function gap(h){ lines.push({k:"gap",h:h}); }
-    function textLines(value, px, family, color, lh, weight, italic) {
+    function textLines(value, px, family, color, lh, weight, italic, role) {
       if (!String(value||"").trim()) return;
       var f=postFont(px,family,weight,italic);
       postWrap(m,value,f,maxW).forEach(function(t){
-        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:t===""?lh*.55:lh, size:px});
+        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:t===""?lh*.55:lh, size:px, role:role||""});
       });
     }
     if (dateText) {
-      textLines(String(dateText).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false);
-      gap(34);
+      textLines(String(dateText).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false,'date');
+      lines.push({k:"gap",h:34,role:"date-gap"});
     }
     if (label) {
-      textLines(String(label).toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false);
+      textLines(String(label).toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false,'label');
       gap(18);
     }
     textLines(text,size||56,'Georgia, Times New Roman, serif','ink',(size||56)*1.32,'400',false);
@@ -2292,9 +2256,9 @@
       pages=pages.concat(postPaginate(block,1320));
     });
     if (opts.notes && notes) {
-      pages=pages.concat(postPaginate(postCarouselBlock(notes,"Working notes","",48),1320));
+      pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48),1320));
     }
-    var metaOpts={date:false,refs:opts.refs,voices:opts.voices,notes:false,tags:opts.tags,marks:opts.marks,brand:opts.brand};
+    var metaOpts={date:false,refs:opts.refs,voices:opts.voices,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
     var metaEntry=Object.assign({},entry,{text:"",workshop:""});
     var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
       // remove the body spacer that postLineObjects emits when there is no body
@@ -2331,12 +2295,35 @@
     var t=postTheme(), c=document.createElement("canvas"); c.width=1080; c.height=1920;
     var x=c.getContext("2d"); x.fillStyle=t.page; x.fillRect(0,0,c.width,c.height);
     roundedRect(x,70,58,940,1804,30); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
-    var left=124, right=956, y=128;
-    page.forEach(function(line){
-      if (line.k==="gap") { y+=line.h; return; }
-      if (line.k==="rule") { y+=8; x.strokeStyle=t.rule; x.lineWidth=2; x.beginPath(); x.moveTo(left,y); x.lineTo(right,y); x.stroke(); y+=line.h-8; return; }
-      x.font=line.font; x.fillStyle=postResolveColor(t,line.color); x.textBaseline="top"; x.fillText(line.text,left,y); y+=line.h;
-    });
+    var left=124, right=956;
+
+    // Carousel cards are composed like pages, not like a document starting at y=0.
+    // Keep the journal date pinned near the top, then optically center the actual
+    // thought. Slides without a date center the whole content block.
+    var datePrefix=[], content=page.slice();
+    if (opts.centerContent && content.length && (content[0].role==="date")) {
+      while (content.length && (content[0].role==="date" || content[0].role==="date-gap")) datePrefix.push(content.shift());
+    }
+    function height(lines){ return (lines||[]).reduce(function(sum,line){return sum+(line.h||0);},0); }
+    function drawLines(lines,startY){
+      var y=startY;
+      lines.forEach(function(line){
+        if (line.k==="gap") { y+=line.h; return; }
+        if (line.k==="rule") { y+=8; x.strokeStyle=t.rule; x.lineWidth=2; x.beginPath(); x.moveTo(left,y); x.lineTo(right,y); x.stroke(); y+=line.h-8; return; }
+        x.font=line.font; x.fillStyle=postResolveColor(t,line.color); x.textBaseline="top"; x.fillText(line.text,left,y); y+=line.h;
+      });
+      return y;
+    }
+
+    if (opts.centerContent) {
+      if (datePrefix.length) drawLines(datePrefix,128);
+      var top=datePrefix.length?310:180, bottom=1690, available=bottom-top, contentH=height(content);
+      // Exact centering can feel visually low on a phone; bias a little upward.
+      var y=top + Math.max(0,(available-contentH)*0.44);
+      drawLines(content,y);
+    } else {
+      drawLines(page,128);
+    }
     if (opts.brand) {
       x.font=postFont(16,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
       x.fillText("THE GOOD PLATES",left,1812);
@@ -2367,7 +2354,8 @@
           : "Too much for one readable journal card — exporting as a short carousel instead.";
       }
     }
-    var canvases=pages.map(function(pg,i){return postDrawPage(pg,i,pages.length,opts);});
+    var drawOpts=Object.assign({},opts,{centerContent:mode==="carousel"});
+    var canvases=pages.map(function(pg,i){return postDrawPage(pg,i,pages.length,drawOpts);});
     return {canvases:canvases,notice:notice};
   }
   function renderPostMaker() {
@@ -2761,7 +2749,8 @@
       function commit() {
         var v = input.value.trim().toLowerCase();
         if (!x.tags) x.tags = [];
-        if (v && x.tags.indexOf(v) === -1) x.tags.push(v);
+        if (v === "insight" || v === "question") setEntryContext(x, v);
+        else if (v && x.tags.indexOf(v) === -1) x.tags.push(v);
         tagEditing = null;
         save(); render();
       }
@@ -2788,20 +2777,9 @@
     return button;
   }
 
-  function buildQuestionState(x) {
-    var STATES = ["", "○", "◐", "●"];
-    var LABELS = { "": "Unmarked", "○": "Open question", "◐": "Sitting with it", "●": "Answered / settled" };
-    var btn = el("button", "entry-state-btn", LABELS[x.react || ""]);
-    btn.title = "Tap to change status";
-    btn.onclick = function (e) {
-      e.stopPropagation();
-      var i = STATES.indexOf(x.react || "");
-      var next = STATES[(i + 1) % STATES.length];
-      if (next) x.react = next; else delete x.react;
-      x.touched = Date.now();
-      save(); render();
-    };
-    return btn;
+  function buildContextControl(x) {
+    var wrap=el("div","context-control"), current=entryContext(x);
+    [["insight","Insight"],["question","Question"]].forEach(function(pair){var btn=el("button","context-choice"+(current===pair[0]?" on":""),pair[1]);btn.type="button";btn.setAttribute("aria-pressed",String(current===pair[0]));btn.onclick=function(e){e.stopPropagation();setEntryContext(x,current===pair[0]?"":pair[0]);save();render();};wrap.appendChild(btn);}); return wrap;
   }
 
   function buildEntryActions(x, kind) {
@@ -2816,26 +2794,14 @@
   }
 
   function buildExpandedMeta(x, kind) {
-    var block = el("div", "entry-expanded-meta");
-    block.appendChild(entryDetailRow("Tags", buildEntryTagControl(x)));
-    block.appendChild(entryDetailRow("Scripture", buildRefLine(x)));
-    block.appendChild(entryDetailRow("Speaker", buildVoiceLine(x)));
-    block.appendChild(entryDetailRow("Gratitude", buildGratLine(x)));
-    if (kind === "bit") {
-      block.appendChild(entryDetailRow("Status", buildQuestionState(x)));
-      var rv = revisitDays(x);
-      if (rv > 0) block.appendChild(el("div", "entry-detail-note", "Not revisited in " + Math.floor(rv / 30) + " months · worth rereading"));
-    } else if (x.mined) {
-      block.appendChild(el("div", "entry-detail-note", "Carried into questions " + x.mined + "×"));
-    }
-    block.appendChild(buildEntryActions(x, kind));
-    return block;
+    var block=el("div","entry-expanded-meta"); block.appendChild(entryDetailRow("Context",buildContextControl(x))); block.appendChild(entryDetailRow("Tags",buildEntryTagControl(x))); block.appendChild(entryDetailRow("Scripture",buildRefLine(x))); block.appendChild(entryDetailRow("Speaker",buildVoiceLine(x))); block.appendChild(entryDetailRow("Gratitude",buildGratLine(x))); block.appendChild(buildEntryActions(x,kind)); return block;
   }
 
   function buildBitMeta(b) { return buildExpandedMeta(b, "bit"); }
 
 
   function render() {
+    if(stageFilter==="bit")stageFilter="pool";
     if (stageFilter !== "home") workspaceMode = "notebook";
     document.body.dataset.mode = workspaceMode;
     document.querySelectorAll("[data-mode]").forEach(function(btn) {
@@ -2873,7 +2839,6 @@
       srow.appendChild(btn);
     }
     sectionCard("pool", "entries", (state.truths || []).length);
-    sectionCard("bit", "questions", state.bits.length);
     sectionCard("sets", "talks / lessons", (state.sets || []).length);
     sectionCard("daily3", "daily 3", "✓");
 
@@ -3149,8 +3114,9 @@
   var capVoiceEditing = false;
   // Gratitude is a stamp, not a field — no value, no typing. Tap it on, tap
   // it off; it just rides along with the entry.
-  var pendingInsight = false;
-  function isInsight(entry){return (entry.tags||[]).some(function(t){return t.toLowerCase()==="insight";});}
+  var pendingContext = "";
+  function isInsight(entry){return entryContext(entry)==="insight";}
+  function isQuestion(entry){return entryContext(entry)==="question";}
   var pendingGrateful = false;
   function renderCapGrat() {
     var row = document.getElementById("capGrat");
@@ -3159,9 +3125,7 @@
     btn.title = "Mark this as a gratitude";
     btn.onclick = function () { pendingGrateful = !pendingGrateful; renderCapGrat(); };
     row.appendChild(btn);
-    var insight=el("button","ref-add grat-btn"+(pendingInsight ? " on" : ""),pendingInsight ? "✓ Insight" : "Insight");
-    insight.setAttribute("aria-pressed",String(pendingInsight));
-    insight.onclick=function(){pendingInsight=!pendingInsight;renderCapGrat();};row.appendChild(insight);
+    [["insight","Insight"],["question","Question"]].forEach(function(pair){var on=pendingContext===pair[0],c=el("button","ref-add grat-btn"+(on?" on":""),(on?"✓ ":"")+pair[1]);c.setAttribute("aria-pressed",String(on));c.onclick=function(){pendingContext=on?"":pair[0];renderCapGrat();};row.appendChild(c);});
   }
   function renderCapVoices() {
     var row = document.getElementById("capVoices");
@@ -3215,42 +3179,7 @@
   }
 
   function addBit() {
-    var text = draft.value.trim();
-    if (!text) return;
-    var refs = pendingRefs.slice();
-    var voices = pendingVoices.slice();
-    var grateful = pendingGrateful;
-    if (stageFilter === "pool" || stageFilter === "home") {
-      if (!state.truths) state.truths = [];
-      var t0 = { id: Date.now().toString(36), text: text, created: Date.now(), refs: refs, voices: voices };
-      if (grateful) t0.grateful = true;
-      if (pendingInsight) t0.tags=["insight"];
-      state.truths.unshift(t0);
-      draft.value = "";
-      pendingRefs = []; capRefEditing = false; renderCapRefs();
-      pendingVoices = []; capVoiceEditing = false; renderCapVoices();
-      pendingGrateful = false; pendingInsight = false; renderCapGrat();
-      save(); render();
-      return;
-    }
-    var b0 = {
-      id: Date.now().toString(36),
-      text: text,
-      tags: [],
-      refs: refs,
-      voices: voices,
-      created: Date.now(),
-      statusAt: Date.now()
-    };
-    if (grateful) b0.grateful = true;
-    if (pendingInsight) b0.tags.push("insight");
-    state.bits.unshift(b0);
-    draft.value = "";
-    pendingRefs = []; capRefEditing = false; renderCapRefs();
-    pendingVoices = []; capVoiceEditing = false; renderCapVoices();
-    pendingGrateful = false; pendingInsight = false; renderCapGrat();
-    draft.placeholder = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
-    save(); render();
+    var text=draft.value.trim(); if(!text)return; var entry={id:Date.now().toString(36),text:text,created:Date.now(),refs:pendingRefs.slice(),voices:pendingVoices.slice(),tags:[]}; if(pendingGrateful)entry.grateful=true;if(pendingContext)entry.context=pendingContext;if(!state.truths)state.truths=[];state.truths.unshift(entry);draft.value="";pendingRefs=[];capRefEditing=false;renderCapRefs();pendingVoices=[];capVoiceEditing=false;renderCapVoices();pendingGrateful=false;pendingContext="";renderCapGrat();draft.placeholder=PLACEHOLDERS[Math.floor(Math.random()*PLACEHOLDERS.length)];save();render();
   }
   document.getElementById("addBtn").onmousedown = function(e){e.preventDefault();};
   document.getElementById("addBtn").onclick = function(){
@@ -3339,32 +3268,11 @@
   };
   syncAutoRefsLabel();
   function renderThemePicker() {
-    var host = document.getElementById("themePicker");
-    if (!host) return;
-    host.innerHTML = "";
-    Object.keys(THEMES).forEach(function (key) {
-      var t = THEMES[key];
-      var choice = el("button", "theme-choice" + (state.theme === key ? " on" : ""));
-      choice.type = "button";
-      choice.title = t.label;
-      choice.setAttribute("aria-label", "Notebook theme: " + t.label);
-      choice.setAttribute("aria-pressed", String(state.theme === key));
-      var swatch = el("span", "theme-swatch"); swatch.style.background = t.page; swatch.style.borderColor = t.rule;
-      var card = el("span", "theme-swatch-card"); card.style.background = t.card; card.style.borderColor = t.rule;
-      var accent = el("span", "theme-swatch-accent"); accent.style.background = t.accent;
-      swatch.appendChild(card); swatch.appendChild(accent);
-      choice.appendChild(swatch);
-      choice.appendChild(el("span", "theme-choice-label", t.label));
-      choice.onclick = function () {
-        state.theme = key;
-        applyTheme();
-        save();
-        renderThemePicker();
-      };
-      host.appendChild(choice);
-    });
+    var host=document.getElementById("themePicker");if(!host)return;host.innerHTML="";Object.keys(THEMES).forEach(function(key){var scheme=THEMES[key],t=themePalette(key,nightAppearance()),choice=el("button","theme-choice"+(state.theme===key?" on":""));choice.type="button";choice.title=scheme.label;choice.setAttribute("aria-label","Notebook theme: "+scheme.label);choice.setAttribute("aria-pressed",String(state.theme===key));var swatch=el("span","theme-swatch");swatch.style.background=t.page;swatch.style.borderColor=t.rule;var card=el("span","theme-swatch-card");card.style.background=t.card;card.style.borderColor=t.rule;var accent=el("span","theme-swatch-accent");accent.style.background=t.accent;swatch.appendChild(card);swatch.appendChild(accent);choice.appendChild(swatch);choice.appendChild(el("span","theme-choice-label",scheme.label));choice.onclick=function(){state.theme=key;applyTheme();save();renderThemePicker();};host.appendChild(choice);});
   }
-  renderThemePicker();
+  function renderAppearancePicker(){var host=document.getElementById("appearancePicker");if(!host)return;host.innerHTML="";[["auto","Auto"],["day","Day"],["night","Night"]].forEach(function(pair){var b=el("button","appearance-choice"+(state.appearance===pair[0]?" on":""),pair[1]);b.type="button";b.setAttribute("aria-pressed",String(state.appearance===pair[0]));b.onclick=function(){state.appearance=pair[0];applyTheme();save();renderAppearancePicker();renderThemePicker();if(postEntry)renderPostMaker();};host.appendChild(b);});}
+  renderThemePicker();renderAppearancePicker();
+  if(window.matchMedia){var mq=window.matchMedia("(prefers-color-scheme: dark)"),appearanceChanged=function(){if(state.appearance==="auto"){applyTheme();renderThemePicker();if(postEntry)renderPostMaker();}};try{mq.addEventListener("change",appearanceChanged);}catch(e){try{mq.addListener(appearanceChanged);}catch(e2){}}}
   document.getElementById("utilBtn").onclick = function () {
     var m = document.getElementById("utilMenu");
     m.style.display = m.style.display === "none" ? "flex" : "none";
@@ -3693,7 +3601,7 @@
     }
     editableList("Tags",function(){return b.tags||[];},function(t){return t;},
       function(t){b.tags=(b.tags||[]).filter(function(v){return v!==t;});},
-      function(t){if(!b.tags)b.tags=[];if(b.tags.indexOf(t)===-1)b.tags.push(t);return true;},"Add a tag");
+      function(t){var q=String(t).toLowerCase();if(q==="insight"||q==="question"){setEntryContext(b,q);return true;}if(!b.tags)b.tags=[];if(b.tags.indexOf(t)===-1)b.tags.push(t);return true;},"Add a tag");
     syncRefs(b);
     editableList("Scriptures",function(){return entryRefs(b);},refLabel,
       function(r){dropRef(b,r);},function(v){return addRefFromInput(b,v);},"Alma 32:21");
@@ -3702,13 +3610,7 @@
     function paintGratitude(){gratitude.textContent=b.grateful ? "✓ Gratitude" : "Gratitude";gratitude.setAttribute("aria-pressed",String(!!b.grateful));}
     gratitude.onclick=function(){if(b.grateful)delete b.grateful;else b.grateful=true;changed();paintGratitude();};
     paintGratitude();host.appendChild(gratitude);
-    var insight=el("button","wb-gratitude",isInsight(b) ? "✓ Insight" : "Insight");
-    insight.setAttribute("aria-pressed",String(isInsight(b)));
-    insight.onclick=function(){
-      if(isInsight(b))b.tags=(b.tags||[]).filter(function(t){return t.toLowerCase()!=="insight";});
-      else {if(!b.tags)b.tags=[];b.tags.push("insight");}
-      changed();renderWbAttached(b);
-    };host.appendChild(insight);
+    var cg=section("Context"),cc=el("div","context-control"),cur=entryContext(b);[["insight","Insight"],["question","Question"]].forEach(function(pair){var bt=el("button","context-choice"+(cur===pair[0]?" on":""),pair[1]);bt.type="button";bt.onclick=function(){setEntryContext(b,cur===pair[0]?"":pair[0]);changed();renderWbAttached(b);};cc.appendChild(bt);});cg.appendChild(cc);
   }
   function syncWorkbenchViewport(){
     var overlay=document.getElementById("workbenchOverlay"), vv=window.visualViewport;
@@ -3737,7 +3639,7 @@
   document.querySelectorAll("[data-post-mode]").forEach(function(btn){
     btn.onclick=function(){postMode=btn.dataset.postMode;renderPostMaker();};
   });
-  ["postOptDate","postOptRefs","postOptVoices","postOptNotes","postOptTags","postOptMarks","postOptBrand"].forEach(function(id){
+  ["postOptDate","postOptRefs","postOptVoices","postOptNotes","postOptTags","postOptContext","postOptGratitude","postOptBrand"].forEach(function(id){
     document.getElementById(id).onchange=renderPostMaker;
   });
   var postExcerptTimer=null;
@@ -3885,13 +3787,14 @@
   function allEntries() {
     return (state.truths || []).concat(state.bits || []);
   }
-  var browseOpenGroups = {}, browseKindNow = null, browseReturn = null;
+  var browseOpenGroups = {}, browseKindNow = null, browseReturn = null, browseContextFilter = "all";
   function openBrowse(kind) {
     if (browseKindNow !== kind) { browseOpenGroups = {}; browseKindNow = kind; }
     var title = document.getElementById("browseTitle");
     var note = document.getElementById("browseNote");
     var list = document.getElementById("browseList");
     list.innerHTML = "";
+    var subnav=document.getElementById("browseSubnav"); if(subnav)subnav.innerHTML="";
     var groups = [];
 
     if (kind === "voices") {
@@ -3925,17 +3828,14 @@
         ? groups.length + (groups.length === 1 ? " passage" : " passages")
         : "Nothing marked yet \u2014 attach a reference with + scripture while you write.";
 
+    } else if (kind === "context") {
+      title.textContent="Insights & Questions"; var sub=document.getElementById("browseSubnav"),tabs=el("div","browse-context-tabs");
+      [["all","All"],["insight","Insights"],["question","Questions"]].forEach(function(pair){var bt=el("button",browseContextFilter===pair[0]?"on":"",pair[1]);bt.onclick=function(){browseContextFilter=pair[0];openBrowse("context");};tabs.appendChild(bt);});sub.appendChild(tabs);
+      var ctxEntries=allEntries().filter(function(e){var c=entryContext(e);return c&&(browseContextFilter==="all"||c===browseContextFilter);}).sort(function(a,b){return entryDate(b)-entryDate(a);}); groups=[{name:null,items:ctxEntries}];
+      var ins=allEntries().filter(isInsight).length,qs=allEntries().filter(isQuestion).length;note.textContent=(ins+qs)?ins+" insight"+(ins===1?"":"s")+" · "+qs+" question"+(qs===1?"":"s"):"Mark an entry as Insight or Question to collect it here.";
     } else {
-      title.textContent = kind === "insight" ? "Insights" : "Hand of God";
-      var grat = allEntries().filter(function (e) { return kind === "insight" ? isInsight(e) : e.grateful; })
-        .sort(function (a, b) { return (b.created || 0) - (a.created || 0); });
-      groups = [{ name: null, items: grat }];
-      note.textContent = grat.length
-        ? grat.length + (grat.length === 1 ? " moment" : " moments")
-        : "Nothing marked yet \u2014 tap + gratitude while you write, or run \ud83d\udd6f\ufe0f prepare.";
+      title.textContent="Hand of God"; var grat=allEntries().filter(function(e){return e.grateful;}).sort(function(a,b){return (b.created||0)-(a.created||0);}); groups=[{name:null,items:grat}]; note.textContent=grat.length?grat.length+(grat.length===1?" moment":" moments"):"Nothing marked yet — tap + gratitude while you write, or run 🕯️ prepare.";
     }
-
-    if(kind === "insight") note.textContent=grat.length ? grat.length+" insight"+(grat.length===1?"":"s") : "Mark an entry as Insight to find it here.";
 
     groups.forEach(function (g) {
       if (!g.items.length) return;
@@ -3971,7 +3871,7 @@
   }
   document.getElementById("voicesBtn").onclick = function () { openBrowse("voices"); };
   document.getElementById("refsBtn").onclick = function () { openBrowse("refs"); };
-  document.getElementById("insightBtn").onclick = function(){openBrowse("insight");};
+  document.getElementById("contextBtn").onclick = function(){browseContextFilter="all";openBrowse("context");};
   document.getElementById("gratBtn").onclick = function () { openBrowse("grat"); };
   document.getElementById("browseClose").onclick = function () {
     browseReturn = null;
@@ -4191,18 +4091,7 @@
       var actions = el("div", "bone-actions");
       var dig = el("button", "bone-digup", "⛏ dig up");
       dig.onclick = function () {
-        var wasStuff = b.from === "stuff";
-        delete b.status;
-        delete b.buriedAt;
-        delete b.from;
-        state.buried = state.buried.filter(function (x) { return x.id !== b.id; });
-        if (wasStuff) {
-          if (!state.truths) state.truths = [];
-          state.truths.unshift(b);
-        } else {
-          b.statusAt = Date.now();
-          state.bits.unshift(b);
-        }
+        var oldFrom=b.from; delete b.status;delete b.buriedAt;delete b.from;if(!b.context&&oldFrom&&oldFrom!=="stuff")b.context="question";state.buried=state.buried.filter(function(x){return x.id!==b.id;});if(!state.truths)state.truths=[];state.truths.unshift(b);
         save(); renderBoneyard(); render();
       };
       actions.appendChild(dig);
@@ -4337,52 +4226,12 @@
         closeSwipe(); save(); render();
       };
       var actCol = el("div", "swipe-act-col");
-      var actQ = el("button", "swipe-act swipe-promote", "+ question");
-      actQ.title = "Copy into questions — it stays here too";
-      actQ.onclick = function (e) {
-        e.stopPropagation();
-        var promoted = {
-          id: Date.now().toString(36),
-          text: t.text,
-          tags: (t.tags || []).slice(),
-          refs: (t.refs || []).slice(),
-          voices: (t.voices || []).slice(),
-          workshop: t.workshop || "",
-          created: Date.now(),
-          statusAt: Date.now()
-        };
-        if (t.occurred) promoted.occurred = t.occurred;
-        if (t.grateful) promoted.grateful = true;
-        state.bits.unshift(promoted);
-        t.mined = (t.mined || 0) + 1;
-        t.touched = Date.now();
-        closeSwipe(); save(); render();
-      };
+      var actQ = el("button", "swipe-act swipe-promote", "? question");
+      actQ.title = "Mark this journal entry as a question";
+      actQ.onclick = function (e) { e.stopPropagation(); setEntryContext(t,"question"); closeSwipe(); save(); render(); };
       var actS = el("button", "swipe-act swipe-promote", "→ talk/lesson");
       actS.title = "Send straight to a talk / lesson";
-      actS.onclick = function (e) {
-        e.stopPropagation();
-        // talks / lessons hold entries by id — mirror it into questions so the
-        // lineup can find it, then open the picker on that new copy
-        var nid = Date.now().toString(36);
-        var mirrored = {
-          id: nid,
-          text: t.text,
-          tags: (t.tags || []).slice(),
-          refs: (t.refs || []).slice(),
-          voices: (t.voices || []).slice(),
-          workshop: t.workshop || "",
-          created: Date.now(),
-          statusAt: Date.now()
-        };
-        if (t.occurred) mirrored.occurred = t.occurred;
-        if (t.grateful) mirrored.grateful = true;
-        state.bits.unshift(mirrored);
-        t.mined = (t.mined || 0) + 1;
-        t.touched = Date.now();
-        save();
-        openTalkLessonPicker(nid);
-      };
+      actS.onclick = function (e) { e.stopPropagation(); openTalkLessonPicker(t.id); };
       actCol.appendChild(actQ);
       actCol.appendChild(actS);
       shell.appendChild(actCol);
@@ -4406,8 +4255,8 @@
         if (syncRefs(t).length) flags.push("✝");
         if (entryVoices(t).length) flags.push("❝");
         if (t.grateful) flags.push("❦");
+        if (isInsight(t)) flags.push("✦"); else if (isQuestion(t)) flags.push("?");
         if (t.workshop && t.workshop.trim()) flags.push("✎");
-        if (t.mined) flags.push("⛏");
         if (flags.length) card.appendChild(el("div", "bit-flags", flags.join(" ")));
         shell.appendChild(card);
         attachSwipe(shell, card);
@@ -4427,7 +4276,7 @@
     var counts = {};
     function tally(arr) {
       (arr || []).forEach(function (x) {
-        (x.tags || []).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
+        (x.tags || []).forEach(function (t) { var q=String(t).toLowerCase(); if(q==="insight"||q==="question")return; counts[t] = (counts[t] || 0) + 1; });
       });
     }
     tally(state.truths);
@@ -4631,11 +4480,12 @@
       if (qb && refs.some(function (r) { return r.book === qb; })) return true;
       // speakers match on any part of the name — "holland" finds the chip
       if (entryVoices(x).some(function (v) { return v.toLowerCase().indexOf(q) !== -1; })) return true;
+      var ec=entryContext(x);if(ec&&ec.indexOf(q)!==-1)return true;
       return false;
     }
     var results = [];
     (state.truths || []).forEach(function (t) {
-      if (hits(t)) results.push({ text: t.text, label: "stuff", open: function () { openWorkbench(t.id, "truth"); } });
+      if (hits(t)) results.push({ text: t.text, label: entryContext(t) || "entry", open: function () { openWorkbench(t.id, "truth"); } });
     });
     state.bits.forEach(function (b) {
       if (hits(b)) results.push({ text: b.text, label: "question", open: function () { openWorkbench(b.id, "bit"); } });
@@ -4957,7 +4807,7 @@
       }
 
       if (availStuff.length) {
-        body.appendChild(el("div", "set-add-head", "from stuff — tap to add"));
+        body.appendChild(el("div", "set-add-head", "from entries — tap to add"));
         availStuff.forEach(addable);
       }
       if (availQ.length) {
