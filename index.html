@@ -1368,7 +1368,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.7.0";
+  var APP_VERSION = "v1.7.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook schemes: each palette changes the whole material, not just the accent.
@@ -2233,6 +2233,95 @@
     while (pages.length>1 && pages[pages.length-1].every(function(l){return l.k==="gap";})) pages.pop();
     return pages;
   }
+  function postPageHeight(page) {
+    return (page || []).reduce(function(sum,line){ return sum + (line.h || 0); }, 0);
+  }
+  function postCarouselBlock(text, label, dateText, size) {
+    var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
+    function gap(h){ lines.push({k:"gap",h:h}); }
+    function textLines(value, px, family, color, lh, weight, italic) {
+      if (!String(value||"").trim()) return;
+      var f=postFont(px,family,weight,italic);
+      postWrap(m,value,f,maxW).forEach(function(t){
+        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:t===""?lh*.55:lh, size:px});
+      });
+    }
+    if (dateText) {
+      textLines(String(dateText).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false);
+      gap(34);
+    }
+    if (label) {
+      textLines(String(label).toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false);
+      gap(18);
+    }
+    textLines(text,size||56,'Georgia, Times New Roman, serif','ink',(size||56)*1.32,'400',false);
+    gap(24);
+    return lines;
+  }
+  function postCarouselBeats(text) {
+    var raw=String(text||"").trim();
+    if (!raw) return [];
+    var paras=raw.split(/\n\s*\n+/).map(function(x){return x.trim();}).filter(Boolean);
+    if (paras.length > 1) return paras;
+    var sentences=raw.match(/[^.!?]+[.!?]+(?:[\"'”’)]*)|[^.!?]+$/g) || [];
+    sentences=sentences.map(function(x){return x.trim();}).filter(Boolean);
+    if (sentences.length > 1) {
+      var target=Math.ceil(raw.length/2), chunks=[""], total=0;
+      sentences.forEach(function(sentence){
+        var i=chunks.length-1;
+        if (chunks[i] && total>=target && chunks.length<2) { chunks.push(sentence); }
+        else chunks[i]+=(chunks[i]?" ":"")+sentence;
+        total+=sentence.length+1;
+      });
+      return chunks.filter(Boolean);
+    }
+    if (raw.length > 220) {
+      var words=raw.split(/\s+/), mid=Math.floor(words.length/2);
+      return [words.slice(0,mid).join(" "), words.slice(mid).join(" ")];
+    }
+    return [raw];
+  }
+  function postCarouselPages(entry, opts) {
+    var body=(entry.text||"").trim(), notes=(entry.workshop||"").trim(), pages=[];
+    var beats=postCarouselBeats(body);
+    // A carousel is a sequence, not merely an overflow fallback. Paragraphs /
+    // sentences become deliberate beats, while very long beats can still paginate.
+    beats.forEach(function(beat,bi){
+      var dateText=(bi===0 && opts.date) ? shareEntryDate(entry) : "";
+      var block=postCarouselBlock(beat, "", dateText, bi===0?60:54);
+      pages=pages.concat(postPaginate(block,1320));
+    });
+    if (opts.notes && notes) {
+      pages=pages.concat(postPaginate(postCarouselBlock(notes,"Working notes","",48),1320));
+    }
+    var metaOpts={date:false,refs:opts.refs,voices:opts.voices,notes:false,tags:opts.tags,marks:opts.marks,brand:opts.brand};
+    var metaEntry=Object.assign({},entry,{text:"",workshop:""});
+    var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
+      // remove the body spacer that postLineObjects emits when there is no body
+      return !(idx===0 && line.k==="gap");
+    });
+    var hasMeta=metaLines.some(function(line){return line.k!=="gap";});
+    if (hasMeta) {
+      if (!pages.length) pages=[[]];
+      var last=pages[pages.length-1], h=postPageHeight(last), mh=postPageHeight(metaLines);
+      if (h+mh<=1580) last.push.apply(last,metaLines);
+      else pages=pages.concat(postPaginate(metaLines,1580));
+    }
+    // If the entry is genuinely tiny and has no notes/metadata, split the prose
+    // into two readable beats rather than returning the same single image as Journal.
+    if (pages.length===1 && body && !(opts.notes&&notes) && !hasMeta) {
+      var words=body.split(/\s+/);
+      if (words.length>8) {
+        var mid=Math.ceil(words.length/2);
+        pages=[
+          postCarouselBlock(words.slice(0,mid).join(" "),"",opts.date?shareEntryDate(entry):"",60),
+          postCarouselBlock(words.slice(mid).join(" "),"","",56)
+        ];
+      }
+    }
+    return pages.length ? pages : [[]];
+  }
+
   function roundedRect(ctx,x,y,w,h,r) {
     r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
     ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
@@ -2261,7 +2350,8 @@
   function makePostCanvases(entry, mode, opts) {
     var notice="", scale=1, pages;
     if (mode === "carousel") {
-      pages=postPaginate(postLineObjects(entry,mode,opts,1),1580);
+      pages=postCarouselPages(entry,opts);
+      notice=pages.length+"-slide carousel · entry → notes → sources";
     } else {
       var minScale=mode==="excerpt"?0.70:0.76;
       for (scale=1; scale>=minScale; scale-=0.04) {
@@ -2288,8 +2378,13 @@
     var host=document.getElementById("postPreview"); host.innerHTML="";
     postCanvases.forEach(function(c){host.appendChild(c);});
     document.getElementById("postNotice").textContent=result.notice || (postCanvases.length>1 ? postCanvases.length+" slides" : "1080 × 1920");
-    document.getElementById("postShareNative").textContent=postCanvases.length>1 ? "Share "+postCanvases.length+" images" : "Share image";
-    document.getElementById("postDownload").textContent=postCanvases.length>1 ? "Save PNGs" : "Save PNG";
+    if (postMode==="carousel") {
+      document.getElementById("postShareNative").textContent="Share carousel ("+postCanvases.length+")";
+      document.getElementById("postDownload").textContent="Save "+postCanvases.length+" slides";
+    } else {
+      document.getElementById("postShareNative").textContent=postCanvases.length>1 ? "Share "+postCanvases.length+" images" : "Share image";
+      document.getElementById("postDownload").textContent=postCanvases.length>1 ? "Save PNGs" : "Save PNG";
+    }
   }
   function postCanvasBlob(canvas) {
     return new Promise(function(resolve){ canvas.toBlob(function(b){resolve(b);},"image/png",1); });
