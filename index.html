@@ -34,13 +34,8 @@
   body { margin: 0; min-height: 100vh; background: var(--page); color: var(--ink); font-family: var(--serif); -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 620px; margin: 0 auto; padding: 0 20px 72px; min-height: 100vh;
     border-left: 1px solid var(--edge); border-right: 1px solid var(--edge);
-    background: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22220%22%20height%3D%22220%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.8%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20type%3D%22matrix%22%20values%3D%220%200%200%200%200.36%20%200%200%200%200%200.27%20%200%200%200%200%200.16%20%200%200%200%200.6%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22220%22%20height%3D%22220%22%20filter%3D%22url%28%23n%29%22%20opacity%3D%220.16%22/%3E%3C/svg%3E');
-    background-color: var(--page);
-    box-shadow: inset 0 0 100px rgba(110, 70, 30, .10); }
-  @media (prefers-color-scheme: dark) {
-    .wrap { background: radial-gradient(ellipse 90% 300px at 50% -40px, rgba(233,188,107,.13), transparent 70%);
-      box-shadow: none; }
-  }
+    background: radial-gradient(ellipse 90% 320px at 50% -50px, var(--wash, transparent), transparent 72%), var(--page);
+    box-shadow: var(--wrapshadow, none); }
   button { cursor: pointer; font-family: inherit; transition: background .15s, color .15s, border-color .15s, transform .05s; }
   button:active { transform: translateY(1px); }
   button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -398,6 +393,17 @@
   .util-menu button { text-align: left; background: transparent; border: none; padding: 8px 6px; font-size: 14px; color: var(--ink); border-radius: 6px; }
   .util-menu button:hover { background: var(--page); }
   .util-menu .util-signout { color: var(--accent2, #b4452f); }
+  .theme-block { padding: 2px 6px 10px; border-bottom: 1px solid var(--rule); margin-bottom: 2px; }
+  .theme-label { display: block; margin-bottom: 9px; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+  .theme-picker { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; align-items: stretch; }
+  .backup .theme-choice { display: grid; grid-template-columns: 42px minmax(0,1fr); gap: 9px; align-items: center; min-width: 0; padding: 7px 8px; border: 1px solid var(--rule); border-radius: 9px; background: var(--page); color: var(--ink); text-align: left; }
+  .backup .theme-choice:hover { border-color: var(--accent); background: var(--page); }
+  .backup .theme-choice.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .theme-swatch { position: relative; width: 42px; height: 30px; border-radius: 6px; border: 1px solid rgba(127,127,127,.28); overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04); }
+  .theme-swatch-card { position: absolute; left: 6px; right: 6px; top: 6px; bottom: 6px; border-radius: 4px; border: 1px solid rgba(127,127,127,.22); }
+  .theme-swatch-accent { position: absolute; width: 12px; height: 3px; left: 10px; bottom: 8px; border-radius: 99px; }
+  .theme-choice-label { min-width: 0; font-family: var(--serif); font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 430px) { .theme-picker { grid-template-columns: 1fr; } }
 
   /* ——— notes drawer ——— */
   .notes-tab { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: none; color: var(--faint); font-family: var(--mono); font-size: 11.5px; padding: 4px 6px; }
@@ -979,6 +985,10 @@
     <span class="sync-chip" id="syncStatus"></span>
     <span class="backup-note" id="authWho"></span>
     <div class="util-menu" id="utilMenu" style="display:none">
+      <div class="theme-block">
+        <span class="theme-label">Notebook</span>
+        <div class="theme-picker" id="themePicker" aria-label="Notebook theme"></div>
+      </div>
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
       <button id="exportBtn">Export backup</button>
@@ -1282,8 +1292,47 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.5.3";
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var APP_VERSION = "v1.6.0";
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+
+  // Notebook schemes: each palette changes the whole material, not just the accent.
+  // Explicit schemes intentionally ignore OS light/dark so a chosen notebook stays itself.
+  var THEMES = {
+    midnight: { label:"Midnight", page:"#141925", card:"#222a3d", ink:"#efe6cd", muted:"#9a9077", faint:"#7d7560", rule:"#323b52", accent:"#cf9b4a", accent2:"#e9bc6b", onaccent:"#1b1407", tagbg:"#2e3850", tagink:"#aeb7cd", edge:"#0a0d14", wash:"rgba(233,188,107,.13)", shadow:"none", stConcept:"#8a93ab", stBit:"#cf9b4a", stReady:"#e9bc6b", stProven:"#efe6cd" },
+    parchment:{ label:"Parchment", page:"#e8d9b8", card:"#f7eed9", ink:"#2a2622", muted:"#7f705d", faint:"#a08e72", rule:"#d3c19c", accent:"#9d3c2d", accent2:"#6f2d24", onaccent:"#fbf2df", tagbg:"#e2d2ad", tagink:"#65553f", edge:"#c9b488", wash:"rgba(126,74,34,.08)", shadow:"inset 0 0 100px rgba(110,70,30,.08)", stConcept:"#8a7c68", stBit:"#9d3c2d", stReady:"#6f2d24", stProven:"#2a2622" },
+    library: { label:"Library", page:"#171812", card:"#25271f", ink:"#eee6d2", muted:"#a79d82", faint:"#7d765f", rule:"#3b3f31", accent:"#a7a56c", accent2:"#c7aa63", onaccent:"#14150f", tagbg:"#30352a", tagink:"#bcc1a7", edge:"#0b0d09", wash:"rgba(199,170,99,.10)", shadow:"none", stConcept:"#929984", stBit:"#a7a56c", stReady:"#c7aa63", stProven:"#eee6d2" },
+    bluepencil:{ label:"Blue Pencil", page:"#e9eef0", card:"#f7f9f8", ink:"#26313a", muted:"#667782", faint:"#89979d", rule:"#c8d2d6", accent:"#4f7184", accent2:"#355568", onaccent:"#f7fbfc", tagbg:"#dde6e9", tagink:"#526b75", edge:"#bec9cd", wash:"rgba(79,113,132,.08)", shadow:"inset 0 0 90px rgba(60,90,110,.05)", stConcept:"#75858d", stBit:"#4f7184", stReady:"#355568", stProven:"#26313a" },
+    moss:    { label:"Moss", page:"#151a14", card:"#242b21", ink:"#ece9d7", muted:"#9ca18a", faint:"#777e68", rule:"#384034", accent:"#8fa36f", accent2:"#b2ba7e", onaccent:"#11170d", tagbg:"#2f382b", tagink:"#b4bca5", edge:"#0b100a", wash:"rgba(143,163,111,.11)", shadow:"none", stConcept:"#87927b", stBit:"#8fa36f", stReady:"#b2ba7e", stProven:"#ece9d7" },
+    wine:    { label:"Wine", page:"#1b151a", card:"#2b222b", ink:"#f0e5dc", muted:"#a58d98", faint:"#7f6974", rule:"#443441", accent:"#b56d84", accent2:"#d298a9", onaccent:"#1a0d12", tagbg:"#3a2d38", tagink:"#c8afbb", edge:"#0d090c", wash:"rgba(181,109,132,.10)", shadow:"none", stConcept:"#9d8791", stBit:"#b56d84", stReady:"#d298a9", stProven:"#f0e5dc" },
+    tide:    { label:"Tide", page:"#102023", card:"#1b3033", ink:"#e4eeea", muted:"#89a29d", faint:"#66837e", rule:"#2d484b", accent:"#67a59f", accent2:"#8dc2ba", onaccent:"#081312", tagbg:"#254044", tagink:"#abc2bd", edge:"#071012", wash:"rgba(103,165,159,.12)", shadow:"none", stConcept:"#7f9995", stBit:"#67a59f", stReady:"#8dc2ba", stProven:"#e4eeea" },
+    carbon:  { label:"Carbon", page:"#111214", card:"#202226", ink:"#efefeb", muted:"#9a9a95", faint:"#71716d", rule:"#34363a", accent:"#c4bda9", accent2:"#e3dcc8", onaccent:"#111214", tagbg:"#2b2d31", tagink:"#babbb7", edge:"#08090a", wash:"rgba(255,255,255,.045)", shadow:"none", stConcept:"#8f9092", stBit:"#c4bda9", stReady:"#e3dcc8", stProven:"#efefeb" }
+  };
+  var THEME_ALIASES = {
+    ember:"midnight", brass:"midnight", clay:"parchment", rust:"parchment", sage:"moss", slate:"bluepencil", plum:"wine", marquee:"wine", indigo:"bluepencil", ash:"carbon"
+  };
+  function normalizedTheme(key) {
+    if (THEMES[key]) return key;
+    if (THEME_ALIASES[key] && THEMES[THEME_ALIASES[key]]) return THEME_ALIASES[key];
+    return "midnight";
+  }
+  function applyTheme() {
+    state.theme = normalizedTheme(state.theme);
+    var t = THEMES[state.theme] || THEMES.midnight;
+    var r = document.documentElement.style;
+    var vars = {
+      "--page":t.page, "--card":t.card, "--ink":t.ink, "--muted":t.muted, "--faint":t.faint,
+      "--rule":t.rule, "--accent":t.accent, "--accent2":t.accent2, "--onaccent":t.onaccent,
+      "--tagbg":t.tagbg, "--tagink":t.tagink, "--edge":t.edge, "--wash":t.wash, "--wrapshadow":t.shadow,
+      "--st-concept":t.stConcept, "--st-bit":t.stBit, "--st-ready":t.stReady, "--st-proven":t.stProven
+    };
+    Object.keys(vars).forEach(function(k){ r.setProperty(k, vars[k]); });
+    r.setProperty("--glow", state.theme === "midnight" ? "0 0 10px rgba(233,188,107,.32)" : "none");
+    r.setProperty("--cardshadow", (state.theme === "parchment" || state.theme === "bluepencil") ? "0 1px 3px rgba(40,35,28,.08)" : "0 2px 7px rgba(0,0,0,.24)");
+    document.documentElement.setAttribute("data-theme", state.theme);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) { meta = document.createElement("meta"); meta.name = "theme-color"; document.head.appendChild(meta); }
+    meta.content = t.page;
+  }
   var stageFilter = "home";
   var workspaceMode = "capture";
   var writeMode = "guided";
@@ -1318,6 +1367,8 @@
     state.poolMigrated = true;
     state.sets = data.sets || [];
     state.autoRefs = data.autoRefs === true;
+    state.theme = normalizedTheme(data.theme || "midnight");
+    applyTheme();
     state.anchors = data.anchors || [];
     state.creed = data.creed || null;
     // Persistent feature fields must be registered here and round-trip tested.
@@ -2933,6 +2984,33 @@
     save(); render();
   };
   syncAutoRefsLabel();
+  function renderThemePicker() {
+    var host = document.getElementById("themePicker");
+    if (!host) return;
+    host.innerHTML = "";
+    Object.keys(THEMES).forEach(function (key) {
+      var t = THEMES[key];
+      var choice = el("button", "theme-choice" + (state.theme === key ? " on" : ""));
+      choice.type = "button";
+      choice.title = t.label;
+      choice.setAttribute("aria-label", "Notebook theme: " + t.label);
+      choice.setAttribute("aria-pressed", String(state.theme === key));
+      var swatch = el("span", "theme-swatch"); swatch.style.background = t.page; swatch.style.borderColor = t.rule;
+      var card = el("span", "theme-swatch-card"); card.style.background = t.card; card.style.borderColor = t.rule;
+      var accent = el("span", "theme-swatch-accent"); accent.style.background = t.accent;
+      swatch.appendChild(card); swatch.appendChild(accent);
+      choice.appendChild(swatch);
+      choice.appendChild(el("span", "theme-choice-label", t.label));
+      choice.onclick = function () {
+        state.theme = key;
+        applyTheme();
+        save();
+        renderThemePicker();
+      };
+      host.appendChild(choice);
+    });
+  }
+  renderThemePicker();
   document.getElementById("utilBtn").onclick = function () {
     var m = document.getElementById("utilMenu");
     m.style.display = m.style.display === "none" ? "flex" : "none";
@@ -4818,6 +4896,8 @@
   });
 
   load();
+  applyTheme();
+  renderThemePicker();
   render();
   initSupabase();
 
