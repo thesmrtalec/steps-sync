@@ -554,6 +554,47 @@
     .entry-share-overlay.screenshot .entry-sheet { padding: 38px 42px; }
   }
 
+
+  /* ——— 9:16 post maker ——— */
+  .entry-share-post { background: var(--card); color: var(--accent2); border: 1px solid var(--rule); }
+  .entry-share-actions button { flex: 1 1 0; max-width: 190px; }
+  .post-overlay { position: fixed; inset: 0; z-index: 520; display: none; background: var(--page); color: var(--ink);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .post-overlay.open { display: block; }
+  .post-shell { width: 100%; max-width: 760px; min-height: 100%; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom)); }
+  .post-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .post-head h2 { margin: 0; font-family: var(--serif); font-size: 25px; font-weight: 700; }
+  .post-head .entry-share-close { margin-left: auto; }
+  .post-sub { margin: -5px 0 15px; color: var(--muted); font-family: var(--serif); font-size: 13.5px; line-height: 1.45; }
+  .post-modes { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; padding: 4px; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); }
+  .post-mode { min-height: 40px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .04em; }
+  .post-mode.on { background: var(--accent); color: var(--onaccent); font-weight: 700; }
+  .post-excerpt-wrap { display: none; margin: 13px 0 0; }
+  .post-excerpt-wrap.show { display: block; }
+  .post-excerpt-wrap label { display: block; margin-bottom: 5px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+  .post-excerpt { width: 100%; min-height: 118px; max-height: 250px; resize: vertical; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); color: var(--ink); padding: 11px 12px; font-family: var(--serif); font-size: 16px; line-height: 1.5; box-shadow: none; }
+  .post-options-label { margin: 16px 0 7px; color: var(--muted); font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; }
+  .post-options { display: flex; flex-wrap: wrap; gap: 7px; }
+  .post-opt { position: relative; }
+  .post-opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .post-opt span { display: inline-flex; align-items: center; min-height: 34px; padding: 0 11px; border: 1px solid var(--rule); border-radius: 999px;
+    color: var(--muted); background: var(--card); font-family: var(--mono); font-size: 10.5px; cursor: pointer; }
+  .post-opt input:checked + span { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--card)); }
+  .post-preview-head { display: flex; align-items: baseline; gap: 10px; margin: 18px 0 8px; }
+  .post-preview-head strong { font-family: var(--serif); font-size: 17px; }
+  .post-notice { margin-left: auto; max-width: 70%; text-align: right; color: var(--faint); font-family: var(--mono); font-size: 9.5px; line-height: 1.35; }
+  .post-preview { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 13px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+  .post-preview canvas { width: min(72vw, 320px); height: auto; flex: 0 0 auto; scroll-snap-align: center; border-radius: 13px; box-shadow: 0 8px 28px rgba(0,0,0,.24); background: var(--card); }
+  .post-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: center; gap: 9px;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--page) 72%, transparent); }
+  .post-actions button { flex: 1 1 0; max-width: 260px; min-height: 46px; border-radius: 10px; padding: 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .03em; }
+  .post-share-native { border: 1px solid var(--accent); background: var(--accent); color: var(--onaccent); font-weight: 700; }
+  .post-download { border: 1px solid var(--rule); background: var(--card); color: var(--ink); }
+  @media (min-width: 720px) {
+    .post-shell { padding-left: 28px; padding-right: 28px; }
+    .post-preview canvas { width: 330px; }
+  }
+
   /* ——— sync auth gate ——— */
   .auth-gate { position: fixed; inset: 0; background: var(--page); z-index: 80; display: none; align-items: center; justify-content: center; padding: 24px; }
   .auth-gate.open { display: flex; }
@@ -1132,7 +1173,7 @@
             </div>
           </div>
           <h2 class="tourc-h">3 · Workbench</h2>
-          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes and details as the idea grows; <b>Share</b> pulls the whole entry together for copy/paste or a clean screenshot.</p>
+          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes and details as the idea grows; <b>Share</b> pulls the whole entry together for copy/paste, a clean screenshot, or a 9:16 post/carousel without rewriting your words.</p>
         </div>
 
         <div class="tourc-card">
@@ -1227,8 +1268,43 @@
       </div>
       <article class="entry-sheet" id="entryShareSheet"></article>
       <div class="entry-share-actions">
-        <button class="entry-share-copy" id="entryShareCopy" type="button">Copy full entry</button>
-        <button class="entry-share-shot" id="entryShareShot" type="button">Screenshot view</button>
+        <button class="entry-share-copy" id="entryShareCopy" type="button">Copy full</button>
+        <button class="entry-share-post" id="entrySharePost" type="button">Make post</button>
+        <button class="entry-share-shot" id="entryShareShot" type="button">Screenshot</button>
+      </div>
+    </div>
+  </div>
+  <div class="post-overlay" id="postOverlay" aria-hidden="true">
+    <div class="post-shell">
+      <div class="post-head">
+        <h2>Make post</h2>
+        <button class="entry-share-close" id="postClose" type="button">done</button>
+      </div>
+      <p class="post-sub">Package the journal entry for a vertical feed. Good Plates lays it out; it doesn't rewrite it.</p>
+      <div class="post-modes" role="tablist" aria-label="Post format">
+        <button class="post-mode" type="button" data-post-mode="excerpt">Excerpt</button>
+        <button class="post-mode on" type="button" data-post-mode="journal">Journal</button>
+        <button class="post-mode" type="button" data-post-mode="carousel">Carousel</button>
+      </div>
+      <div class="post-excerpt-wrap" id="postExcerptWrap">
+        <label for="postExcerpt">Excerpt</label>
+        <textarea class="post-excerpt" id="postExcerpt" placeholder="Choose the part you want on the card…"></textarea>
+      </div>
+      <div class="post-options-label">Include</div>
+      <div class="post-options">
+        <label class="post-opt"><input id="postOptDate" type="checkbox" checked><span>Date</span></label>
+        <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Scriptures</span></label>
+        <label class="post-opt"><input id="postOptVoices" type="checkbox" checked><span>Speakers</span></label>
+        <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Working notes</span></label>
+        <label class="post-opt"><input id="postOptTags" type="checkbox"><span>Tags</span></label>
+        <label class="post-opt"><input id="postOptMarks" type="checkbox"><span>Markers</span></label>
+        <label class="post-opt"><input id="postOptBrand" type="checkbox"><span>Good Plates mark</span></label>
+      </div>
+      <div class="post-preview-head"><strong>Preview</strong><span class="post-notice" id="postNotice"></span></div>
+      <div class="post-preview" id="postPreview"></div>
+      <div class="post-actions">
+        <button class="post-share-native" id="postShareNative" type="button">Share image</button>
+        <button class="post-download" id="postDownload" type="button">Save PNG</button>
       </div>
     </div>
   </div>
@@ -1292,7 +1368,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.6.0";
+  var APP_VERSION = "v1.7.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook schemes: each palette changes the whole material, not just the accent.
@@ -2059,6 +2135,189 @@
     overlay.classList.remove("open", "screenshot");
     overlay.setAttribute("aria-hidden", "true");
     sharingEntry = null;
+  }
+
+
+  // ——— 9:16 post maker ———
+  // This is deliberately packaging, not authorship: no generated copy, no hooks,
+  // no hashtags. The journal remains upstream; this only lays out what is there.
+  var postEntry = null;
+  var postMode = "journal";
+  var postCanvases = [];
+  function postTheme() { return THEMES[normalizedTheme(state.theme)] || THEMES.midnight; }
+  function postCheckbox(id) { var n=document.getElementById(id); return !!(n && n.checked); }
+  function postOptions() {
+    return {
+      date:postCheckbox("postOptDate"), refs:postCheckbox("postOptRefs"), voices:postCheckbox("postOptVoices"),
+      notes:postCheckbox("postOptNotes"), tags:postCheckbox("postOptTags"), marks:postCheckbox("postOptMarks"),
+      brand:postCheckbox("postOptBrand")
+    };
+  }
+  function openPostMaker(entry) {
+    if (!entry) return;
+    postEntry = entry;
+    postMode = "journal";
+    document.querySelectorAll("[data-post-mode]").forEach(function(b){ b.classList.toggle("on", b.dataset.postMode === postMode); });
+    var ex = document.getElementById("postExcerpt"); if (ex) ex.value = (entry.text || "").trim();
+    document.getElementById("postExcerptWrap").classList.remove("show");
+    var overlay=document.getElementById("postOverlay");
+    overlay.classList.add("open"); overlay.scrollTop=0; overlay.setAttribute("aria-hidden","false");
+    renderPostMaker();
+  }
+  function closePostMaker() {
+    var overlay=document.getElementById("postOverlay");
+    overlay.classList.remove("open"); overlay.setAttribute("aria-hidden","true");
+    postEntry=null; postCanvases=[];
+  }
+  function postFont(size, family, weight, italic) {
+    return (italic ? "italic " : "") + (weight ? weight + " " : "") + Math.round(size) + "px " + family;
+  }
+  function postWrap(ctx, text, font, maxWidth) {
+    ctx.font=font;
+    var out=[];
+    String(text||"").split("\n").forEach(function(par, pi){
+      if (!par.trim()) { out.push(""); return; }
+      var words=par.split(/\s+/), line="";
+      words.forEach(function(word){
+        var test=line ? line+" "+word : word;
+        if (line && ctx.measureText(test).width > maxWidth) { out.push(line); line=word; }
+        else line=test;
+      });
+      if (line) out.push(line);
+      if (pi < String(text||"").split("\n").length-1 && par.trim()) out.push("");
+    });
+    return out;
+  }
+  function postLineObjects(entry, mode, opts, scale) {
+    var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
+    function gap(h){ lines.push({k:"gap",h:h*scale}); }
+    function rule(){ lines.push({k:"rule",h:28*scale}); }
+    function textLines(text,size,family,color,lh,weight,italic) {
+      if (!String(text||"").trim()) return;
+      var f=postFont(size*scale,family,weight,italic);
+      postWrap(m,text,f,maxW).forEach(function(t){
+        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:(t===""?lh*.55:lh)*scale, size:size*scale});
+      });
+    }
+    function section(label, value, monoValue) {
+      if (!value || (Array.isArray(value) && !value.length)) return;
+      rule();
+      textLines(label.toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false);
+      gap(7);
+      var txt=Array.isArray(value)?value.join("  ·  "):value;
+      textLines(txt, monoValue?24:31, monoValue?'ui-monospace, SFMono-Regular, Menlo, monospace':'Georgia, Times New Roman, serif',monoValue?'accent2':'ink',monoValue?34:43,'400',false);
+      gap(18);
+    }
+    if (opts.date) {
+      textLines(shareEntryDate(entry).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false);
+      gap(34);
+    }
+    var body=(mode==="excerpt" ? (document.getElementById("postExcerpt").value||"") : (entry.text||"")).trim();
+    textLines(body, mode==="excerpt"?58:52, 'Georgia, Times New Roman, serif','ink', mode==="excerpt"?75:69,'400',false);
+    gap(28);
+    if (opts.voices) section(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), false);
+    if (opts.refs) section("Scriptures", syncRefs(entry).slice().sort(refSort).map(refLabel), true);
+    if (opts.tags) section("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), true);
+    if (opts.marks) section("Marked", entryMarks(entry), true);
+    if (opts.notes) section("Working notes", (entry.workshop||"").trim(), false);
+    return lines;
+  }
+  function postPaginate(lines, maxH) {
+    var pages=[[]], y=0;
+    lines.forEach(function(line){
+      var h=line.h||0;
+      // Don't strand a rule/label at the bottom when a fresh page is available.
+      if (y+h>maxH && pages[pages.length-1].length) { pages.push([]); y=0; }
+      pages[pages.length-1].push(line); y+=h;
+    });
+    while (pages.length>1 && pages[pages.length-1].every(function(l){return l.k==="gap";})) pages.pop();
+    return pages;
+  }
+  function roundedRect(ctx,x,y,w,h,r) {
+    r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+  function postResolveColor(t,key){ return t[key] || t.ink; }
+  function postDrawPage(page, index, total, opts) {
+    var t=postTheme(), c=document.createElement("canvas"); c.width=1080; c.height=1920;
+    var x=c.getContext("2d"); x.fillStyle=t.page; x.fillRect(0,0,c.width,c.height);
+    roundedRect(x,70,58,940,1804,30); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
+    var left=124, right=956, y=128;
+    page.forEach(function(line){
+      if (line.k==="gap") { y+=line.h; return; }
+      if (line.k==="rule") { y+=8; x.strokeStyle=t.rule; x.lineWidth=2; x.beginPath(); x.moveTo(left,y); x.lineTo(right,y); x.stroke(); y+=line.h-8; return; }
+      x.font=line.font; x.fillStyle=postResolveColor(t,line.color); x.textBaseline="top"; x.fillText(line.text,left,y); y+=line.h;
+    });
+    if (opts.brand) {
+      x.font=postFont(16,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
+      x.fillText("THE GOOD PLATES",left,1812);
+    }
+    if (total>1) {
+      var pg=(index+1)+" / "+total; x.font=postFont(17,'ui-monospace, SFMono-Regular, Menlo, monospace','500',false); x.fillStyle=t.faint;
+      x.textAlign='right'; x.textBaseline='alphabetic'; x.fillText(pg,right,1812); x.textAlign='left';
+    }
+    return c;
+  }
+  function makePostCanvases(entry, mode, opts) {
+    var notice="", scale=1, pages;
+    if (mode === "carousel") {
+      pages=postPaginate(postLineObjects(entry,mode,opts,1),1580);
+    } else {
+      var minScale=mode==="excerpt"?0.70:0.76;
+      for (scale=1; scale>=minScale; scale-=0.04) {
+        pages=postPaginate(postLineObjects(entry,mode,opts,scale),1580);
+        if (pages.length===1) break;
+      }
+      if (pages.length>1) {
+        // Readability beats pretending a wall of 18px text is a useful social card.
+        scale=mode==="excerpt"?0.76:0.86;
+        pages=postPaginate(postLineObjects(entry,mode,opts,scale),1580);
+        notice = mode==="excerpt"
+          ? "That excerpt is too long for one readable card — trim it, or it will export as multiple slides."
+          : "Too much for one readable journal card — exporting as a short carousel instead.";
+      }
+    }
+    var canvases=pages.map(function(pg,i){return postDrawPage(pg,i,pages.length,opts);});
+    return {canvases:canvases,notice:notice};
+  }
+  function renderPostMaker() {
+    if (!postEntry) return;
+    var wrap=document.getElementById("postExcerptWrap"); wrap.classList.toggle("show",postMode==="excerpt");
+    document.querySelectorAll("[data-post-mode]").forEach(function(b){b.classList.toggle("on",b.dataset.postMode===postMode);});
+    var result=makePostCanvases(postEntry,postMode,postOptions()); postCanvases=result.canvases;
+    var host=document.getElementById("postPreview"); host.innerHTML="";
+    postCanvases.forEach(function(c){host.appendChild(c);});
+    document.getElementById("postNotice").textContent=result.notice || (postCanvases.length>1 ? postCanvases.length+" slides" : "1080 × 1920");
+    document.getElementById("postShareNative").textContent=postCanvases.length>1 ? "Share "+postCanvases.length+" images" : "Share image";
+    document.getElementById("postDownload").textContent=postCanvases.length>1 ? "Save PNGs" : "Save PNG";
+  }
+  function postCanvasBlob(canvas) {
+    return new Promise(function(resolve){ canvas.toBlob(function(b){resolve(b);},"image/png",1); });
+  }
+  function postFilename(entry,i,total) {
+    var d=new Date(entryDate(entry)||Date.now()), iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    return "good-plates-"+iso+(total>1?"-"+(i+1):"")+".png";
+  }
+  async function postFiles() {
+    var blobs=await Promise.all(postCanvases.map(postCanvasBlob));
+    return blobs.map(function(b,i){return new File([b],postFilename(postEntry,i,blobs.length),{type:"image/png"});});
+  }
+  function downloadPostFiles(files) {
+    files.forEach(function(file,i){
+      setTimeout(function(){var a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1200);},i*180);
+    });
+  }
+  async function sharePostFiles() {
+    if (!postCanvases.length || !postEntry) return;
+    var files=await postFiles();
+    if (navigator.share && (!navigator.canShare || navigator.canShare({files:files}))) {
+      try { await navigator.share({files:files,title:"Good Plates — journal entry"}); return; } catch(e) { if (e && e.name==="AbortError") return; }
+    }
+    downloadPostFiles(files);
+  }
+  async function savePostFiles() {
+    if (!postCanvases.length || !postEntry) return;
+    downloadPostFiles(await postFiles());
   }
 
   function attachLongPressCopy(node, getText) {
@@ -3377,6 +3636,19 @@
     e.stopPropagation();
     if (sharingEntry) copyText(fullEntryText(sharingEntry));
   };
+
+  document.getElementById("entrySharePost").onclick = function(e) { e.stopPropagation(); if (sharingEntry) openPostMaker(sharingEntry); };
+  document.getElementById("postClose").onclick = closePostMaker;
+  document.querySelectorAll("[data-post-mode]").forEach(function(btn){
+    btn.onclick=function(){postMode=btn.dataset.postMode;renderPostMaker();};
+  });
+  ["postOptDate","postOptRefs","postOptVoices","postOptNotes","postOptTags","postOptMarks","postOptBrand"].forEach(function(id){
+    document.getElementById(id).onchange=renderPostMaker;
+  });
+  var postExcerptTimer=null;
+  document.getElementById("postExcerpt").oninput=function(){clearTimeout(postExcerptTimer);postExcerptTimer=setTimeout(renderPostMaker,110);};
+  document.getElementById("postShareNative").onclick=sharePostFiles;
+  document.getElementById("postDownload").onclick=savePostFiles;
   document.getElementById("entryShareShot").onclick = function (e) {
     e.stopPropagation();
     var overlay = document.getElementById("entryShareOverlay");
@@ -5284,6 +5556,8 @@
 })();
   document.addEventListener("keydown", function(e){
     if (e.key !== "Escape") return;
+    var postOverlay = document.getElementById("postOverlay");
+    if (postOverlay && postOverlay.classList.contains("open")) { closePostMaker(); return; }
     var shareOverlay = document.getElementById("entryShareOverlay");
     if (shareOverlay && shareOverlay.classList.contains("open")) {
       if (shareOverlay.classList.contains("screenshot")) shareOverlay.classList.remove("screenshot");
