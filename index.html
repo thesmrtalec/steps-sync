@@ -1386,7 +1386,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.8.1";
+  var APP_VERSION = "v1.8.3";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2245,6 +2245,18 @@
     }
     return [raw];
   }
+  function postCarouselProvenance(entry, opts) {
+    var parts=[];
+    if (opts.voices) {
+      var voices=entryVoices(entry);
+      if (voices.length) parts.push(voices.join(" · "));
+    }
+    if (opts.refs) {
+      var refs=syncRefs(entry).slice().sort(refSort).map(refLabel);
+      if (refs.length) parts.push(refs.join(" · "));
+    }
+    return parts.join("  •  ");
+  }
   function postCarouselPages(entry, opts) {
     var body=(entry.text||"").trim(), notes=(entry.workshop||"").trim(), pages=[];
     var beats=postCarouselBeats(body);
@@ -2258,7 +2270,9 @@
     if (opts.notes && notes) {
       pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48),1320));
     }
-    var metaOpts={date:false,refs:opts.refs,voices:opts.voices,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
+    // Speaker/scripture are provenance, not end-matter. Carousel drawing puts
+    // them on the opening slide, with only a quiet reminder on a final Notes slide.
+    var metaOpts={date:false,refs:false,voices:false,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
     var metaEntry=Object.assign({},entry,{text:"",workshop:""});
     var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
       // remove the body spacer that postLineObjects emits when there is no body
@@ -2317,12 +2331,34 @@
 
     if (opts.centerContent) {
       if (datePrefix.length) drawLines(datePrefix,128);
-      var top=datePrefix.length?310:180, bottom=1690, available=bottom-top, contentH=height(content);
+
+      // Provenance belongs with the thought, not buried in end-matter. On a
+      // carousel, establish it on the opening slide and let the middle slides breathe.
+      var provH=0;
+      if (opts.provenance) {
+        var provTop=datePrefix.length?190:128;
+        var provFont=postFont(24,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
+        var provLines=postWrap(x,String(opts.provenance).toUpperCase(),provFont,820);
+        x.font=provFont; x.fillStyle=t.accent2; x.textBaseline='top';
+        provLines.forEach(function(line,pi){ x.fillText(line,left,provTop+(pi*34)); });
+        provH=provLines.length*34;
+      }
+
+      var top;
+      if (datePrefix.length && opts.provenance) top=270+provH;
+      else if (datePrefix.length) top=310;
+      else if (opts.provenance) top=205+provH;
+      else top=180;
+      var bottom=1690, available=bottom-top, contentH=height(content);
       // Exact centering can feel visually low on a phone; bias a little upward.
       var y=top + Math.max(0,(available-contentH)*0.44);
       drawLines(content,y);
     } else {
       drawLines(page,128);
+    }
+    if (opts.footerProvenance) {
+      x.font=postFont(15,'ui-monospace, SFMono-Regular, Menlo, monospace','500',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
+      x.fillText(String(opts.footerProvenance).toUpperCase(),left,1768);
     }
     if (opts.brand) {
       x.font=postFont(16,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
@@ -2338,7 +2374,7 @@
     var notice="", scale=1, pages;
     if (mode === "carousel") {
       pages=postCarouselPages(entry,opts);
-      notice=pages.length+"-slide carousel · entry → notes → sources";
+      notice=pages.length+"-slide carousel" + (postCarouselProvenance(entry,opts)?" · source on first slide":"");
     } else {
       var minScale=mode==="excerpt"?0.70:0.76;
       for (scale=1; scale>=minScale; scale-=0.04) {
@@ -2354,8 +2390,16 @@
           : "Too much for one readable journal card — exporting as a short carousel instead.";
       }
     }
-    var drawOpts=Object.assign({},opts,{centerContent:mode==="carousel"});
-    var canvases=pages.map(function(pg,i){return postDrawPage(pg,i,pages.length,drawOpts);});
+    var source=mode==="carousel" ? postCarouselProvenance(entry,opts) : "";
+    var canvases=pages.map(function(pg,i){
+      var isNotes=pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
+      var pageOpts=Object.assign({},opts,{
+        centerContent:mode==="carousel",
+        provenance:(mode==="carousel" && i===0) ? source : "",
+        footerProvenance:(mode==="carousel" && source && i===pages.length-1 && isNotes) ? source : ""
+      });
+      return postDrawPage(pg,i,pages.length,pageOpts);
+    });
     return {canvases:canvases,notice:notice};
   }
   function renderPostMaker() {
