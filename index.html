@@ -1386,7 +1386,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.8.3";
+  var APP_VERSION = "v1.8.4";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2332,26 +2332,35 @@
     if (opts.centerContent) {
       if (datePrefix.length) drawLines(datePrefix,128);
 
-      // Provenance belongs with the thought, not buried in end-matter. On a
-      // carousel, establish it on the opening slide and let the middle slides breathe.
-      var provH=0;
-      if (opts.provenance) {
-        var provTop=datePrefix.length?190:128;
-        var provFont=postFont(24,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
-        var provLines=postWrap(x,String(opts.provenance).toUpperCase(),provFont,820);
-        x.font=provFont; x.fillStyle=t.accent2; x.textBaseline='top';
-        provLines.forEach(function(line,pi){ x.fillText(line,left,provTop+(pi*34)); });
-        provH=provLines.length*34;
+      // The source is part of the composition, not metadata. A speaker gets
+      // real visual weight; a scripture reference frames the passage without
+      // competing with the passage itself. Both travel with slide one only.
+      var speakerLines=[], scriptureLines=[], sourceH=0;
+      if (opts.speakerAttribution) {
+        var speakerFont=postFont(40,'Georgia, Times New Roman, serif','600',false);
+        speakerLines=postWrap(x,String(opts.speakerAttribution).toUpperCase(),speakerFont,820);
+        sourceH += speakerLines.length*50 + 26;
+      }
+      if (opts.scriptureAttribution) {
+        var scriptureFont=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
+        scriptureLines=postWrap(x,String(opts.scriptureAttribution).toUpperCase(),scriptureFont,820);
+        sourceH += scriptureLines.length*38 + 28;
       }
 
-      var top;
-      if (datePrefix.length && opts.provenance) top=270+provH;
-      else if (datePrefix.length) top=310;
-      else if (opts.provenance) top=205+provH;
-      else top=180;
-      var bottom=1690, available=bottom-top, contentH=height(content);
-      // Exact centering can feel visually low on a phone; bias a little upward.
-      var y=top + Math.max(0,(available-contentH)*0.44);
+      var top=datePrefix.length ? 255 : 180;
+      var bottom=1690, available=bottom-top, contentH=height(content), totalH=sourceH+contentH;
+      // Center the source + thought as one object, with a slight upward optical bias.
+      var y=top + Math.max(0,(available-totalH)*0.44);
+      if (speakerLines.length) {
+        x.font=postFont(40,'Georgia, Times New Roman, serif','600',false); x.fillStyle=t.accent2; x.textBaseline='top';
+        speakerLines.forEach(function(line){ x.fillText(line,left,y); y+=50; });
+        y+=26;
+      }
+      if (scriptureLines.length) {
+        x.font=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.accent2; x.textBaseline='top';
+        scriptureLines.forEach(function(line){ x.fillText(line,left,y); y+=38; });
+        y+=28;
+      }
       drawLines(content,y);
     } else {
       drawLines(page,128);
@@ -2391,11 +2400,14 @@
       }
     }
     var source=mode==="carousel" ? postCarouselProvenance(entry,opts) : "";
+    var speakerSource=(mode==="carousel" && opts.voices) ? entryVoices(entry).join(" · ") : "";
+    var scriptureSource=(mode==="carousel" && opts.refs) ? syncRefs(entry).slice().sort(refSort).map(refLabel).join(" · ") : "";
     var canvases=pages.map(function(pg,i){
       var isNotes=pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
       var pageOpts=Object.assign({},opts,{
         centerContent:mode==="carousel",
-        provenance:(mode==="carousel" && i===0) ? source : "",
+        speakerAttribution:(mode==="carousel" && i===0) ? speakerSource : "",
+        scriptureAttribution:(mode==="carousel" && i===0) ? scriptureSource : "",
         footerProvenance:(mode==="carousel" && source && i===pages.length-1 && isNotes) ? source : ""
       });
       return postDrawPage(pg,i,pages.length,pageOpts);
