@@ -1386,7 +1386,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.8.4";
+  var APP_VERSION = "v1.8.6";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2257,6 +2257,17 @@
     }
     return parts.join("  •  ");
   }
+  function postSpeakerNotesHeader(text) {
+    var value=String(text||"").trim();
+    if (!value) return [];
+    var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
+    var f=postFont(38,'Georgia, Times New Roman, serif','600',false);
+    postWrap(m,value,f,maxW).forEach(function(t){
+      lines.push({k:"text",text:t,font:f,color:"accent2",h:49,size:38,role:"notes-speaker"});
+    });
+    lines.push({k:"gap",h:28,role:"notes-speaker-gap"});
+    return lines;
+  }
   function postCarouselPages(entry, opts) {
     var body=(entry.text||"").trim(), notes=(entry.workshop||"").trim(), pages=[];
     var beats=postCarouselBeats(body);
@@ -2270,8 +2281,9 @@
     if (opts.notes && notes) {
       pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48),1320));
     }
-    // Speaker/scripture are provenance, not end-matter. Carousel drawing puts
-    // them on the opening slide, with only a quiet reminder on a final Notes slide.
+    // Scripture frames the quoted passage on slide one. A speaker is attribution,
+    // but in Good Plates the useful context is the reflection: put the speaker at
+    // the top of the Notes slide instead of repeating or watermarking the quote.
     var metaOpts={date:false,refs:false,voices:false,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
     var metaEntry=Object.assign({},entry,{text:"",workshop:""});
     var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
@@ -2332,14 +2344,14 @@
     if (opts.centerContent) {
       if (datePrefix.length) drawLines(datePrefix,128);
 
-      // The source is part of the composition, not metadata. A speaker gets
-      // real visual weight; a scripture reference frames the passage without
-      // competing with the passage itself. Both travel with slide one only.
+      // Scripture is a citation, so it can frame a passage before the text.
+      // Speaker attribution normally lives at the top of the Notes slide. Only
+      // fall back to quote attribution when an entry has no Notes slide at all.
       var speakerLines=[], scriptureLines=[], sourceH=0;
       if (opts.speakerAttribution) {
-        var speakerFont=postFont(40,'Georgia, Times New Roman, serif','600',false);
-        speakerLines=postWrap(x,String(opts.speakerAttribution).toUpperCase(),speakerFont,820);
-        sourceH += speakerLines.length*50 + 26;
+        var speakerFont=postFont(36,'Georgia, Times New Roman, serif','600',true);
+        speakerLines=postWrap(x,"— "+String(opts.speakerAttribution),speakerFont,820);
+        sourceH += 28 + speakerLines.length*46;
       }
       if (opts.scriptureAttribution) {
         var scriptureFont=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
@@ -2349,19 +2361,19 @@
 
       var top=datePrefix.length ? 255 : 180;
       var bottom=1690, available=bottom-top, contentH=height(content), totalH=sourceH+contentH;
-      // Center the source + thought as one object, with a slight upward optical bias.
+      // Center citation + quote + attribution as one object, with a slight upward optical bias.
       var y=top + Math.max(0,(available-totalH)*0.44);
-      if (speakerLines.length) {
-        x.font=postFont(40,'Georgia, Times New Roman, serif','600',false); x.fillStyle=t.accent2; x.textBaseline='top';
-        speakerLines.forEach(function(line){ x.fillText(line,left,y); y+=50; });
-        y+=26;
-      }
       if (scriptureLines.length) {
         x.font=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.accent2; x.textBaseline='top';
         scriptureLines.forEach(function(line){ x.fillText(line,left,y); y+=38; });
         y+=28;
       }
-      drawLines(content,y);
+      y=drawLines(content,y);
+      if (speakerLines.length) {
+        y+=28;
+        x.font=postFont(36,'Georgia, Times New Roman, serif','600',true); x.fillStyle=t.accent2; x.textBaseline='top';
+        speakerLines.forEach(function(line){ x.fillText(line,left,y); y+=46; });
+      }
     } else {
       drawLines(page,128);
     }
@@ -2383,7 +2395,7 @@
     var notice="", scale=1, pages;
     if (mode === "carousel") {
       pages=postCarouselPages(entry,opts);
-      notice=pages.length+"-slide carousel" + (postCarouselProvenance(entry,opts)?" · source on first slide":"");
+      notice=pages.length+"-slide carousel" + (postCarouselProvenance(entry,opts)?" · source prioritized":"");
     } else {
       var minScale=mode==="excerpt"?0.70:0.76;
       for (scale=1; scale>=minScale; scale-=0.04) {
@@ -2402,13 +2414,27 @@
     var source=mode==="carousel" ? postCarouselProvenance(entry,opts) : "";
     var speakerSource=(mode==="carousel" && opts.voices) ? entryVoices(entry).join(" · ") : "";
     var scriptureSource=(mode==="carousel" && opts.refs) ? syncRefs(entry).slice().sort(refSort).map(refLabel).join(" · ") : "";
+    var hasNotesPage=mode==="carousel" && pages.some(function(pg){
+      return pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
+    });
+    if (mode==="carousel" && speakerSource && hasNotesPage) {
+      var speakerHeader=postSpeakerNotesHeader(speakerSource);
+      var inserted=false;
+      pages=pages.map(function(pg){
+        if (inserted) return pg;
+        var isNotes=pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
+        if (!isNotes) return pg;
+        inserted=true;
+        return speakerHeader.concat(pg);
+      });
+    }
     var canvases=pages.map(function(pg,i){
       var isNotes=pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
       var pageOpts=Object.assign({},opts,{
         centerContent:mode==="carousel",
-        speakerAttribution:(mode==="carousel" && i===0) ? speakerSource : "",
+        speakerAttribution:(mode==="carousel" && !hasNotesPage && i===0) ? speakerSource : "",
         scriptureAttribution:(mode==="carousel" && i===0) ? scriptureSource : "",
-        footerProvenance:(mode==="carousel" && source && i===pages.length-1 && isNotes) ? source : ""
+        footerProvenance:""
       });
       return postDrawPage(pg,i,pages.length,pageOpts);
     });
