@@ -313,41 +313,40 @@
   .section-card.active { border-color: var(--accent); }
 
   /* ——— daily 3 ——— */
-  .d3-kicker { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 2px 0 16px; }
-  .d3-hat { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; box-shadow: var(--cardshadow); }
-  .d3-hat.picked { border-color: var(--accent); border-width: 2px; padding: 12px 14px; }
-  .d3-hat-top { display: flex; align-items: center; justify-content: space-between; }
-  .d3-hat-label { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.1; }
-  .d3-hat.picked .d3-hat-label { color: var(--accent); }
-  .d3-hat-check { color: var(--accent); font-size: 18px; font-weight: 700; }
-  .d3-hat-warn { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; color: var(--faint); margin-top: 3px; }
-  .d3-count { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--faint); text-align: center; margin-top: 6px; }
-  .d3-nudge { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--accent2); background: var(--tagbg); border-radius: 8px; padding: 9px 12px; margin: 0 0 14px; line-height: 1.35; }
-  .d3-card { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 15px; margin-bottom: 14px; box-shadow: var(--cardshadow); }
-  .d3-card.done { border-color: var(--accent); }
-  .d3-card-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 10px; }
-  .d3-card-label { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); }
-  .d3-card-warn { font-family: var(--mono); font-size: 10.5px; letter-spacing: .05em; color: var(--faint); }
-  .d3-task { width: 100%; background: var(--page); border: 1px solid var(--rule); border-radius: 10px; padding: 11px 12px; font-family: var(--serif); font-size: 16px; color: var(--ink); resize: none; margin-bottom: 10px; }
-  .d3-task::placeholder { color: var(--faint); }
-  .d3-task-fixed { font-family: var(--serif); font-size: 16px; color: var(--ink); line-height: 1.35; margin-bottom: 8px; }
-  .d3-sugg { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
-  .d3-sugg-body { flex: 1; }
-  .d3-sugg-text { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--accent2); line-height: 1.3; cursor: pointer; }
-  .d3-sugg-text:hover { text-decoration: underline; text-underline-offset: 2px; }
-  .d3-sugg-actions { display: flex; gap: 12px; margin-top: 5px; }
-  .d3-sugg-act { background: none; border: none; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); padding: 0; }
-  .d3-sugg-act:hover { color: var(--accent); }
-  .d3-sugg-add-row { display: flex; gap: 6px; margin-bottom: 10px; }
-  .d3-sugg-add-row input { flex: 1; background: var(--page); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; font-family: var(--serif); font-size: 14px; color: var(--ink); }
-  .d3-sugg-add-row button { background: var(--accent); color: var(--onaccent); border: none; border-radius: 8px; padding: 0 14px; font-family: var(--mono); font-size: 12px; }
-  .d3-done { width: 100%; background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; box-shadow: var(--glow); }
-  .d3-done.dim { opacity: .4; }
-  .d3-undo { background: none; border: none; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; padding: 2px 0; }
-  .d3-finish { text-align: center; padding: 8px 0 4px; margin-top: 4px; }
-  .d3-finish-line { font-family: var(--serif); font-size: 17px; color: var(--muted); margin-bottom: 12px; }
-  .d3-out { background: var(--accent); color: var(--onaccent); border: none; border-radius: 10px; padding: 11px 28px; font-size: 14px; font-weight: 600; }
-  .d3-reset { display: block; margin: 18px auto 0; background: none; border: none; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--faint); text-decoration: underline; text-underline-offset: 3px; }
+  /* ——— Daily 3: morning intentions, not a task manager ——— */
+  .d3-page { max-width: 720px; margin: 0 auto; padding: 4px 0 30px; }
+  .d3-date { font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--faint); margin: 2px 0 10px; }
+  .d3-title { margin: 0; font-family: var(--serif); font-size: 30px; line-height: 1.08; color: var(--ink); }
+  .d3-intro { margin: 7px 0 22px; max-width: 560px; font-family: var(--serif); font-size: 15px; line-height: 1.45; color: var(--muted); }
+  .d3-grid { display: grid; gap: 12px; }
+  .d3-intention { background: var(--card); border: 1px solid var(--rule); border-radius: 13px; padding: 15px 16px 16px; box-shadow: var(--cardshadow); }
+  .d3-intention-head { display: grid; grid-template-columns: 27px minmax(0,1fr); gap: 10px; align-items: start; margin-bottom: 10px; }
+  .d3-number { width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 50%; font-family: var(--mono); font-size: 10px; color: var(--accent); }
+  .d3-prompt { font-family: var(--serif); font-size: 19px; font-weight: 700; line-height: 1.2; color: var(--ink); }
+  .d3-hint { margin-top: 3px; font-family: var(--serif); font-size: 13.5px; line-height: 1.35; color: var(--muted); }
+  .d3-input { width: 100%; min-height: 74px; resize: vertical; border: 1px solid var(--rule); border-radius: 9px; background: var(--page); color: var(--ink); padding: 10px 11px; font-family: var(--serif); font-size: 17px; line-height: 1.45; }
+  .d3-input::placeholder { color: var(--faint); }
+  .d3-primary { width: 100%; margin-top: 14px; border: 0; border-radius: 10px; padding: 12px 16px; background: var(--accent); color: var(--onaccent); font-family: var(--serif); font-size: 15.5px; font-weight: 700; }
+  .d3-primary:disabled { opacity: .36; cursor: default; }
+  .d3-summary { display: grid; gap: 10px; margin-top: 20px; }
+  .d3-summary-row { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 11px; padding: 14px 15px; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--cardshadow); }
+  .d3-summary-num { font-family: var(--mono); font-size: 11px; color: var(--accent); padding-top: 3px; }
+  .d3-summary-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .11em; text-transform: uppercase; color: var(--faint); margin-bottom: 5px; }
+  .d3-summary-text { font-family: var(--serif); font-size: 18px; line-height: 1.38; color: var(--ink); white-space: pre-wrap; }
+  .d3-actions { display: flex; gap: 9px; margin-top: 14px; }
+  .d3-action { flex: 1; min-height: 42px; border: 1px solid var(--rule); border-radius: 9px; background: transparent; color: var(--muted); font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
+  .d3-action.primary { border-color: var(--accent); color: var(--accent); }
+  .d3-reflect { margin-top: 18px; padding-top: 17px; border-top: 1px solid var(--rule); }
+  .d3-reflect h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 21px; color: var(--ink); }
+  .d3-reflect p { margin: 0 0 12px; font-family: var(--serif); font-size: 14px; color: var(--muted); }
+  .d3-reflect-choices { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+  .d3-reflect-choice { min-height: 40px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--muted); font-family: var(--serif); font-size: 14px; }
+  .d3-reflect-choice.on { border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .d3-reflect-note { width: 100%; min-height: 76px; margin-top: 9px; resize: vertical; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); padding: 10px 11px; font-family: var(--serif); font-size: 15px; line-height: 1.45; }
+  .d3-closed { margin-top: 18px; padding: 14px 15px; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); }
+  .d3-closed-kicker { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .d3-closed-result { margin-top: 5px; font-family: var(--serif); font-size: 19px; color: var(--ink); }
+  .d3-closed-note { margin-top: 7px; font-family: var(--serif); font-size: 14.5px; line-height: 1.4; color: var(--muted); white-space: pre-wrap; }
   .search-row { margin: 0 0 12px; }
   .search-row input { width: 100%; box-sizing: border-box; background: var(--card); border: 1px solid var(--rule); border-radius: 999px; padding: 10px 18px; font-family: var(--serif); font-size: 16px; color: var(--ink); outline: none; }
   .search-row input:focus { border-color: var(--accent); }
@@ -1201,7 +1200,7 @@
             </div>
           </div>
           <h2 class="tourc-h">4 · Notebook</h2>
-          <p class="tourc-p">This is where the pile becomes useful. Browse journal entries, collect material into talks / lessons, or open collections built from the context and details you've attached.</p>
+          <p class="tourc-p">This is where the pile becomes useful. Browse journal entries, collect material into talks / lessons, or open collections built from the context and details you've attached. <b>Daily 3</b> is a simple morning page for setting three intentions before the day gets noisy.</p>
         </div>
 
         <div class="tourc-card">
@@ -1386,7 +1385,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.8.6";
+  var APP_VERSION = "v1.9.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -1460,7 +1459,7 @@
     state.buried=data.buried||[]; state.buried.forEach(function(x){x.tags=(x.tags||[]).filter(function(t){if(String(t).toLowerCase()==="insight"){if(!x.context)x.context="insight";return false;}return String(t).toLowerCase()!=="question";});if(!x.context&&x.from&&x.from!=="stuff")x.context="question";});
     state.poolMigrated=true; state.sets=data.sets||[]; state.autoRefs=data.autoRefs===true; state.theme=normalizedTheme(data.theme||"midnight"); state.appearance=normalizedAppearance(data.appearance||"auto"); applyTheme();
     state.anchors=data.anchors||[]; state.creed=data.creed||null;
-    state.daily3=data.daily3?JSON.parse(JSON.stringify(data.daily3)):{day:todayKeyStr(),picks:[],going:false}; state.daily3.day=d3DateKey(state.daily3.day)||todayKeyStr(); state.d3History=d3MigrateHistory(data.d3History||{}); state.d3Seeds=data.d3Seeds?JSON.parse(JSON.stringify(data.d3Seeds)):{}; state.updatedAt=data.updatedAt||0;
+    state.d3Legacy=data.d3Legacy||((data.daily3 && data.daily3.v!==2)?JSON.parse(JSON.stringify(data.daily3)):null); state.daily3=d3Normalize(data.daily3||null); state.d3Days=data.d3Days?JSON.parse(JSON.stringify(data.d3Days)):{}; state.d3History=data.d3History||{}; state.d3Seeds=data.d3Seeds?JSON.parse(JSON.stringify(data.d3Seeds)):{}; state.updatedAt=data.updatedAt||0;
   }
   function load() {
     try {
@@ -2261,6 +2260,9 @@
     var value=String(text||"").trim();
     if (!value) return [];
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
+    var labelFont=postFont(18,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
+    lines.push({k:"text",text:"SPEAKER",font:labelFont,color:"muted",h:28,size:18,role:"notes-speaker-label"});
+    lines.push({k:"gap",h:8,role:"notes-speaker-label-gap"});
     var f=postFont(38,'Georgia, Times New Roman, serif','600',false);
     postWrap(m,value,f,maxW).forEach(function(t){
       lines.push({k:"text",text:t,font:f,color:"accent2",h:49,size:38,role:"notes-speaker"});
@@ -2922,7 +2924,7 @@
     }
     sectionCard("pool", "entries", (state.truths || []).length);
     sectionCard("sets", "talks / lessons", (state.sets || []).length);
-    sectionCard("daily3", "daily 3", "✓");
+    sectionCard("daily3", "daily 3", d3().set ? "✓" : "○");
 
     var capWrap = document.querySelector(".capture");
     var capDest = document.getElementById("capDest");
@@ -5284,300 +5286,122 @@
     try { if (localStorage.getItem(WKEY) && !localStorage.getItem(TKEY)) maybeTour(); } catch (e) {}
   })();
   // ============================================================================
-  //  DAILY 3 — pick the 3 hats that matter most today, move the needle, check off.
-  //  Hats are ROLES. The warning is a common way that role can drift.
-  //  No streaks, no engine. Small & simple. Do it, check it, get out.
+  //  DAILY 3 — plan the day with intention.
+  //  Three prompts, no hats, no streaks, no task-manager theater.
   // ============================================================================
-  var HATS = [
-    { key:"calling", label:"Calling", warn:"drift" },
-    { key:"parent",  label:"Parent",  warn:"distraction" },
-    { key:"spouse",  label:"Spouse",  warn:"inattention" },
-    { key:"family",  label:"Family",  warn:"distance" },
-    { key:"friend",  label:"Friend",  warn:"neglect" },
-    { key:"craft",   label:"Craft",   warn:"avoidance" },
-    { key:"self",    label:"Self",    warn:"autopilot" }
+  var D3_PROMPTS = [
+    { key:"move", prompt:"What needs to move today?", hint:"One concrete thing that would make the day materially better." },
+    { key:"people", prompt:"Who needs me today?", hint:"A person or responsibility that needs real attention." },
+    { key:"posture", prompt:"How do I want to be today?", hint:"The posture you want to bring to the day." }
   ];
-  // Older personal builds used narrower role names. Remap them so existing
-  // Daily 3 data still opens cleanly in this shared version.
-  var D3_ROLE_MAP = {
-    bishop:"calling", dad:"parent", husband:"spouse", son:"family",
-    friend:"friend", comic:"craft", man:"self"
-  };
-  function d3RoleKey(k){ return D3_ROLE_MAP[k] || k; }
-  function hatByKey(k){ for(var i=0;i<HATS.length;i++) if(HATS[i].key===k) return HATS[i]; return null; }
-
-  // Fixed seed tasks per hat — small, concrete things that feed into positives.
-  // People can add their own; those live in state.d3Seeds[key] and merge on top.
-  var SEEDS = {
-    calling: [
-      "Check in with one person you serve — no agenda beyond listening.",
-      "Follow up on one assignment or commitment connected to your calling.",
-      "Thank someone whose service may be going unnoticed.",
-      "Prepare one useful thought or question for an upcoming meeting.",
-      "Act on one prompting or concern you have been postponing.",
-      "Pray specifically about one person or responsibility in your stewardship."
-    ],
-    parent: [
-      "Put the phone away and give one child your full attention for 15 minutes.",
-      "Ask about something they care about, then stay with the answer.",
-      "Do one thing on their terms — their game, their idea, their pace.",
-      "Teach one small skill you have been meaning to pass on.",
-      "Notice something they did well and say it out loud.",
-      "Read, play, build, walk, or talk — something present and unhurried."
-    ],
-    spouse: [
-      "Do one task your spouse would otherwise have to carry.",
-      "Ask about their day and give the answer your full attention.",
-      "Say one specific thing you appreciate about them.",
-      "Take one thing off their plate without being asked.",
-      "Protect a little time to be together without multitasking.",
-      "Give something today without keeping score."
-    ],
-    family: [
-      "Call or text a family member simply to connect.",
-      "Ask how they are doing before talking about yourself.",
-      "Thank a family member for something you have taken for granted.",
-      "Offer practical help with something they are carrying.",
-      "Repair one small tension instead of letting it sit.",
-      "Make one ordinary family interaction more intentional."
-    ],
-    friend: [
-      "Reach out to a friend you have gone quiet on.",
-      "Show up for someone without waiting to be asked.",
-      "Follow up on something a friend said was weighing on them.",
-      "Make a real plan instead of saying 'we should get together sometime.'",
-      "Celebrate something good that happened for someone else.",
-      "Say the thank-you or apology you have been putting off."
-    ],
-    craft: [
-      "Spend 10 focused minutes practicing the thing you want to get better at.",
-      "Finish one small piece instead of endlessly improving the plan.",
-      "Capture one idea before you lose it.",
-      "Study someone excellent at the craft and notice one technique they use.",
-      "Share, test, submit, or show one piece of work to another person.",
-      "Do the slightly uncomfortable version that will actually help you grow."
-    ],
-    self: [
-      "Do the hard thing first, before it grows.",
-      "Move your body on purpose today.",
-      "Keep one promise you made to yourself.",
-      "Say the true thing even when avoiding it would be easier.",
-      "Make ten quiet minutes for prayer, reflection, or scripture study.",
-      "Finish one thing you have left hanging."
-    ]
-  };
-  // full pool for a hat: fixed seeds + personal additions
-  function d3SeedPool(key){
-    var mine = (state.d3Seeds && state.d3Seeds[key]) ? state.d3Seeds[key] : [];
-    return (SEEDS[key]||[]).concat(mine);
-  }
-  function d3AddSeed(key, text){
-    text = (text||"").trim(); if(!text) return;
-    if(!state.d3Seeds) state.d3Seeds={};
-    if(!state.d3Seeds[key]) state.d3Seeds[key]=[];
-    state.d3Seeds[key].push(text);
-  }
+  var d3Editing=false, d3ReflectionOpen=false;
 
   function d3DateKey(value){
     if(typeof value === "string" && /^\d{4}-\d{1,2}-\d{1,2}$/.test(value))return value;
     var ts=Number(value);return ts && Number.isFinite(ts) ? dayKeyOf(ts) : null;
   }
-  function d3MigrateHistory(history){
-    var out={};
-    Object.keys(history).forEach(function(key){
-      var day=d3DateKey(key);if(!day || !Array.isArray(history[key]))return;
-      out[day]=(out[day]||[]).concat(history[key].map(d3RoleKey));
-    });
-    return out;
-  }
-  function d3MigrateRoles(){
-    if(state.daily3 && Array.isArray(state.daily3.picks)){
-      state.daily3.picks.forEach(function(p){ p.key=d3RoleKey(p.key); });
-    }
-    if(state.d3History){
-      Object.keys(state.d3History).forEach(function(day){
-        if(Array.isArray(state.d3History[day])) state.d3History[day]=state.d3History[day].map(d3RoleKey);
-      });
-    }
-    if(state.d3Seeds){
-      Object.keys(D3_ROLE_MAP).forEach(function(oldKey){
-        var newKey=D3_ROLE_MAP[oldKey];
-        if(oldKey===newKey || !state.d3Seeds[oldKey]) return;
-        state.d3Seeds[newKey]=(state.d3Seeds[newKey]||[]).concat(state.d3Seeds[oldKey]);
-        delete state.d3Seeds[oldKey];
-      });
-    }
-  }
   function d3Today(){ return todayKeyStr(); }
+  function d3Blank(day){ return {v:2,day:day||d3Today(),intentions:["","",""],set:false,setAt:0,reflection:"",reflectionNote:"",closedAt:0}; }
+  function d3Normalize(raw){
+    if(raw && raw.v===2){
+      var out=d3Blank(d3DateKey(raw.day)||d3Today());
+      var vals=Array.isArray(raw.intentions)?raw.intentions:[];
+      out.intentions=[0,1,2].map(function(i){return String(vals[i]||"");});
+      out.set=!!raw.set; out.setAt=Number(raw.setAt)||0;
+      out.reflection=["kept","partly","lost"].indexOf(raw.reflection)!==-1?raw.reflection:"";
+      out.reflectionNote=String(raw.reflectionNote||""); out.closedAt=Number(raw.closedAt)||0;
+      return out;
+    }
+    // Migrate the old role/task Daily 3 without pretending the roles still matter.
+    var oldDay=d3DateKey(raw && raw.day)||d3Today(), old=d3Blank(oldDay), tasks=[];
+    if(raw && Array.isArray(raw.picks)){
+      raw.picks.forEach(function(p){ if(p && String(p.task||"").trim())tasks.push(String(p.task).trim()); });
+    }
+    old.intentions=[tasks[0]||"",tasks[1]||"",tasks[2]||""];
+    old.set=tasks.length>=3; return old;
+  }
+  function d3Archive(s){
+    if(!s || !s.day)return;
+    if(!state.d3Days)state.d3Days={};
+    state.d3Days[s.day]={
+      intentions:(s.intentions||[]).slice(0,3), set:!!s.set, setAt:s.setAt||0,
+      reflection:s.reflection||"", reflectionNote:s.reflectionNote||"", closedAt:s.closedAt||0
+    };
+  }
   function d3(){
-    d3MigrateRoles();
-    if(!state.daily3) state.daily3={ day:0, picks:[], going:false };
-    if(state.daily3.day!==d3Today()){ state.daily3={ day:d3Today(), picks:[], going:false }; }
-    if(!state.d3History) state.d3History={};   // { dayTs: [hatKey, ...completed] }
+    state.daily3=d3Normalize(state.daily3);
+    var today=d3Today();
+    if(state.daily3.day!==today){
+      var old=state.daily3;
+      if(old.set || old.reflection || (old.intentions||[]).some(function(x){return String(x||"").trim();}))d3Archive(old);
+      state.daily3=d3Blank(today); d3Editing=false; d3ReflectionOpen=false;
+    }
     return state.daily3;
   }
-  // record a completed hat into today's history (for the neglect nudge)
-  function d3LogDone(key){
-    if(!state.d3History) state.d3History={};
-    var day=String(d3Today());
-    if(!state.d3History[day]) state.d3History[day]=[];
-    state.d3History[day].push(key);
+  function d3DateLabel(day){
+    var parts=String(day||d3Today()).split("-").map(Number), d=new Date(parts[0],(parts[1]||1)-1,parts[2]||1);
+    return d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
   }
-  // which hats haven't been TOUCHED in the last 7 days (by completion)
-  function d3Neglected(){
-    var now=new Date(), seen={};
-    for(var i=0;i<7;i++){
-      var date=new Date(now);date.setDate(date.getDate()-i);
-      var day=dayKeyOf(date.getTime());
-      (state.d3History[day]||[]).forEach(function(k){ seen[k]=1; });
+  function d3AllFilled(s){ return (s.intentions||[]).slice(0,3).every(function(x){return String(x||"").trim();}); }
+  function d3Persist(s){ d3Archive(s); save(); }
+
+  function d3RenderEditor(host,s,isEdit){
+    var page=el("div","d3-page"); host.appendChild(page);
+    page.appendChild(el("div","d3-date",d3DateLabel(s.day)));
+    page.appendChild(el("h2","d3-title",isEdit?"Edit today":"Set the day"));
+    page.appendChild(el("p","d3-intro",isEdit?"Change the intention, not the whole system.":"Three intentions for today. Not a task list."));
+    var grid=el("div","d3-grid"); page.appendChild(grid), inputs=[];
+    D3_PROMPTS.forEach(function(meta,i){
+      var card=el("div","d3-intention"), head=el("div","d3-intention-head");
+      head.appendChild(el("div","d3-number",String(i+1)));
+      var copy=el("div"); copy.appendChild(el("div","d3-prompt",meta.prompt)); copy.appendChild(el("div","d3-hint",meta.hint));
+      head.appendChild(copy); card.appendChild(head);
+      var ta=el("textarea","d3-input"); ta.rows=2; ta.value=s.intentions[i]||""; ta.placeholder="Write one sentence.";
+      ta.oninput=function(){s.intentions[i]=ta.value; refresh();}; ta.onblur=function(){d3Archive(s);save();};
+      card.appendChild(ta); grid.appendChild(card); inputs.push(ta);
+    });
+    var btn=el("button","d3-primary",isEdit?"Save changes":"Set my day");
+    function refresh(){btn.disabled=!d3AllFilled(s);} refresh();
+    btn.onclick=function(){
+      if(!d3AllFilled(s)){var first=inputs.find(function(x){return !x.value.trim();});if(first)first.focus();return;}
+      s.intentions=s.intentions.map(function(x){return String(x||"").trim();}); s.set=true; if(!s.setAt)s.setAt=Date.now();
+      d3Editing=false; d3Persist(s); d3Render();
+    };
+    page.appendChild(btn);
+    if(isEdit){
+      var actions=el("div","d3-actions"), cancel=el("button","d3-action","Cancel");
+      cancel.onclick=function(){d3Editing=false;d3Render();}; actions.appendChild(cancel); page.appendChild(actions);
     }
-    return HATS.filter(function(h){ return !seen[h.key]; });
+  }
+
+  function d3RenderReflection(page,s){
+    if(s.reflection && !d3ReflectionOpen){
+      var closed=el("div","d3-closed"); closed.appendChild(el("div","d3-closed-kicker","Day closed"));
+      var labels={kept:"Kept it",partly:"Partly",lost:"Lost it"}; closed.appendChild(el("div","d3-closed-result",labels[s.reflection]||s.reflection));
+      if(s.reflectionNote)closed.appendChild(el("div","d3-closed-note",s.reflectionNote));
+      var edit=el("button","d3-action","Edit reflection"); edit.style.marginTop="12px"; edit.onclick=function(){d3ReflectionOpen=true;d3Render();}; closed.appendChild(edit);
+      page.appendChild(closed); return;
+    }
+    if(!d3ReflectionOpen)return;
+    var box=el("div","d3-reflect"); box.appendChild(el("h3",null,"How’d the day go?")); box.appendChild(el("p",null,"No score. Just a quick record of whether the day matched the intention."));
+    var choices=el("div","d3-reflect-choices"), options=[{k:"kept",t:"Kept"},{k:"partly",t:"Partly"},{k:"lost",t:"Lost it"}];
+    options.forEach(function(o){var b=el("button","d3-reflect-choice"+(s.reflection===o.k?" on":""),o.t);b.onclick=function(){s.reflection=o.k;d3Render();};choices.appendChild(b);}); box.appendChild(choices);
+    var note=el("textarea","d3-reflect-note"); note.rows=3; note.placeholder="Anything worth remembering? (optional)"; note.value=s.reflectionNote||""; note.oninput=function(){s.reflectionNote=note.value;}; box.appendChild(note);
+    var saveBtn=el("button","d3-primary","Save reflection"); saveBtn.disabled=!s.reflection; saveBtn.onclick=function(){if(!s.reflection)return;s.reflectionNote=note.value.trim();s.closedAt=Date.now();d3ReflectionOpen=false;d3Persist(s);d3Render();}; box.appendChild(saveBtn);
+    var cancel=el("button","d3-action","Cancel"); cancel.style.marginTop="8px";cancel.onclick=function(){d3ReflectionOpen=false;d3Render();};box.appendChild(cancel);
+    page.appendChild(box);
   }
 
   function d3Render(){
-    var host=document.getElementById("d3Host"); if(!host) return;
-    host.innerHTML="";
-    var s=d3();
-
-    // still choosing?  first pass = haven't started any yet;  "go again" = reopened
-    var startedCount=s.picks.filter(function(p){return p.started;}).length;
-    var stillChoosing = s.going || startedCount===0;
-
-    if(stillChoosing){
-      var firstRound = !s.going;
-      host.appendChild(el("div","d3-kicker", s.going ? "Go again \u2014 pick any hat, double up if you want" : "Which 3 hats matter most today?"));
-
-      // in go-again mode, count only the NEW (non-retired, not-yet-started) picks
-      var live=s.picks.filter(function(p){return !p.started;});
-      var chosen={}; live.forEach(function(p){chosen[p.key]=1;});
-      var capReached = !s.going && live.length>=3;
-
-      HATS.forEach(function(h){
-        var picked=!!chosen[h.key];
-        var b=el("button","d3-hat"+(picked?" picked":""));
-        var top=el("div","d3-hat-top");
-        top.appendChild(el("span","d3-hat-label",h.label));
-        if(picked) top.appendChild(el("span","d3-hat-check","\u2713"));
-        b.appendChild(top);
-        b.appendChild(el("span","d3-hat-warn","watch for · "+h.warn));
-        b.onclick=function(){
-          if(picked){ s.picks=s.picks.filter(function(p){return !(p.key===h.key && !p.started);}); }
-          else if(s.going || live.length<3){ s.picks.push({key:h.key,task:"",done:false,started:false}); }
-          save(); d3Render();
-        };
-        host.appendChild(b);
-      });
-
-      if(s.going){
-        // go-again: any number, confirm to start
-        if(live.length>0){
-          var goBtn=el("button","d3-done","Start these \u2192");
-          goBtn.onclick=function(){ live.forEach(function(p){p.started=true;}); s.going=false; save(); d3Render(); };
-          host.appendChild(goBtn);
-        }
-        var never=el("button","d3-reset","never mind \u2014 close");
-        never.onclick=function(){ s.going=false; save(); stageFilter="home"; render(); };
-        host.appendChild(never);
-      } else {
-        // first round: need exactly 3, then start
-        if(live.length>=3){
-          var startBtn=el("button","d3-done","Start these 3 \u2192");
-          startBtn.onclick=function(){ live.forEach(function(p){p.started=true;}); save(); d3Render(); };
-          host.appendChild(startBtn);
-        } else if(live.length>0){
-          host.appendChild(el("div","d3-count",live.length+" of 3 chosen"));
-        }
-      }
-      return;
-    }
-
-    host.appendChild(el("div","d3-kicker","Move the needle \u2014 one concrete thing each"));
-    var active=s.picks.filter(function(p){return p.started;});
-    active.forEach(function(p){
-      var h=hatByKey(p.key);
-      var card=el("div","d3-card"+(p.done?" done":""));
-      var head=el("div","d3-card-head");
-      head.appendChild(el("span","d3-card-label",h.label));
-      head.appendChild(el("span","d3-card-warn","watch for · "+h.warn));
-      card.appendChild(head);
-
-      if(!p.done){
-        var ta=el("textarea","d3-task"); ta.rows=2;
-        ta.placeholder="What will you actually DO today? Something you can say 'I did that' about.";
-        ta.value=p.task;
-        ta.oninput=function(){ p.task=ta.value; refreshDim(); };
-        ta.onblur=save;
-        var done=el("button","d3-done"+(p.task.trim()?"":" dim"),"Did it \u2713");
-        done.onclick=function(){ if(!p.task.trim()){ ta.focus(); return; } p.done=true; d3LogDone(p.key); save(); d3Render(); };
-        function refreshDim(){ done.className="d3-done"+(ta.value.trim()?"":" dim"); }
-
-        // ——— suggestion: one shown, tap to use, tap shuffle to cycle ———
-        var pool=d3SeedPool(p.key);
-        if(pool.length){
-          if(typeof p.si!=="number" || p.si>=pool.length){ p.si=Math.floor(Math.random()*pool.length); }
-          var wrap=el("div","d3-sugg");
-          var body=el("div","d3-sugg-body");
-          var txt=el("div","d3-sugg-text",pool[p.si]);
-          txt.title="tap to use this";
-          txt.onclick=function(){ ta.value=pool[p.si]; p.task=pool[p.si]; refreshDim(); ta.focus(); save(); };
-          body.appendChild(txt);
-          var acts=el("div","d3-sugg-actions");
-          var shuffle=el("button","d3-sugg-act","shuffle \u21bb");
-          shuffle.onclick=function(){
-            if(pool.length<2) return;
-            var n=p.si; while(n===p.si){ n=Math.floor(Math.random()*pool.length); }
-            p.si=n; txt.textContent=pool[p.si]; save();
-          };
-          var addBtn=el("button","d3-sugg-act","+ add my own");
-          acts.appendChild(shuffle); acts.appendChild(addBtn);
-          body.appendChild(acts); wrap.appendChild(body);
-          card.appendChild(wrap);
-
-          var addRow=el("div","d3-sugg-add-row"); addRow.style.display="none";
-          var inp=el("input"); inp.type="text"; inp.placeholder="A "+h.label+" task to keep in the rotation\u2026";
-          var saveBtn=el("button",null,"save");
-          function commit(){ if(inp.value.trim()){ d3AddSeed(p.key,inp.value); p.si=d3SeedPool(p.key).length-1; save(); d3Render(); } }
-          saveBtn.onclick=commit;
-          inp.onkeydown=function(e){ if(e.key==="Enter") commit(); };
-          addRow.appendChild(inp); addRow.appendChild(saveBtn);
-          card.appendChild(addRow);
-          addBtn.onclick=function(){ var vis=addRow.style.display!=="none"; addRow.style.display=vis?"none":"flex"; if(!vis) inp.focus(); };
-        }
-
-        card.appendChild(ta);
-        card.appendChild(done);
-      } else {
-        card.appendChild(el("div","d3-task-fixed",p.task));
-        var undo=el("button","d3-undo","undo");
-        undo.onclick=function(){
-          p.done=false;
-          // pull the last matching completion back out of history
-          var day=String(d3Today()), arr=state.d3History[day]||[];
-          var i=arr.lastIndexOf(p.key); if(i!==-1) arr.splice(i,1);
-          save(); d3Render();
-        };
-        card.appendChild(undo);
-      }
-      host.appendChild(card);
-    });
-
-    if(active.length && active.every(function(p){return p.done;})){
-      var doneCount=state.d3History[String(d3Today())] ? state.d3History[String(d3Today())].length : active.length;
-      var fin=el("div","d3-finish");
-      fin.appendChild(el("div","d3-finish-line", doneCount>3 ? doneCount+" needles moved today. Keep going or call it." : "Three needles moved. That's the day."));
-      var again=el("button","d3-done","Go again \u2192");
-      again.onclick=function(){ s.going=true; save(); d3Render(); };
-      fin.appendChild(again);
-      var out=el("button","d3-reset","Close \u2014 that's enough for today");
-      out.onclick=function(){ stageFilter="home"; render(); };
-      fin.appendChild(out);
-      host.appendChild(fin);
-      return;
-    }
-
-    var reset=el("button","d3-reset","start over");
-    reset.onclick=function(){ s.picks=[]; save(); d3Render(); };
-    host.appendChild(reset);
+    var host=document.getElementById("d3Host"); if(!host)return; host.innerHTML=""; var s=d3();
+    if(!s.set || d3Editing){d3RenderEditor(host,s,!!s.set);return;}
+    var page=el("div","d3-page"); host.appendChild(page); page.appendChild(el("div","d3-date",d3DateLabel(s.day))); page.appendChild(el("h2","d3-title","Today"));
+    page.appendChild(el("p","d3-intro","The three things you chose before the day got loud."));
+    var summary=el("div","d3-summary");
+    D3_PROMPTS.forEach(function(meta,i){var row=el("div","d3-summary-row");row.appendChild(el("div","d3-summary-num",String(i+1)));var body=el("div");body.appendChild(el("div","d3-summary-label",meta.prompt));body.appendChild(el("div","d3-summary-text",s.intentions[i]||""));row.appendChild(body);summary.appendChild(row);}); page.appendChild(summary);
+    var actions=el("div","d3-actions"); var edit=el("button","d3-action","Edit intentions");edit.onclick=function(){d3Editing=true;d3Render();};actions.appendChild(edit);
+    if(!s.reflection || d3ReflectionOpen){var close=el("button","d3-action primary",s.reflection?"Reflection":"Close the day");close.onclick=function(){d3ReflectionOpen=true;d3Render();};actions.appendChild(close);} page.appendChild(actions);
+    d3RenderReflection(page,s);
   }
 
 })();
