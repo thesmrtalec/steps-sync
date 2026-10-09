@@ -1315,7 +1315,7 @@
       <div class="post-options-label">Include</div>
       <div class="post-options">
         <label class="post-opt"><input id="postOptDate" type="checkbox" checked><span>Date</span></label>
-        <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Scriptures</span></label>
+        <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Cross references</span></label>
         <label class="post-opt"><input id="postOptVoices" type="checkbox" checked><span>Speakers</span></label>
         <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Notes</span></label>
         <label class="post-opt" id="postOptContextWrap"><input id="postOptContext" type="checkbox" checked><span>Context</span></label>
@@ -1391,7 +1391,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.10.1";
+  var APP_VERSION = "v1.10.2";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2219,7 +2219,7 @@
     function meta(label,value,style){ if(value && (!Array.isArray(value)||value.length)){ section(label,value,style,!hasMeta); hasMeta=true; } }
     if (opts.context && entryContext(entry)) meta("Context", [contextLabel(entry)], "meta");
     if (opts.voices) meta(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), "voice");
-    if (opts.refs) meta("Scripture"+(syncRefs(entry).length===1?"":"s"), syncRefs(entry).slice().sort(refSort).map(refLabel), "ref");
+    if (opts.refs) meta("Cross reference"+(syncRefs(entry).length===1?"":"s"), syncRefs(entry).slice().sort(refSort).map(refLabel), "ref");
     if (opts.tags) meta("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), "meta");
     if (opts.grateful && entry.grateful) meta("Gratitude", ["Gratitude"], "meta");
     if (opts.notes && String(entry.workshop||"").trim()) section("Notes", (entry.workshop||"").trim(), "notes", true);
@@ -2334,6 +2334,20 @@
     lines.push({k:"gap",h:28,role:"notes-speaker-gap"});
     return lines;
   }
+  function postCrossReferencesBlock(values) {
+    var refs=(values||[]).filter(function(v){return String(v||"").trim();});
+    if (!refs.length) return [];
+    var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
+    lines.push({k:"gap",h:28,role:"crossref-gap"});
+    var labelFont=postFont(15,POST_SANS,'600',false);
+    lines.push({k:"text",text:"Cross references",font:labelFont,color:"muted",h:22,size:15,role:"crossref-label"});
+    lines.push({k:"gap",h:8,role:"crossref-label-gap"});
+    var f=postFont(27,POST_SERIF,'500',false);
+    postWrap(m,refs.join("  ·  "),f,maxW).forEach(function(t){
+      lines.push({k:"text",text:t,font:f,color:"accent2",h:38,size:27,role:"crossref-value"});
+    });
+    return lines;
+  }
   function postCarouselPages(entry, opts) {
     var body=(entry.text||"").trim(), notes=(entry.workshop||"").trim(), pages=[];
     var beats=postCarouselBeats(body);
@@ -2347,9 +2361,9 @@
     if (opts.notes && notes) {
       pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48,"notes"),1320));
     }
-    // Scripture frames the quoted passage on slide one. A speaker is attribution,
-    // but in Good Plates the useful context is the reflection: put the speaker at
-    // the top of the Notes slide instead of repeating or watermarking the quote.
+    // Speaker attribution belongs with the reflection. Cross references are
+    // added later to the Notes slide so attached scripture does not automatically
+    // become a headline on the quote card.
     var metaOpts={date:false,refs:false,voices:false,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
     var metaEntry=Object.assign({},entry,{text:"",workshop:""});
     var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
@@ -2490,7 +2504,7 @@
     }
     var source=mode==="carousel" ? postCarouselProvenance(entry,opts) : "";
     var speakerSource=(mode==="carousel" && opts.voices) ? entryVoices(entry).join(" · ") : "";
-    var scriptureSource=(mode==="carousel" && opts.refs) ? syncRefs(entry).slice().sort(refSort).map(refLabel).join(" · ") : "";
+    var scriptureRefs=(mode==="carousel" && opts.refs) ? syncRefs(entry).slice().sort(refSort).map(refLabel) : [];
     var hasNotesPage=mode==="carousel" && pages.some(function(pg){
       return pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
     });
@@ -2505,12 +2519,27 @@
         return speakerHeader.concat(pg);
       });
     }
+    if (mode==="carousel" && scriptureRefs.length) {
+      var crossRefs=postCrossReferencesBlock(scriptureRefs);
+      var noteIndexes=[];
+      pages.forEach(function(pg,idx){
+        if (pg.some(function(line){return line.role==="notes-body" || (line.role==="label" && String(line.text||"").toUpperCase()==="NOTES");})) noteIndexes.push(idx);
+      });
+      if (noteIndexes.length) {
+        var ni=noteIndexes[noteIndexes.length-1], target=pages[ni], need=postPageHeight(crossRefs);
+        if (postPageHeight(target)+need<=1580) target.push.apply(target,crossRefs);
+        else pages.splice(ni+1,0,crossRefs);
+      } else {
+        // No Notes slide exists: keep the reference optional, but make it a
+        // supporting page instead of forcing it into the quote headline zone.
+        pages.push(postCarouselBlock(scriptureRefs.join("  ·  "),"Cross references","",32));
+      }
+    }
     var canvases=pages.map(function(pg,i){
-      var isNotes=pg.some(function(line){return line.role==="label" && String(line.text||"").toUpperCase()==="NOTES";});
       var pageOpts=Object.assign({},opts,{
         centerContent:mode==="carousel",
         speakerAttribution:(mode==="carousel" && !hasNotesPage && i===0) ? speakerSource : "",
-        scriptureAttribution:(mode==="carousel" && i===0) ? scriptureSource : "",
+        scriptureAttribution:"",
         footerProvenance:""
       });
       return postDrawPage(pg,i,pages.length,pageOpts);
