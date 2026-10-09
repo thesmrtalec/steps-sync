@@ -521,22 +521,23 @@
   .entry-share-kicker { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
   .entry-share-close { margin-left: auto; background: transparent; border: 1px solid var(--rule); color: var(--muted);
     border-radius: 999px; padding: 5px 14px; font-family: var(--mono); font-size: 12px; }
-  .entry-sheet { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 24px 22px;
-    box-shadow: var(--cardshadow); }
-  .entry-sheet-date { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--faint); margin-bottom: 18px; }
-  .entry-sheet-text { font-family: var(--serif); font-size: clamp(22px, 5vw, 30px); line-height: 1.38; color: var(--ink);
-    white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 22px; }
-  .entry-sheet-section { border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 14px; }
-  .entry-sheet-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 7px; }
-  .entry-sheet-value { font-family: var(--serif); font-size: 16px; line-height: 1.55; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .entry-sheet-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .entry-sheet-chip { display: inline-block; border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px;
-    font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .entry-sheet-chip.voice { background: var(--tagbg); border-color: var(--tagbg); color: var(--tagink); }
-  .entry-sheet-chip.ref { color: var(--accent2); }
-  .entry-sheet-chip.mark { color: var(--accent); border-color: var(--accent); }
+  /* Share pages should read like printed journal leaves, not app cards. */
+  .entry-sheet { background: var(--card); border: 1px solid color-mix(in srgb, var(--rule) 78%, transparent); border-radius: 5px; padding: 28px 26px 32px;
+    box-shadow: 0 10px 28px rgba(20,16,10,.08); }
+  .entry-sheet-date { font-family: var(--mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 24px; }
+  .entry-sheet-text { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; font-size: clamp(23px, 5vw, 31px); line-height: 1.42; color: var(--ink);
+    white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; letter-spacing: -.006em; }
+  .entry-sheet-rule { height: 1px; background: color-mix(in srgb, var(--rule) 78%, transparent); margin: 24px 0 18px; }
+  .entry-sheet-section { margin: 0 0 14px; }
+  .entry-sheet-section.notes { margin-top: 22px; }
+  .entry-sheet-label { font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif; font-size: 10px; font-weight: 600;
+    letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .entry-sheet-value { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; font-size: 17px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .entry-sheet-value.voice { font-size: 18px; font-style: italic; }
+  .entry-sheet-value.ref { color: var(--accent2); }
+  .entry-sheet-value.tag, .entry-sheet-value.mark { font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif; font-size: 13px; color: var(--muted); letter-spacing: .01em; }
+  .entry-sheet-value.notes { font-size: 17px; line-height: 1.58; }
   .entry-share-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
     background: linear-gradient(to top, var(--page) 70%, transparent); display: flex; justify-content: center; gap: 9px; }
   .entry-share-actions button { min-height: 46px; border-radius: 10px; padding: 0 16px; font-family: var(--mono); font-size: 12px;
@@ -547,10 +548,10 @@
   .entry-share-overlay.screenshot .entry-share-shell { max-width: 760px; padding: max(28px, env(safe-area-inset-top)) 18px max(34px, env(safe-area-inset-bottom)); display: flex; min-height: 100%; align-items: flex-start; }
   .entry-share-overlay.screenshot .entry-share-top,
   .entry-share-overlay.screenshot .entry-share-actions { display: none; }
-  .entry-share-overlay.screenshot .entry-sheet { width: 100%; margin: 0 auto; border-radius: 18px; padding: 30px 26px; }
+  .entry-share-overlay.screenshot .entry-sheet { width: 100%; margin: 0 auto; border-radius: 4px; padding: 34px 30px 40px; }
   @media (min-width: 720px) {
     .entry-share-overlay.screenshot .entry-share-shell { align-items: center; }
-    .entry-share-overlay.screenshot .entry-sheet { padding: 38px 42px; }
+    .entry-share-overlay.screenshot .entry-sheet { padding: 46px 52px 52px; }
   }
 
 
@@ -583,7 +584,7 @@
   .post-preview-head strong { font-family: var(--serif); font-size: 17px; }
   .post-notice { margin-left: auto; max-width: 70%; text-align: right; color: var(--faint); font-family: var(--mono); font-size: 9.5px; line-height: 1.35; }
   .post-preview { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 13px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-  .post-preview canvas { width: min(72vw, 320px); height: auto; flex: 0 0 auto; scroll-snap-align: center; border-radius: 13px; box-shadow: 0 8px 28px rgba(0,0,0,.24); background: var(--card); }
+  .post-preview canvas { width: min(72vw, 320px); height: auto; flex: 0 0 auto; scroll-snap-align: center; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.18); background: var(--card); }
   .post-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: center; gap: 9px;
     padding: 12px 18px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--page) 72%, transparent); }
   .post-actions button { flex: 1 1 0; max-width: 260px; min-height: 46px; border-radius: 10px; padding: 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: .03em; }
@@ -1385,7 +1386,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.9.2";
+  var APP_VERSION = "v1.10.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2072,10 +2073,35 @@
     var voices=entryVoices(entry).slice(); if(voices.length)parts.push("Speaker"+(voices.length>1?"s":"")+": "+voices.join(" · "));
     var refs=syncRefs(entry).slice().sort(refSort); if(refs.length)parts.push("Scriptures: "+refs.map(refLabel).join(" · "));
     var tags=(entry.tags||[]).filter(function(t){return String(t).trim();}); if(tags.length)parts.push("Tags: "+tags.join(" · "));
-    if(entry.grateful)parts.push("Gratitude"); var workshop=(entry.workshop||"").trim(); if(workshop)parts.push("Working notes\n"+workshop); var when=shareEntryDate(entry); if(when)parts.push("Date: "+when); return parts.join("\n\n");
+    if(entry.grateful)parts.push("Gratitude"); var workshop=(entry.workshop||"").trim(); if(workshop)parts.push("Notes\n"+workshop); var when=shareEntryDate(entry); if(when)parts.push("Date: "+when); return parts.join("\n\n");
   }
-  function sheetSection(label,value,kind){ if(!value||(Array.isArray(value)&&!value.length))return null; var sec=el("section","entry-sheet-section");sec.appendChild(el("div","entry-sheet-label",label));if(Array.isArray(value)){var chips=el("div","entry-sheet-chips");value.forEach(function(v){chips.appendChild(el("span","entry-sheet-chip"+(kind?" "+kind:""),v));});sec.appendChild(chips);}else sec.appendChild(el("div","entry-sheet-value",value));return sec; }
-  function renderEntryShare(entry){ var sheet=document.getElementById("entryShareSheet");sheet.innerHTML="";var when=shareEntryDate(entry);if(when)sheet.appendChild(el("div","entry-sheet-date",when));sheet.appendChild(el("div","entry-sheet-text",(entry.text||"").trim()));var voices=entryVoices(entry).slice(),refs=syncRefs(entry).slice().sort(refSort).map(refLabel),tags=(entry.tags||[]).filter(function(t){return String(t).trim();}),workshop=(entry.workshop||"").trim(),ctx=contextLabel(entry);[sheetSection("Context",ctx?[ctx]:[],"mark"),sheetSection(voices.length===1?"Speaker":"Speakers",voices,"voice"),sheetSection("Scriptures",refs,"ref"),sheetSection("Tags",tags,""),sheetSection("Gratitude",entry.grateful?["Gratitude"]:[],"mark"),sheetSection("Working notes",workshop,"")].forEach(function(node){if(node)sheet.appendChild(node);}); }
+  function sheetSection(label,value,kind){
+    if(!value||(Array.isArray(value)&&!value.length))return null;
+    var sec=el("section","entry-sheet-section"+(kind==="notes"?" notes":""));
+    sec.appendChild(el("div","entry-sheet-label",label));
+    var txt=Array.isArray(value)?value.join(" · "):value;
+    sec.appendChild(el("div","entry-sheet-value"+(kind?" "+kind:""),txt));
+    return sec;
+  }
+  function renderEntryShare(entry){
+    var sheet=document.getElementById("entryShareSheet");sheet.innerHTML="";
+    var when=shareEntryDate(entry);if(when)sheet.appendChild(el("div","entry-sheet-date",when));
+    sheet.appendChild(el("div","entry-sheet-text",(entry.text||"").trim()));
+    var voices=entryVoices(entry).slice(),refs=syncRefs(entry).slice().sort(refSort).map(refLabel),tags=(entry.tags||[]).filter(function(t){return String(t).trim();}),workshop=(entry.workshop||"").trim(),ctx=contextLabel(entry);
+    var meta=[
+      sheetSection("Context",ctx?[ctx]:[],"mark"),
+      sheetSection(voices.length===1?"Speaker":"Speakers",voices,"voice"),
+      sheetSection("Scripture"+(refs.length===1?"":"s"),refs,"ref"),
+      sheetSection("Tags",tags,"tag"),
+      sheetSection("Gratitude",entry.grateful?["Gratitude"]:[],"mark")
+    ].filter(Boolean);
+    if(meta.length||workshop)sheet.appendChild(el("div","entry-sheet-rule"));
+    meta.forEach(function(node){sheet.appendChild(node);});
+    if(workshop){
+      if(meta.length)sheet.appendChild(el("div","entry-sheet-rule"));
+      sheet.appendChild(sheetSection("Notes",workshop,"notes"));
+    }
+  }
   function openEntryShare(entry) {
     if (!entry) return;
     closeSwipe();
@@ -2134,6 +2160,9 @@
   function postFont(size, family, weight, italic) {
     return (italic ? "italic " : "") + (weight ? weight + " " : "") + Math.round(size) + "px " + family;
   }
+  var POST_SERIF='"Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif';
+  var POST_SANS='-apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif';
+  var POST_MONO='ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace';
   function postWrap(ctx, text, font, maxWidth) {
     ctx.font=font;
     var out=[];
@@ -2153,36 +2182,41 @@
   function postLineObjects(entry, mode, opts, scale) {
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
     function gap(h){ lines.push({k:"gap",h:h*scale}); }
-    function rule(){ lines.push({k:"rule",h:28*scale}); }
-    function textLines(text,size,family,color,lh,weight,italic) {
+    function rule(){ lines.push({k:"rule",h:24*scale}); }
+    function textLines(text,size,family,color,lh,weight,italic,role) {
       if (!String(text||"").trim()) return;
       var f=postFont(size*scale,family,weight,italic);
       postWrap(m,text,f,maxW).forEach(function(t){
-        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:(t===""?lh*.55:lh)*scale, size:size*scale});
+        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:(t===""?lh*.55:lh)*scale, size:size*scale, role:role||""});
       });
     }
-    function section(label, value, monoValue) {
+    function section(label, value, style, divider) {
       if (!value || (Array.isArray(value) && !value.length)) return;
-      rule();
-      textLines(label.toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false);
-      gap(7);
+      if (divider) rule(); else gap(10);
+      textLines(label.toUpperCase(),15,POST_SANS,'muted',22,'600',false,'section-label');
+      gap(5);
       var txt=Array.isArray(value)?value.join("  ·  "):value;
-      textLines(txt, monoValue?24:31, monoValue?'ui-monospace, SFMono-Regular, Menlo, monospace':'Georgia, Times New Roman, serif',monoValue?'accent2':'ink',monoValue?34:43,'400',false);
-      gap(18);
+      if(style==="voice") textLines(txt,29,POST_SERIF,'ink',40,'400',true,'section-value');
+      else if(style==="ref") textLines(txt,25,POST_SERIF,'accent2',34,'600',false,'section-value');
+      else if(style==="notes") textLines(txt,31,POST_SERIF,'ink',45,'400',false,'section-value');
+      else textLines(txt,20,POST_SANS,'muted',30,'400',false,'section-value');
+      gap(12);
     }
     if (opts.date) {
-      textLines(shareEntryDate(entry).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false);
+      textLines(shareEntryDate(entry).toUpperCase(),18,POST_MONO,'faint',28,'500',false,'date');
       gap(34);
     }
     var body=(mode==="excerpt" ? (document.getElementById("postExcerpt").value||"") : (entry.text||"")).trim();
-    textLines(body, mode==="excerpt"?58:52, 'Georgia, Times New Roman, serif','ink', mode==="excerpt"?75:69,'400',false);
-    gap(28);
-    if (opts.context && entryContext(entry)) section("Context", [contextLabel(entry)], true);
-    if (opts.voices) section(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), false);
-    if (opts.refs) section("Scriptures", syncRefs(entry).slice().sort(refSort).map(refLabel), true);
-    if (opts.tags) section("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), true);
-    if (opts.grateful && entry.grateful) section("Gratitude", ["Gratitude"], true);
-    if (opts.notes) section("Notes", (entry.workshop||"").trim(), false);
+    textLines(body, mode==="excerpt"?58:52, POST_SERIF,'ink', mode==="excerpt"?76:70,'400',false,'body');
+    gap(26);
+    var hasMeta=false;
+    function meta(label,value,style){ if(value && (!Array.isArray(value)||value.length)){ section(label,value,style,!hasMeta); hasMeta=true; } }
+    if (opts.context && entryContext(entry)) meta("Context", [contextLabel(entry)], "meta");
+    if (opts.voices) meta(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), "voice");
+    if (opts.refs) meta("Scripture"+(syncRefs(entry).length===1?"":"s"), syncRefs(entry).slice().sort(refSort).map(refLabel), "ref");
+    if (opts.tags) meta("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), "meta");
+    if (opts.grateful && entry.grateful) meta("Gratitude", ["Gratitude"], "meta");
+    if (opts.notes && String(entry.workshop||"").trim()) section("Notes", (entry.workshop||"").trim(), "notes", true);
     return lines;
   }
   function postPaginate(lines, maxH) {
@@ -2210,14 +2244,14 @@
       });
     }
     if (dateText) {
-      textLines(String(dateText).toUpperCase(),20,'ui-monospace, SFMono-Regular, Menlo, monospace','faint',30,'500',false,'date');
+      textLines(String(dateText).toUpperCase(),18,POST_MONO,'faint',28,'500',false,'date');
       lines.push({k:"gap",h:34,role:"date-gap"});
     }
     if (label) {
-      textLines(String(label).toUpperCase(),18,'ui-monospace, SFMono-Regular, Menlo, monospace','muted',26,'600',false,'label');
+      textLines(String(label).toUpperCase(),15,POST_SANS,'muted',22,'600',false,'label');
       gap(18);
     }
-    textLines(text,size||56,'Georgia, Times New Roman, serif','ink',(size||56)*1.32,'400',false);
+    textLines(text,size||56,POST_SERIF,'ink',(size||56)*1.34,'400',false);
     gap(24);
     return lines;
   }
@@ -2280,12 +2314,12 @@
     var value=String(text||"").trim();
     if (!value) return [];
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
-    var labelFont=postFont(18,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
-    lines.push({k:"text",text:"SPEAKER",font:labelFont,color:"muted",h:28,size:18,role:"notes-speaker-label"});
+    var labelFont=postFont(15,POST_SANS,'600',false);
+    lines.push({k:"text",text:"SPEAKER",font:labelFont,color:"muted",h:22,size:15,role:"notes-speaker-label"});
     lines.push({k:"gap",h:8,role:"notes-speaker-label-gap"});
-    var f=postFont(38,'Georgia, Times New Roman, serif','600',false);
+    var f=postFont(40,POST_SERIF,'600',false);
     postWrap(m,value,f,maxW).forEach(function(t){
-      lines.push({k:"text",text:t,font:f,color:"accent2",h:49,size:38,role:"notes-speaker"});
+      lines.push({k:"text",text:t,font:f,color:"accent2",h:50,size:40,role:"notes-speaker"});
     });
     lines.push({k:"gap",h:28,role:"notes-speaker-gap"});
     return lines;
@@ -2349,7 +2383,7 @@
   function postDrawPage(page, index, total, opts) {
     var t=postTheme(), c=document.createElement("canvas"); c.width=1080; c.height=1920;
     var x=c.getContext("2d"); x.fillStyle=t.page; x.fillRect(0,0,c.width,c.height);
-    roundedRect(x,70,58,940,1804,30); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
+    roundedRect(x,70,58,940,1804,7); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
     var left=124, right=956;
 
     // Carousel cards are composed like pages, not like a document starting at y=0.
@@ -2378,12 +2412,12 @@
       // fall back to quote attribution when an entry has no Notes slide at all.
       var speakerLines=[], scriptureLines=[], sourceH=0;
       if (opts.speakerAttribution) {
-        var speakerFont=postFont(36,'Georgia, Times New Roman, serif','600',true);
+        var speakerFont=postFont(34,POST_SERIF,'500',true);
         speakerLines=postWrap(x,"— "+String(opts.speakerAttribution),speakerFont,820);
         sourceH += 28 + speakerLines.length*46;
       }
       if (opts.scriptureAttribution) {
-        var scriptureFont=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false);
+        var scriptureFont=postFont(27,POST_SERIF,'600',false);
         scriptureLines=postWrap(x,String(opts.scriptureAttribution).toUpperCase(),scriptureFont,820);
         sourceH += scriptureLines.length*38 + 28;
       }
@@ -2393,29 +2427,29 @@
       // Center citation + quote + attribution as one object, with a slight upward optical bias.
       var y=top + Math.max(0,(available-totalH)*0.44);
       if (scriptureLines.length) {
-        x.font=postFont(27,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.accent2; x.textBaseline='top';
+        x.font=postFont(27,POST_SERIF,'600',false); x.fillStyle=t.accent2; x.textBaseline='top';
         scriptureLines.forEach(function(line){ x.fillText(line,left,y); y+=38; });
         y+=28;
       }
       y=drawLines(content,y);
       if (speakerLines.length) {
         y+=28;
-        x.font=postFont(36,'Georgia, Times New Roman, serif','600',true); x.fillStyle=t.accent2; x.textBaseline='top';
+        x.font=postFont(34,POST_SERIF,'500',true); x.fillStyle=t.accent2; x.textBaseline='top';
         speakerLines.forEach(function(line){ x.fillText(line,left,y); y+=46; });
       }
     } else {
       drawLines(page,128);
     }
     if (opts.footerProvenance) {
-      x.font=postFont(15,'ui-monospace, SFMono-Regular, Menlo, monospace','500',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
+      x.font=postFont(14,POST_SANS,'500',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
       x.fillText(String(opts.footerProvenance).toUpperCase(),left,1768);
     }
     if (opts.brand) {
-      x.font=postFont(16,'ui-monospace, SFMono-Regular, Menlo, monospace','600',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
+      x.font=postFont(14,POST_SANS,'600',false); x.fillStyle=t.faint; x.textBaseline='alphabetic';
       x.fillText("THE GOOD PLATES",left,1812);
     }
     if (total>1) {
-      var pg=(index+1)+" / "+total; x.font=postFont(17,'ui-monospace, SFMono-Regular, Menlo, monospace','500',false); x.fillStyle=t.faint;
+      var pg=(index+1)+" / "+total; x.font=postFont(16,POST_MONO,'500',false); x.fillStyle=t.faint;
       x.textAlign='right'; x.textBaseline='alphabetic'; x.fillText(pg,right,1812); x.textAlign='left';
     }
     return c;
