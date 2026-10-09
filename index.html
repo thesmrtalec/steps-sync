@@ -522,8 +522,13 @@
   .entry-share-close { margin-left: auto; background: transparent; border: 1px solid var(--rule); color: var(--muted);
     border-radius: 999px; padding: 5px 14px; font-family: var(--mono); font-size: 12px; }
   /* Share pages should read like printed journal leaves, not app cards. */
-  .entry-sheet { background: var(--card); border: 1px solid color-mix(in srgb, var(--rule) 78%, transparent); border-radius: 5px; padding: 28px 26px 32px;
-    box-shadow: 0 10px 28px rgba(20,16,10,.08); }
+  .entry-sheet {
+    background:
+      radial-gradient(circle at 18% 24%, color-mix(in srgb, var(--ink) 2.4%, transparent) .65px, transparent .8px) 0 0 / 19px 19px,
+      radial-gradient(circle at 72% 66%, color-mix(in srgb, var(--ink) 1.8%, transparent) .55px, transparent .75px) 0 0 / 27px 27px,
+      var(--card);
+    border: 1px solid color-mix(in srgb, var(--rule) 72%, transparent); border-radius: 2px; padding: 28px 26px 32px;
+    box-shadow: 0 7px 18px rgba(20,16,10,.055); }
   .entry-sheet-date { font-family: var(--mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase;
     color: var(--faint); margin-bottom: 24px; }
   .entry-sheet-text { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; font-size: clamp(23px, 5vw, 31px); line-height: 1.42; color: var(--ink);
@@ -531,13 +536,13 @@
   .entry-sheet-rule { height: 1px; background: color-mix(in srgb, var(--rule) 78%, transparent); margin: 24px 0 18px; }
   .entry-sheet-section { margin: 0 0 14px; }
   .entry-sheet-section.notes { margin-top: 22px; }
-  .entry-sheet-label { font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif; font-size: 10px; font-weight: 600;
-    letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .entry-sheet-label { font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: .02em; color: var(--muted); margin-bottom: 5px; }
   .entry-sheet-value { font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif; font-size: 17px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; overflow-wrap: anywhere; }
   .entry-sheet-value.voice { font-size: 18px; font-style: italic; }
   .entry-sheet-value.ref { color: var(--accent2); }
   .entry-sheet-value.tag, .entry-sheet-value.mark { font-family: -apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif; font-size: 13px; color: var(--muted); letter-spacing: .01em; }
-  .entry-sheet-value.notes { font-size: 17px; line-height: 1.58; }
+  .entry-sheet-value.notes { font-family: 'Caveat', 'Bradley Hand', cursive; font-size: 24px; line-height: 1.34; letter-spacing: .002em; transform: rotate(-.12deg); transform-origin: left top; }
   .entry-share-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2; padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
     background: linear-gradient(to top, var(--page) 70%, transparent); display: flex; justify-content: center; gap: 9px; }
   .entry-share-actions button { min-height: 46px; border-radius: 10px; padding: 0 16px; font-family: var(--mono); font-size: 12px;
@@ -548,7 +553,7 @@
   .entry-share-overlay.screenshot .entry-share-shell { max-width: 760px; padding: max(28px, env(safe-area-inset-top)) 18px max(34px, env(safe-area-inset-bottom)); display: flex; min-height: 100%; align-items: flex-start; }
   .entry-share-overlay.screenshot .entry-share-top,
   .entry-share-overlay.screenshot .entry-share-actions { display: none; }
-  .entry-share-overlay.screenshot .entry-sheet { width: 100%; margin: 0 auto; border-radius: 4px; padding: 34px 30px 40px; }
+  .entry-share-overlay.screenshot .entry-sheet { width: 100%; margin: 0 auto; border-radius: 2px; padding: 34px 30px 40px; }
   @media (min-width: 720px) {
     .entry-share-overlay.screenshot .entry-share-shell { align-items: center; }
     .entry-share-overlay.screenshot .entry-sheet { padding: 46px 52px 52px; }
@@ -1386,7 +1391,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.10.0";
+  var APP_VERSION = "v1.10.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2163,6 +2168,7 @@
   var POST_SERIF='"Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif';
   var POST_SANS='-apple-system, BlinkMacSystemFont, "Avenir Next", "Segoe UI", sans-serif';
   var POST_MONO='ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace';
+  var POST_HAND='"Caveat", "Bradley Hand", cursive';
   function postWrap(ctx, text, font, maxWidth) {
     ctx.font=font;
     var out=[];
@@ -2193,12 +2199,12 @@
     function section(label, value, style, divider) {
       if (!value || (Array.isArray(value) && !value.length)) return;
       if (divider) rule(); else gap(10);
-      textLines(label.toUpperCase(),15,POST_SANS,'muted',22,'600',false,'section-label');
+      textLines(label,16,POST_SANS,'muted',23,'600',false,'section-label');
       gap(5);
       var txt=Array.isArray(value)?value.join("  ·  "):value;
       if(style==="voice") textLines(txt,29,POST_SERIF,'ink',40,'400',true,'section-value');
       else if(style==="ref") textLines(txt,25,POST_SERIF,'accent2',34,'600',false,'section-value');
-      else if(style==="notes") textLines(txt,31,POST_SERIF,'ink',45,'400',false,'section-value');
+      else if(style==="notes") textLines(txt,39,POST_HAND,'ink',48,'500',false,'section-value');
       else textLines(txt,20,POST_SANS,'muted',30,'400',false,'section-value');
       gap(12);
     }
@@ -2233,14 +2239,17 @@
   function postPageHeight(page) {
     return (page || []).reduce(function(sum,line){ return sum + (line.h || 0); }, 0);
   }
-  function postCarouselBlock(text, label, dateText, size) {
+  function postCarouselBlock(text, label, dateText, size, style) {
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
     function gap(h){ lines.push({k:"gap",h:h}); }
-    function textLines(value, px, family, color, lh, weight, italic, role) {
+    function textLines(value, px, family, color, lh, weight, italic, role, hand) {
       if (!String(value||"").trim()) return;
       var f=postFont(px,family,weight,italic);
+      var idx=0;
       postWrap(m,value,f,maxW).forEach(function(t){
-        lines.push({k:t===""?"gap":"text", text:t, font:f, color:color, h:t===""?lh*.55:lh, size:px, role:role||""});
+        var line={k:t===""?"gap":"text", text:t, font:f, color:color, h:t===""?lh*.55:lh, size:px, role:role||""};
+        if(hand && t!=="") line.xOffset=[0,3,-2,1][idx++%4];
+        lines.push(line);
       });
     }
     if (dateText) {
@@ -2248,10 +2257,11 @@
       lines.push({k:"gap",h:34,role:"date-gap"});
     }
     if (label) {
-      textLines(String(label).toUpperCase(),15,POST_SANS,'muted',22,'600',false,'label');
+      textLines(String(label),16,POST_SANS,'muted',23,'600',false,'label');
       gap(18);
     }
-    textLines(text,size||56,POST_SERIF,'ink',(size||56)*1.34,'400',false);
+    if(style==="notes") textLines(text,size||48,POST_HAND,'ink',(size||48)*1.18,'500',false,'notes-body',true);
+    else textLines(text,size||56,POST_SERIF,'ink',(size||56)*1.34,'400',false,'body');
     gap(24);
     return lines;
   }
@@ -2315,7 +2325,7 @@
     if (!value) return [];
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
     var labelFont=postFont(15,POST_SANS,'600',false);
-    lines.push({k:"text",text:"SPEAKER",font:labelFont,color:"muted",h:22,size:15,role:"notes-speaker-label"});
+    lines.push({k:"text",text:"Speaker",font:labelFont,color:"muted",h:22,size:15,role:"notes-speaker-label"});
     lines.push({k:"gap",h:8,role:"notes-speaker-label-gap"});
     var f=postFont(40,POST_SERIF,'600',false);
     postWrap(m,value,f,maxW).forEach(function(t){
@@ -2335,7 +2345,7 @@
       pages=pages.concat(postPaginate(block,1320));
     });
     if (opts.notes && notes) {
-      pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48),1320));
+      pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48,"notes"),1320));
     }
     // Scripture frames the quoted passage on slide one. A speaker is attribution,
     // but in Good Plates the useful context is the reflection: put the speaker at
@@ -2383,7 +2393,11 @@
   function postDrawPage(page, index, total, opts) {
     var t=postTheme(), c=document.createElement("canvas"); c.width=1080; c.height=1920;
     var x=c.getContext("2d"); x.fillStyle=t.page; x.fillRect(0,0,c.width,c.height);
-    roundedRect(x,70,58,940,1804,7); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
+    roundedRect(x,70,58,940,1804,2); x.fillStyle=t.card; x.fill(); x.strokeStyle=t.rule; x.lineWidth=2; x.stroke();
+    // A faint, deterministic paper grain keeps the export from feeling like a UI card.
+    x.save(); x.globalAlpha=.018; x.fillStyle=t.ink;
+    for(var gi=0;gi<360;gi++){ var gx=82+((gi*97)%914), gy=70+((gi*173)%1778); x.fillRect(gx,gy,1.2,1.2); }
+    x.restore();
     var left=124, right=956;
 
     // Carousel cards are composed like pages, not like a document starting at y=0.
@@ -2399,7 +2413,7 @@
       lines.forEach(function(line){
         if (line.k==="gap") { y+=line.h; return; }
         if (line.k==="rule") { y+=8; x.strokeStyle=t.rule; x.lineWidth=2; x.beginPath(); x.moveTo(left,y); x.lineTo(right,y); x.stroke(); y+=line.h-8; return; }
-        x.font=line.font; x.fillStyle=postResolveColor(t,line.color); x.textBaseline="top"; x.fillText(line.text,left,y); y+=line.h;
+        x.font=line.font; x.fillStyle=postResolveColor(t,line.color); x.textBaseline="top"; x.fillText(line.text,left+(line.xOffset||0),y); y+=line.h;
       });
       return y;
     }
