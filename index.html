@@ -1385,7 +1385,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.9.1";
+  var APP_VERSION = "v1.9.2";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2224,10 +2224,30 @@
   function postCarouselBeats(text) {
     var raw=String(text||"").trim();
     if (!raw) return [];
-    var paras=raw.split(/\n\s*\n+/).map(function(x){return x.trim();}).filter(Boolean);
+
+    // Pasted quotations sometimes leave a lone opening/closing quote (or other
+    // punctuation) on its own paragraph/sentence. That is typography, not a beat.
+    // Fold it into the neighboring text so it can never become an empty slide.
+    function meaningful(x){ return /[\p{L}\p{N}]/u.test(String(x||"")); }
+    function foldPunctuation(parts){
+      var out=[];
+      (parts||[]).forEach(function(part){
+        var v=String(part||"").trim();
+        if (!v) return;
+        if (!meaningful(v)) {
+          if (out.length) out[out.length-1]+=v;
+          return;
+        }
+        out.push(v);
+      });
+      return out;
+    }
+
+    var paras=foldPunctuation(raw.split(/\n\s*\n+/));
     if (paras.length > 1) return paras;
+
     var sentences=raw.match(/[^.!?]+[.!?]+(?:[\"'”’)]*)|[^.!?]+$/g) || [];
-    sentences=sentences.map(function(x){return x.trim();}).filter(Boolean);
+    sentences=foldPunctuation(sentences);
     if (sentences.length > 1) {
       var target=Math.ceil(raw.length/2), chunks=[""], total=0;
       sentences.forEach(function(sentence){
@@ -2236,13 +2256,13 @@
         else chunks[i]+=(chunks[i]?" ":"")+sentence;
         total+=sentence.length+1;
       });
-      return chunks.filter(Boolean);
+      return chunks.filter(function(x){return meaningful(x);});
     }
     if (raw.length > 220) {
       var words=raw.split(/\s+/), mid=Math.floor(words.length/2);
-      return [words.slice(0,mid).join(" "), words.slice(mid).join(" ")];
+      return [words.slice(0,mid).join(" "), words.slice(mid).join(" ")].filter(function(x){return meaningful(x);});
     }
-    return [raw];
+    return meaningful(raw) ? [raw] : [];
   }
   function postCarouselProvenance(entry, opts) {
     var parts=[];
@@ -2311,6 +2331,13 @@
         ];
       }
     }
+    // Final safety net: never export a slide whose only visible content is
+    // punctuation (for example a stranded curly quote from pasted text).
+    pages=pages.filter(function(pg){
+      return pg.some(function(line){
+        return line.k==="text" && /[\p{L}\p{N}]/u.test(String(line.text||""));
+      });
+    });
     return pages.length ? pages : [[]];
   }
 
