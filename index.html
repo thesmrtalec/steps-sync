@@ -1318,7 +1318,6 @@
         <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Cross references</span></label>
         <label class="post-opt"><input id="postOptVoices" type="checkbox" checked><span>Speakers</span></label>
         <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Notes</span></label>
-        <label class="post-opt" id="postOptContextWrap"><input id="postOptContext" type="checkbox" checked><span>Context</span></label>
         <label class="post-opt" id="postOptGratitudeWrap"><input id="postOptGratitude" type="checkbox" checked><span>Gratitude</span></label>
         <label class="post-opt"><input id="postOptTags" type="checkbox"><span>Tags</span></label>
         <label class="post-opt"><input id="postOptBrand" type="checkbox"><span>Good Plates mark</span></label>
@@ -1391,7 +1390,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.10.2";
+  var APP_VERSION = "v1.10.3";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2063,7 +2062,7 @@
 
 
   // Long-press stays intentionally light. Share is the canonical whole object:
-  // prose + attached context + working notes, ready to move somewhere else.
+  // prose + useful provenance + working notes, ready to move somewhere else.
   var sharingEntry = null;
   function shareEntryDate(entry) {
     var ts = entryDate(entry);
@@ -2074,7 +2073,6 @@
   function contextLabel(entry){ var c=entryContext(entry); return c ? c.charAt(0).toUpperCase()+c.slice(1) : ""; }
   function fullEntryText(entry) {
     if (!entry) return ""; var parts=[], body=(entry.text||"").trim(); if(body)parts.push(body);
-    var ctx=contextLabel(entry); if(ctx)parts.push("Context: "+ctx);
     var voices=entryVoices(entry).slice(); if(voices.length)parts.push("Speaker"+(voices.length>1?"s":"")+": "+voices.join(" · "));
     var refs=syncRefs(entry).slice().sort(refSort); if(refs.length)parts.push("Scriptures: "+refs.map(refLabel).join(" · "));
     var tags=(entry.tags||[]).filter(function(t){return String(t).trim();}); if(tags.length)parts.push("Tags: "+tags.join(" · "));
@@ -2092,9 +2090,8 @@
     var sheet=document.getElementById("entryShareSheet");sheet.innerHTML="";
     var when=shareEntryDate(entry);if(when)sheet.appendChild(el("div","entry-sheet-date",when));
     sheet.appendChild(el("div","entry-sheet-text",(entry.text||"").trim()));
-    var voices=entryVoices(entry).slice(),refs=syncRefs(entry).slice().sort(refSort).map(refLabel),tags=(entry.tags||[]).filter(function(t){return String(t).trim();}),workshop=(entry.workshop||"").trim(),ctx=contextLabel(entry);
+    var voices=entryVoices(entry).slice(),refs=syncRefs(entry).slice().sort(refSort).map(refLabel),tags=(entry.tags||[]).filter(function(t){return String(t).trim();}),workshop=(entry.workshop||"").trim();
     var meta=[
-      sheetSection("Context",ctx?[ctx]:[],"mark"),
       sheetSection(voices.length===1?"Speaker":"Speakers",voices,"voice"),
       sheetSection("Scripture"+(refs.length===1?"":"s"),refs,"ref"),
       sheetSection("Tags",tags,"tag"),
@@ -2141,7 +2138,7 @@
   function postOptions() {
     return {
       date:postCheckbox("postOptDate"), refs:postCheckbox("postOptRefs"), voices:postCheckbox("postOptVoices"),
-      notes:postCheckbox("postOptNotes"), tags:postCheckbox("postOptTags"), context:postCheckbox("postOptContext"), grateful:postCheckbox("postOptGratitude"),
+      notes:postCheckbox("postOptNotes"), tags:postCheckbox("postOptTags"), grateful:postCheckbox("postOptGratitude"),
       brand:postCheckbox("postOptBrand")
     };
   }
@@ -2152,7 +2149,7 @@
     document.querySelectorAll("[data-post-mode]").forEach(function(b){ b.classList.toggle("on", b.dataset.postMode === postMode); });
     var ex = document.getElementById("postExcerpt"); if (ex) ex.value = (entry.text || "").trim();
     document.getElementById("postExcerptWrap").classList.remove("show");
-    var cw=document.getElementById("postOptContextWrap"), gw=document.getElementById("postOptGratitudeWrap"); if(cw)cw.style.display=entryContext(entry)?"":"none"; if(gw)gw.style.display=entry.grateful?"":"none";
+    var gw=document.getElementById("postOptGratitudeWrap"); if(gw)gw.style.display=entry.grateful?"":"none";
     var overlay=document.getElementById("postOverlay");
     overlay.classList.add("open"); overlay.scrollTop=0; overlay.setAttribute("aria-hidden","false");
     renderPostMaker();
@@ -2217,7 +2214,6 @@
     gap(26);
     var hasMeta=false;
     function meta(label,value,style){ if(value && (!Array.isArray(value)||value.length)){ section(label,value,style,!hasMeta); hasMeta=true; } }
-    if (opts.context && entryContext(entry)) meta("Context", [contextLabel(entry)], "meta");
     if (opts.voices) meta(entryVoices(entry).length===1?"Speaker":"Speakers", entryVoices(entry).slice(), "voice");
     if (opts.refs) meta("Cross reference"+(syncRefs(entry).length===1?"":"s"), syncRefs(entry).slice().sort(refSort).map(refLabel), "ref");
     if (opts.tags) meta("Tags", (entry.tags||[]).filter(function(t){return String(t).trim();}), "meta");
@@ -2364,7 +2360,7 @@
     // Speaker attribution belongs with the reflection. Cross references are
     // added later to the Notes slide so attached scripture does not automatically
     // become a headline on the quote card.
-    var metaOpts={date:false,refs:false,voices:false,notes:false,tags:opts.tags,context:opts.context,grateful:opts.grateful,brand:opts.brand};
+    var metaOpts={date:false,refs:false,voices:false,notes:false,tags:opts.tags,grateful:opts.grateful,brand:opts.brand};
     var metaEntry=Object.assign({},entry,{text:"",workshop:""});
     var metaLines=postLineObjects(metaEntry,"journal",metaOpts,1).filter(function(line,idx,arr){
       // remove the body spacer that postLineObjects emits when there is no body
@@ -3827,7 +3823,7 @@
   document.querySelectorAll("[data-post-mode]").forEach(function(btn){
     btn.onclick=function(){postMode=btn.dataset.postMode;renderPostMaker();};
   });
-  ["postOptDate","postOptRefs","postOptVoices","postOptNotes","postOptTags","postOptContext","postOptGratitude","postOptBrand"].forEach(function(id){
+  ["postOptDate","postOptRefs","postOptVoices","postOptNotes","postOptTags","postOptGratitude","postOptBrand"].forEach(function(id){
     document.getElementById(id).onchange=renderPostMaker;
   });
   var postExcerptTimer=null;
