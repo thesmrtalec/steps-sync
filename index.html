@@ -786,15 +786,15 @@
   body.capture-keyboard #composer #draft {height:0;}
 
   #workbenchOverlay {z-index:110;bottom:auto;height:100dvh;}
-  #workbenchOverlay .notes-inner {padding:16px 20px;overflow:hidden;}
-  #workbenchOverlay .notes-head {flex-shrink:0;margin-bottom:14px;}
+  #workbenchOverlay .notes-inner {padding:16px 20px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
+  #workbenchOverlay .notes-head {flex-shrink:0;margin-bottom:14px;position:sticky;top:0;z-index:4;background:var(--page);padding-bottom:8px;}
   #workbenchOverlay .notes-head h2 {font:26px var(--serif);margin:0;}
   #workbenchOverlay .notes-close {font-size:14px;min-height:44px;}
-  #workbenchOverlay .wb-writing {display:flex;flex-direction:column;flex:1;min-height:120px;overflow:auto;}
+  #workbenchOverlay .wb-writing {display:flex;flex-direction:column;flex:0 0 auto;min-height:0;overflow:visible;}
   #workbenchOverlay .wb-label {font:14px var(--serif);text-transform:none;letter-spacing:0;margin:0 0 6px;color:var(--muted);}
-  #workbenchOverlay textarea {box-shadow:none;resize:none;flex-shrink:0;}
-  #workbenchOverlay .wb-bit {height:130px;min-height:100px;margin-bottom:16px;}
-  #workbenchOverlay .wb-pad {min-height:150px;flex:1;margin:0;}
+  #workbenchOverlay textarea {box-shadow:none;resize:none;flex-shrink:0;overflow-y:hidden;}
+  #workbenchOverlay .wb-bit {height:auto;min-height:100px;margin-bottom:16px;}
+  #workbenchOverlay .wb-pad {height:auto;min-height:260px;flex:0 0 auto;margin:0;}
   .wb-details {border-top:1px solid var(--rule);margin-top:14px;flex:0 0 auto;max-height:48%;overflow:auto;}
   .wb-details summary {cursor:pointer;padding:12px 0;font-size:16px;}
   .wb-details summary span {display:block;font-size:14px;color:var(--muted);margin:4px 0 0 17px;}
@@ -812,12 +812,10 @@
   #workbenchOverlay .wb-meta {font-size:14px;margin-top:8px;flex-shrink:0;}
   #workbenchOverlay.wb-typing .wb-meta {display:none;}
   #workbenchOverlay.wb-typing .wb-details:not([open]) summary span {display:none;}
-  #workbenchOverlay.wb-typing[data-editor="notes"] .wb-bit,
-  #workbenchOverlay.wb-typing[data-editor="notes"] label[for="wbBit"],
-  #workbenchOverlay.wb-typing[data-editor="entry"] .wb-pad,
-  #workbenchOverlay.wb-typing[data-editor="entry"] label[for="wbPad"] {display:none;}
-  #workbenchOverlay.wb-typing[data-editor="entry"] .wb-bit {flex:1;height:0;min-height:80px;margin:0;}
-  #workbenchOverlay.wb-typing .wb-details[open] {max-height:58%;}
+  /* Keep the entry and notes in the same scrollable page while the keyboard is open.
+     The old focus mode hid whichever field you weren't editing, which made it
+     impossible to scroll back to the source entry while writing notes. */
+  #workbenchOverlay.wb-typing .wb-details[open] {max-height:none;}
 
   .notebook-tools {display:flex;flex-wrap:wrap;gap:4px 16px;padding:4px 0 14px;margin-bottom:14px;border-bottom:1px solid var(--rule);}
   .notebook-tools button {display:inline-flex;align-items:center;min-height:44px;border:0;border-radius:0;padding:0;background:transparent;color:var(--ink);font:16px var(--serif);}
@@ -1390,7 +1388,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.10.3";
+  var APP_VERSION = "v1.10.4";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -3718,6 +3716,13 @@
     var pool = workbenchKind === "truth" ? (state.truths || []) : state.bits;
     return pool.find(function (x) { return x.id === workbenchId; });
   }
+  function sizeWorkbenchEditors() {
+    [["wbBit",100],["wbPad",260]].forEach(function(pair){
+      var box=document.getElementById(pair[0]); if(!box)return;
+      box.style.height="auto";
+      box.style.height=Math.max(pair[1],box.scrollHeight+2)+"px";
+    });
+  }
   function openWorkbench(id, kind) {
     workbenchKind = kind || "bit";
     workbenchId = id;
@@ -3725,6 +3730,7 @@
     if (!b) { workbenchId = null; workbenchKind = "bit"; return; }
     document.getElementById("wbBit").value = b.text;
     document.getElementById("wbPad").value = b.workshop || "";
+    sizeWorkbenchEditors();
     document.querySelector(".wb-details").open=false;
     renderWbAttached(b);
     var m = document.getElementById("wbMeta");
@@ -3735,6 +3741,7 @@
     }
     renderBrowseNav();
     document.getElementById("workbenchOverlay").classList.add("open");
+    requestAnimationFrame(sizeWorkbenchEditors);
     // don't steal focus mid-browse — you're reading, not editing yet
     syncWorkbenchViewport();
   }
@@ -3806,8 +3813,8 @@
   }
   if(window.visualViewport){visualViewport.addEventListener("resize",syncWorkbenchViewport);visualViewport.addEventListener("scroll",syncWorkbenchViewport);}
   document.getElementById("workbenchOverlay").addEventListener("focusin",syncWorkbenchViewport);
-  document.getElementById("wbBit").oninput = saveWorkbench;
-  document.getElementById("wbPad").oninput = saveWorkbench;
+  document.getElementById("wbBit").oninput = function(){sizeWorkbenchEditors();saveWorkbench();};
+  document.getElementById("wbPad").oninput = function(){sizeWorkbenchEditors();saveWorkbench();};
   document.getElementById("wbShare").onclick = function () {
     saveWorkbench();
     openEntryShare(benchFind());
