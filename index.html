@@ -962,6 +962,22 @@
   .browse-context-tabs button { border:1px solid var(--rule); border-radius:999px; background:transparent; color:var(--muted); padding:5px 11px; font-family:var(--mono); font-size:10.5px; }
   .browse-context-tabs button.on { border-color:var(--accent); color:var(--accent); background:color-mix(in srgb,var(--accent) 8%,transparent); }
 
+  /* ——— week recap: a quiet chronological spread, not a dashboard ——— */
+  #weekOverlay .notes-inner { overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain; }
+  .week-range { margin:-4px 0 8px; font-family:var(--mono); font-size:11px; letter-spacing:.07em; color:var(--faint); }
+  .week-day { margin:24px 0 0; padding-bottom:7px; border-bottom:1px solid var(--rule); font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); }
+  .week-entry { padding:14px 2px 16px; border-bottom:1px solid color-mix(in srgb,var(--rule) 70%,transparent); cursor:pointer; }
+  .week-entry:last-child { border-bottom:none; }
+  .week-entry-text { margin:0; white-space:pre-wrap; font-family:var(--serif); font-size:17px; line-height:1.55; color:var(--ink); }
+  .week-entry-notes { position:relative; margin:8px 0 0 18px; padding-left:10px; border-left:2px solid color-mix(in srgb,var(--accent) 35%,var(--rule)); font-family:'Caveat','Bradley Hand',cursive; font-size:17px; line-height:1.35; color:var(--muted); max-height:4.1em; overflow:hidden; white-space:pre-wrap; }
+  .week-entry-notes.clipped { -webkit-mask-image:linear-gradient(180deg,#000 68%,transparent 100%); mask-image:linear-gradient(180deg,#000 68%,transparent 100%); }
+  .week-empty { margin:30px 0 12px; font-family:var(--serif); font-style:italic; color:var(--muted); }
+  .week-note-wrap { margin-top:30px; padding-top:18px; border-top:1px solid var(--rule); }
+  .week-note-label { display:block; margin-bottom:7px; font-family:var(--serif); font-size:16px; color:var(--ink); }
+  .week-note-help { margin:0 0 10px; font-family:var(--serif); font-size:13.5px; color:var(--muted); }
+  .week-note { width:100%; min-height:128px; resize:vertical; box-shadow:none; }
+  .week-note-status { min-height:18px; margin-top:6px; font-family:var(--mono); font-size:10.5px; color:var(--faint); }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -986,7 +1002,7 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="contextBtn">Insights &amp; Questions</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="contextBtn">Insights &amp; Questions</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab" id="weekRecapBtn">Week Recap</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search entries, context, talks / lessons…" autocomplete="off" />
   </div>
@@ -1067,6 +1083,22 @@
       <div id="browseSubnav"></div>
       <div class="notes-index" style="margin-top:10px">
         <div id="browseList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-overlay" id="weekOverlay">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>This week</h2>
+        <button class="notes-close" id="weekClose">done</button>
+      </div>
+      <p class="week-range" id="weekRange"></p>
+      <div id="weekList"></div>
+      <div class="week-note-wrap">
+        <label class="week-note-label" for="weekNote">Week note</label>
+        <p class="week-note-help">Optional — anything worth saying about the week as a whole.</p>
+        <textarea class="notes-canvas week-note" id="weekNote" placeholder="Write a note about the week…"></textarea>
+        <div class="week-note-status" id="weekNoteStatus"></div>
       </div>
     </div>
   </div>
@@ -1229,7 +1261,7 @@
             </div>
           </div>
           <h2 class="tourc-h">Find it again</h2>
-          <p class="tourc-p">Speaker and scripture collections are built from what you attach. The Notebook also holds Insights &amp; Questions, gratitude, habits, Light &amp; Truth, Take stock, and the Vault. Sign in with the same account on each device to keep your data in sync.</p>
+          <p class="tourc-p">Speaker and scripture collections are built from what you attach. The Notebook also holds Insights &amp; Questions, gratitude, habits, Light &amp; Truth, Take stock, the Vault, and a Week Recap that simply lays the current week out in order. Sign in with the same account on each device to keep your data in sync.</p>
         </div>
       </div>
     </div>
@@ -1388,8 +1420,8 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.10.4";
-  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
+  var APP_VERSION = "v1.11.0";
+  var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
   // has a deliberately designed day and night palette; Auto follows the device.
@@ -1457,6 +1489,7 @@
     (data.bits||[]).forEach(function(x){keep(x,"question");});
     state.truths=merged; state.bits=[];
     state.notes=data.notes||[];
+    state.weekNotes=data.weekNotes||{};
     state.habits=data.habits||{pray:[],good:[],bad:[]}; if(!state.habits.pray)state.habits.pray=[];if(!state.habits.good)state.habits.good=[];if(!state.habits.bad)state.habits.bad=[];
     state.habitLabels=data.habitLabels||{good:"good habit",bad:"bad habit"};
     state.buried=data.buried||[]; state.buried.forEach(function(x){x.tags=(x.tags||[]).filter(function(t){if(String(t).toLowerCase()==="insight"){if(!x.context)x.context="insight";return false;}return String(t).toLowerCase()!=="question";});if(!x.context&&x.from&&x.from!=="stuff")x.context="question";});
@@ -3861,6 +3894,11 @@
     workbenchId = null;
     workbenchKind = "bit";
     document.getElementById("workbenchOverlay").classList.remove("open");
+    if (weekReturn) {
+      weekReturn = false;
+      openWeekRecap();
+      return;
+    }
     if (browseReturn) {                 // came in from a browse view
       var back = browseReturn;
       browseReturn = null;
@@ -3971,6 +4009,64 @@
       alert("Couldn't build the PDF: " + (err && err.message ? err.message : err));
     }
   }
+  // ——— week recap ———
+  // A chronological reread of what was created this week. No scoring, ranking,
+  // promotion, or generated summary — the journal is the recap.
+  var weekReturn = false, weekNoteTimer = null;
+  function weekBounds() {
+    var start = startOfWeek();
+    return { start:start, end:start + 7 * DAY };
+  }
+  function localDateKey(ms) {
+    var d = new Date(ms), y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
+    return y+"-"+m+"-"+day;
+  }
+  function weekRangeLabel(start,end) {
+    var a=new Date(start), b=new Date(end-1), sameMonth=a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear();
+    if (sameMonth) return a.toLocaleDateString("en-US",{month:"long",day:"numeric"})+"–"+b.getDate()+", "+b.getFullYear();
+    if (a.getFullYear()===b.getFullYear()) return a.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" – "+b.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    return a.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" – "+b.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  }
+  function openWeekRecap() {
+    var bounds=weekBounds(), key=localDateKey(bounds.start), list=document.getElementById("weekList"), note=document.getElementById("weekNote");
+    document.getElementById("weekRange").textContent=weekRangeLabel(bounds.start,bounds.end);
+    list.innerHTML="";
+    var entries=allEntries().filter(function(e){var at=entryDate(e);return at>=bounds.start&&at<bounds.end;}).sort(function(a,b){return entryDate(a)-entryDate(b);});
+    if(!entries.length){list.appendChild(el("p","week-empty","Nothing captured here yet this week."));}
+    var dayKey="";
+    entries.forEach(function(e){
+      var at=entryDate(e), dk=new Date(at).toDateString();
+      if(dk!==dayKey){dayKey=dk;list.appendChild(el("div","week-day",new Date(at).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})));}
+      var card=el("article","week-entry");
+      card.appendChild(el("p","week-entry-text",e.text||""));
+      var wn=String(e.workshop||"").trim();
+      if(wn){var preview=el("div","week-entry-notes",wn); if(wn.length>190||wn.split("\n").length>3)preview.classList.add("clipped"); card.appendChild(preview);}
+      card.title="Open in Workbench";
+      card.onclick=function(){
+        saveWeekNoteNow(); weekReturn=true; document.getElementById("weekOverlay").classList.remove("open");
+        openWorkbench(e.id,(state.bits||[]).indexOf(e)!==-1?"bit":"truth");
+      };
+      list.appendChild(card);
+    });
+    note.value=(state.weekNotes&&state.weekNotes[key])||"";
+    note.dataset.weekKey=key;
+    document.getElementById("weekNoteStatus").textContent="";
+    document.getElementById("weekOverlay").classList.add("open");
+  }
+  function saveWeekNoteNow() {
+    var note=document.getElementById("weekNote"); if(!note||!note.dataset.weekKey)return;
+    if(!state.weekNotes)state.weekNotes={};
+    var v=note.value.trim(); if(v)state.weekNotes[note.dataset.weekKey]=note.value; else delete state.weekNotes[note.dataset.weekKey];
+    save(); document.getElementById("weekNoteStatus").textContent=v?"saved":"";
+  }
+  document.getElementById("weekNote").oninput=function(){
+    document.getElementById("weekNoteStatus").textContent="";
+    clearTimeout(weekNoteTimer); weekNoteTimer=setTimeout(saveWeekNoteNow,650);
+  };
+  document.getElementById("weekNote").onblur=function(){clearTimeout(weekNoteTimer);saveWeekNoteNow();};
+  document.getElementById("weekRecapBtn").onclick=openWeekRecap;
+  document.getElementById("weekClose").onclick=function(){clearTimeout(weekNoteTimer);saveWeekNoteNow();document.getElementById("weekOverlay").classList.remove("open");};
+
   // ——— browse: speakers, scriptures, gratitude ———
   // The lens row filters the stuff list; these are the whole collection at
   // once, grouped, so you can see who you keep returning to and what you\'ve
