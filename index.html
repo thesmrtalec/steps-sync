@@ -1420,7 +1420,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.11.0";
+  var APP_VERSION = "v1.11.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2294,11 +2294,11 @@
   }
   function postCarouselBeats(text) {
     var raw=String(text||"").trim();
-    if (!raw) return [];
+    if (!raw) return {units:[],separator:" "};
 
-    // Pasted quotations sometimes leave a lone opening/closing quote (or other
-    // punctuation) on its own paragraph/sentence. That is typography, not a beat.
-    // Fold it into the neighboring text so it can never become an empty slide.
+    // Carousel breaks are semantic only after the prose proves it needs more room.
+    // Paragraphs are the preferred break; sentences are the fallback. A short entry
+    // stays intact no matter how many sentences it contains.
     function meaningful(x){ return /[\p{L}\p{N}]/u.test(String(x||"")); }
     function foldPunctuation(parts){
       var out=[];
@@ -2315,25 +2315,46 @@
     }
 
     var paras=foldPunctuation(raw.split(/\n\s*\n+/));
-    if (paras.length > 1) return paras;
+    if (paras.length > 1) return {units:paras,separator:"\n\n"};
 
-    var sentences=raw.match(/[^.!?]+[.!?]+(?:[\"'”’)]*)|[^.!?]+$/g) || [];
-    sentences=foldPunctuation(sentences);
-    if (sentences.length > 1) {
-      var target=Math.ceil(raw.length/2), chunks=[""], total=0;
-      sentences.forEach(function(sentence){
-        var i=chunks.length-1;
-        if (chunks[i] && total>=target && chunks.length<2) { chunks.push(sentence); }
-        else chunks[i]+=(chunks[i]?" ":"")+sentence;
-        total+=sentence.length+1;
-      });
-      return chunks.filter(function(x){return meaningful(x);});
-    }
-    if (raw.length > 220) {
-      var words=raw.split(/\s+/), mid=Math.floor(words.length/2);
-      return [words.slice(0,mid).join(" "), words.slice(mid).join(" ")].filter(function(x){return meaningful(x);});
-    }
-    return meaningful(raw) ? [raw] : [];
+    var sentences=foldPunctuation(raw.match(/[^.!?]+[.!?]+(?:[\"'”’)]*)|[^.!?]+$/g) || []);
+    if (sentences.length > 1) return {units:sentences,separator:" "};
+    return meaningful(raw) ? {units:[raw],separator:" "} : {units:[],separator:" "};
+  }
+  function postCarouselBodyPages(text, dateText, maxH) {
+    var raw=String(text||"").trim();
+    if (!raw) return [];
+
+    // One slide is the default. Only split when the actual rendered block is too
+    // tall for the page; word count, sentence count, and paragraph count alone do
+    // not earn another slide.
+    var whole=postCarouselBlock(raw,"",dateText,60);
+    if (postPageHeight(whole)<=maxH) return [whole];
+
+    var beatData=postCarouselBeats(raw), units=beatData.units, separator=beatData.separator;
+    if (!units.length) return [];
+    var chunks=[], current="";
+    units.forEach(function(unit){
+      var candidate=current ? current+separator+unit : unit;
+      var candidateDate=chunks.length===0 ? dateText : "";
+      var size=chunks.length===0 ? 60 : 54;
+      if (current && postPageHeight(postCarouselBlock(candidate,"",candidateDate,size))>maxH) {
+        chunks.push(current);
+        current=unit;
+      } else {
+        current=candidate;
+      }
+    });
+    if (current) chunks.push(current);
+
+    var pages=[];
+    chunks.forEach(function(chunk,idx){
+      var block=postCarouselBlock(chunk,"",idx===0?dateText:"",idx===0?60:54);
+      // A single very long paragraph/sentence may still exceed the page. At that
+      // point a line-level break is unavoidable and is the final fallback.
+      pages=pages.concat(postPaginate(block,maxH));
+    });
+    return pages;
   }
   function postCarouselProvenance(entry, opts) {
     var parts=[];
@@ -2377,14 +2398,7 @@
   }
   function postCarouselPages(entry, opts) {
     var body=(entry.text||"").trim(), notes=(entry.workshop||"").trim(), pages=[];
-    var beats=postCarouselBeats(body);
-    // A carousel is a sequence, not merely an overflow fallback. Paragraphs /
-    // sentences become deliberate beats, while very long beats can still paginate.
-    beats.forEach(function(beat,bi){
-      var dateText=(bi===0 && opts.date) ? shareEntryDate(entry) : "";
-      var block=postCarouselBlock(beat, "", dateText, bi===0?60:54);
-      pages=pages.concat(postPaginate(block,1320));
-    });
+    pages=pages.concat(postCarouselBodyPages(body,opts.date?shareEntryDate(entry):"",1320));
     if (opts.notes && notes) {
       pages=pages.concat(postPaginate(postCarouselBlock(notes,"Notes","",48,"notes"),1320));
     }
@@ -2403,18 +2417,6 @@
       var last=pages[pages.length-1], h=postPageHeight(last), mh=postPageHeight(metaLines);
       if (h+mh<=1580) last.push.apply(last,metaLines);
       else pages=pages.concat(postPaginate(metaLines,1580));
-    }
-    // If the entry is genuinely tiny and has no notes/metadata, split the prose
-    // into two readable beats rather than returning the same single image as Journal.
-    if (pages.length===1 && body && !(opts.notes&&notes) && !hasMeta) {
-      var words=body.split(/\s+/);
-      if (words.length>8) {
-        var mid=Math.ceil(words.length/2);
-        pages=[
-          postCarouselBlock(words.slice(0,mid).join(" "),"",opts.date?shareEntryDate(entry):"",60),
-          postCarouselBlock(words.slice(mid).join(" "),"","",56)
-        ];
-      }
     }
     // Final safety net: never export a slide whose only visible content is
     // punctuation (for example a stranded curly quote from pasted text).
@@ -2461,6 +2463,10 @@
 
     if (opts.centerContent) {
       if (datePrefix.length) drawLines(datePrefix,128);
+      // Edge spacer lines are layout residue, not part of the visual object. Drop
+      // them before measuring so short thoughts are genuinely centered.
+      while (content.length && content[0].k==="gap") content.shift();
+      while (content.length && content[content.length-1].k==="gap") content.pop();
 
       // Scripture is a citation, so it can frame a passage before the text.
       // Speaker attribution normally lives at the top of the Notes slide. Only
@@ -2479,8 +2485,8 @@
 
       var top=datePrefix.length ? 255 : 180;
       var bottom=1690, available=bottom-top, contentH=height(content), totalH=sourceH+contentH;
-      // Center citation + quote + attribution as one object, with a slight upward optical bias.
-      var y=top + Math.max(0,(available-totalH)*0.44);
+      // Center citation + quote + attribution as one visual object.
+      var y=top + Math.max(0,(available-totalH)*0.5);
       if (scriptureLines.length) {
         x.font=postFont(27,POST_SERIF,'600',false); x.fillStyle=t.accent2; x.textBaseline='top';
         scriptureLines.forEach(function(line){ x.fillText(line,left,y); y+=38; });
