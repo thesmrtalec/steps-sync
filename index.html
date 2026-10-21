@@ -1420,7 +1420,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.11.1";
+  var APP_VERSION = "v1.11.2";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2443,9 +2443,9 @@
     x.restore();
     var left=124, right=956;
 
-    // Carousel cards are composed like pages, not like a document starting at y=0.
-    // Keep the journal date pinned near the top, then optically center the actual
-    // thought. Slides without a date center the whole content block.
+    // Export cards are composed like pages, not like a document starting at y=0.
+    // Keep the journal date pinned near the top, then center the entire visible
+    // content block. This applies to Journal and Excerpt too, not only Carousel.
     var datePrefix=[], content=page.slice();
     if (opts.centerContent && content.length && (content[0].role==="date")) {
       while (content.length && (content[0].role==="date" || content[0].role==="date-gap")) datePrefix.push(content.shift());
@@ -2570,7 +2570,7 @@
     }
     var canvases=pages.map(function(pg,i){
       var pageOpts=Object.assign({},opts,{
-        centerContent:mode==="carousel",
+        centerContent:true,
         speakerAttribution:(mode==="carousel" && !hasNotesPage && i===0) ? speakerSource : "",
         scriptureAttribution:"",
         footerProvenance:""
