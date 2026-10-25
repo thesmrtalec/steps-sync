@@ -964,6 +964,9 @@
 
   /* ——— week recap: a quiet chronological spread, not a dashboard ——— */
   #weekOverlay .notes-inner { overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior-y:contain; }
+  .week-section-title { margin:26px 0 8px; font-size:21px; color:var(--ink); }
+  .week-source { margin:0 0 7px; font-family:var(--mono); font-size:12px; color:var(--accent2); line-height:1.5; }
+  .week-entry:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
   .week-range { margin:-4px 0 8px; font-family:var(--mono); font-size:11px; letter-spacing:.07em; color:var(--faint); }
   .week-day { margin:24px 0 0; padding-bottom:7px; border-bottom:1px solid var(--rule); font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); }
   .week-entry { padding:14px 2px 16px; border-bottom:1px solid color-mix(in srgb,var(--rule) 70%,transparent); cursor:pointer; }
@@ -4038,21 +4041,41 @@
     document.getElementById("weekRange").textContent=weekRangeLabel(bounds.start,bounds.end);
     list.innerHTML="";
     var entries=allEntries().filter(function(e){var at=entryDate(e);return at>=bounds.start&&at<bounds.end;}).sort(function(a,b){return entryDate(a)-entryDate(b);});
-    if(!entries.length){list.appendChild(el("p","week-empty","Nothing captured here yet this week."));}
-    var dayKey="";
-    entries.forEach(function(e){
-      var at=entryDate(e), dk=new Date(at).toDateString();
-      if(dk!==dayKey){dayKey=dk;list.appendChild(el("div","week-day",new Date(at).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})));}
+    function openEntry(e) {
+      saveWeekNoteNow(); weekReturn=true; document.getElementById("weekOverlay").classList.remove("open");
+      openWorkbench(e.id,(state.bits||[]).indexOf(e)!==-1?"bit":"truth");
+    }
+    function entryCard(e,source) {
       var card=el("article","week-entry");
+      card.tabIndex=0; card.setAttribute("role","button");
+      card.setAttribute("aria-label","Open entry in Workbench");
+      if(source)card.appendChild(el("div","week-source",source));
       card.appendChild(el("p","week-entry-text",e.text||""));
       var wn=String(e.workshop||"").trim();
       if(wn){var preview=el("div","week-entry-notes",wn); if(wn.length>190||wn.split("\n").length>3)preview.classList.add("clipped"); card.appendChild(preview);}
       card.title="Open in Workbench";
-      card.onclick=function(){
-        saveWeekNoteNow(); weekReturn=true; document.getElementById("weekOverlay").classList.remove("open");
-        openWorkbench(e.id,(state.bits||[]).indexOf(e)!==-1?"bit":"truth");
-      };
-      list.appendChild(card);
+      card.onclick=function(){openEntry(e);};
+      card.onkeydown=function(event){if(event.key==="Enter"||event.key===" "){event.preventDefault();openEntry(e);}};
+      return card;
+    }
+    list.appendChild(el("h3","week-section-title","Scriptures"));
+    var scriptureEntries=entries.filter(function(e){return syncRefs(e).length>0;});
+    if(!scriptureEntries.length)list.appendChild(el("p","week-empty","No scriptures attached to this week’s entries."));
+    scriptureEntries.forEach(function(e){
+      list.appendChild(entryCard(e,syncRefs(e).slice().sort(refSort).map(refLabel).join(" · ")));
+    });
+    list.appendChild(el("h3","week-section-title","Quotes"));
+    var quoteEntries=entries.filter(function(e){return entryVoices(e).length>0;});
+    if(!quoteEntries.length)list.appendChild(el("p","week-empty","No speakers attached to this week’s entries."));
+    quoteEntries.forEach(function(e){list.appendChild(entryCard(e,entryVoices(e).join(" · ")));});
+    list.appendChild(el("h3","week-section-title","Journal"));
+    if(!entries.length)list.appendChild(el("p","week-empty","Nothing captured here yet this week."));
+    var dayKey="";
+    entries.forEach(function(e){
+      var at=entryDate(e), dk=new Date(at).toDateString();
+      if(dk!==dayKey){dayKey=dk;list.appendChild(el("div","week-day",new Date(at).toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})));}
+      var sources=syncRefs(e).slice().sort(refSort).map(refLabel).concat(entryVoices(e));
+      list.appendChild(entryCard(e,sources.join(" · ")));
     });
     note.value=(state.weekNotes&&state.weekNotes[key])||"";
     note.dataset.weekKey=key;
