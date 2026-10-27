@@ -486,11 +486,12 @@
   .volume-lede { margin: -2px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
   .volume-form { display: flex; flex-direction: column; gap: 18px; padding-bottom: 36px; }
   .volume-field > label, .volume-legend { display: block; margin: 0 0 7px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
-  .volume-field input[type="text"], .volume-field input[type="date"] { width: 100%; min-height: 45px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); padding: 9px 11px; font: 16px var(--serif); }
+  .volume-field input[type="text"], .volume-field input[type="date"], .volume-field select { width: 100%; min-height: 45px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); padding: 9px 11px; font: 16px var(--serif); }
   .volume-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .volume-checks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
   .volume-check { display: flex; align-items: center; gap: 9px; min-height: 43px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); font-size: 14px; }
   .volume-check input { width: 17px; height: 17px; accent-color: var(--accent); }
+  .volume-check.muted { opacity: .42; }
   .volume-help { margin: 7px 0 0; color: var(--faint); font-size: 12.5px; line-height: 1.45; }
   .volume-build { min-height: 48px; border: 0; border-radius: 10px; background: var(--accent); color: var(--onaccent); font: 700 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
   .volume-build:disabled { opacity: .55; cursor: wait; }
@@ -1122,14 +1123,25 @@
           <div class="volume-field"><label for="volumeFrom">From</label><input id="volumeFrom" type="date" /></div>
           <div class="volume-field"><label for="volumeTo">Through</label><input id="volumeTo" type="date" /></div>
         </div>
+        <div class="volume-field">
+          <label for="volumeScope">Collection</label>
+          <select id="volumeScope">
+            <option value="scriptures_quotes" selected>Scriptures &amp; quotes</option>
+            <option value="scriptures">Scriptures only</option>
+            <option value="quotes">Quotes only</option>
+            <option value="all">Everything</option>
+          </select>
+          <p class="volume-help">Scriptures have an attached reference. Quotes have an attached speaker. This filters by what you deliberately attached, not by guessing from the prose.</p>
+        </div>
         <div>
           <span class="volume-legend">Include</span>
           <div class="volume-checks">
-            <label class="volume-check"><input id="volumeEntries" type="checkbox" checked /> Notebook entries</label>
-            <label class="volume-check"><input id="volumeJournal" type="checkbox" checked /> Journal entries</label>
+            <label class="volume-check"><input id="volumeEntries" type="checkbox" checked /> Main notebook entries</label>
+            <label class="volume-check" id="volumeJournalLabel"><input id="volumeJournal" type="checkbox" checked /> Long-form journal pages</label>
             <label class="volume-check"><input id="volumeWork" type="checkbox" /> Working notes</label>
             <label class="volume-check"><input id="volumeGratitude" type="checkbox" /> Gratitude only</label>
           </div>
+          <p class="volume-help">Journal pages are the separate dated writing from Journal mode. They’re available only when the collection is set to Everything.</p>
         </div>
         <div>
           <span class="volume-legend">Indexes</span>
@@ -1480,7 +1492,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.12.0";
+  var APP_VERSION = "v1.13.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -3685,13 +3697,27 @@
     dates.sort(function (a, b) { return a - b; });
     return dates;
   }
+  function volumeScopeTitle(scope) {
+    if (scope === "scriptures") return "Collected Scriptures";
+    if (scope === "quotes") return "Collected Quotes";
+    if (scope === "scriptures_quotes") return "Scriptures & Quotes";
+    return "The Good Plates";
+  }
+  function syncVolumeScopeUI() {
+    var scope = document.getElementById("volumeScope").value;
+    var journal = document.getElementById("volumeJournal"), label = document.getElementById("volumeJournalLabel");
+    journal.disabled = scope !== "all";
+    label.classList.toggle("muted", journal.disabled);
+  }
   function openVolumeExport() {
     var dates = volumeSourceDates(), now = Date.now();
     document.getElementById("volumeFrom").value = volumeDayValue(dates[0] || now);
     document.getElementById("volumeTo").value = volumeDayValue(dates[dates.length - 1] || now);
     var first = new Date(dates[0] || now), last = new Date(dates[dates.length - 1] || now);
     var years = first.getFullYear() === last.getFullYear() ? String(first.getFullYear()) : first.getFullYear() + "–" + last.getFullYear();
-    document.getElementById("volumeTitle").value = "The Good Plates — " + years;
+    var title = document.getElementById("volumeTitle"), scope = document.getElementById("volumeScope").value;
+    title.value = volumeScopeTitle(scope) + " — " + years; title.dataset.auto = "true";
+    syncVolumeScopeUI();
     document.getElementById("volumeStatus").textContent = "";
     document.getElementById("utilMenu").style.display = "none";
     var overlay = document.getElementById("volumeOverlay");
@@ -3705,6 +3731,7 @@
     function checked(id) { return document.getElementById(id).checked; }
     return {
       title: document.getElementById("volumeTitle").value.trim() || "The Good Plates",
+      scope: document.getElementById("volumeScope").value,
       from: volumeDateValue(document.getElementById("volumeFrom").value, false),
       to: volumeDateValue(document.getElementById("volumeTo").value, true),
       entries: checked("volumeEntries"), journal: checked("volumeJournal"), work: checked("volumeWork"), gratitude: checked("volumeGratitude"),
@@ -3715,9 +3742,13 @@
     var out = [];
     if (opts.entries) (state.truths || []).forEach(function (e) {
       var d = entryDate(e); if (!d || d < opts.from || d > opts.to || (opts.gratitude && !e.grateful)) return;
+      var hasReference = entryRefs(e).length > 0, hasSpeaker = entryVoices(e).length > 0;
+      if (opts.scope === "scriptures_quotes" && !hasReference && !hasSpeaker) return;
+      if (opts.scope === "scriptures" && !hasReference) return;
+      if (opts.scope === "quotes" && !hasSpeaker) return;
       out.push({ kind:"entry", date:d, entry:e, text:e.text || "" });
     });
-    if (opts.journal && !opts.gratitude) (state.notes || []).forEach(function (n) {
+    if (opts.scope === "all" && opts.journal && !opts.gratitude) (state.notes || []).forEach(function (n) {
       var d = n.updated || 0; if (!d || d < opts.from || d > opts.to) return;
       out.push({ kind:"journal", date:d, entry:n, text:n.text || "" });
     });
@@ -3733,8 +3764,11 @@
   }
   function volumeSlug(s) { return String(s || "volume").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 52) || "good-plates-volume"; }
 
+  var volumeBuilding = false, volumeLastExport = 0;
   function buildVolumePDF() {
     var status = document.getElementById("volumeStatus"), build = document.getElementById("volumeBuild");
+    if (volumeBuilding || Date.now() - volumeLastExport < 2000) return;
+    volumeBuilding = true; volumeLastExport = Date.now();
     try {
       var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
       if (!jsPDFLib) { alert("PDF export isn't available right now — check your connection and try again."); return; }
@@ -3859,21 +3893,27 @@
         doc.setPage(p); setText("helvetica", "normal", 7.5, 145); doc.text(String(p - 1), W / 2, 626, { align:"center" });
       }
       doc.setProperties({ title:opts.title, subject:"Collected entries from The Good Plates", creator:"The Good Plates" });
-      var blob = doc.output("blob"), filename = volumeSlug(opts.title) + ".pdf", file = new File([blob], filename, { type:"application/pdf" });
+      var filename = volumeSlug(opts.title) + ".pdf";
       status.textContent = total + " pages built.";
-      if (navigator.canShare && navigator.canShare({ files:[file] })) navigator.share({ files:[file], title:opts.title }).catch(function () {});
-      else {
-        var url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      }
+      doc.save(filename);
     } catch (err) {
       status.textContent = "Couldn't build the volume.";
       alert("Couldn't build the volume: " + (err && err.message ? err.message : err));
-    } finally { build.disabled = false; }
+    } finally { volumeBuilding = false; build.disabled = false; }
   }
   document.getElementById("volumeBtn").onclick = openVolumeExport;
   document.getElementById("volumeClose").onclick = closeVolumeExport;
   document.getElementById("volumeBuild").onclick = buildVolumePDF;
+  document.getElementById("volumeTitle").oninput = function () { this.dataset.auto = "false"; };
+  document.getElementById("volumeScope").onchange = function () {
+    syncVolumeScopeUI();
+    var title = document.getElementById("volumeTitle");
+    if (title.dataset.auto === "true") {
+      var from = document.getElementById("volumeFrom").value, to = document.getElementById("volumeTo").value;
+      var firstYear = from ? from.slice(0,4) : String(new Date().getFullYear()), lastYear = to ? to.slice(0,4) : firstYear;
+      title.value = volumeScopeTitle(this.value) + " — " + (firstYear === lastYear ? firstYear : firstYear + "–" + lastYear);
+    }
+  };
 
   // backup
   document.getElementById("exportBtn").onclick = function () {
