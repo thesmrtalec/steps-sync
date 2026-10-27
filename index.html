@@ -480,6 +480,22 @@
   .notes-index { margin-top: 22px; overflow-y: auto; min-height: 0;
     -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .notes-index-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  /* ——— collected volume export ——— */
+  #volumeOverlay { z-index: 180; overflow-y: auto; }
+  #volumeOverlay .notes-inner { max-width: 680px; overflow-y: auto; }
+  .volume-lede { margin: -2px 0 20px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .volume-form { display: flex; flex-direction: column; gap: 18px; padding-bottom: 36px; }
+  .volume-field > label, .volume-legend { display: block; margin: 0 0 7px; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+  .volume-field input[type="text"], .volume-field input[type="date"] { width: 100%; min-height: 45px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); padding: 9px 11px; font: 16px var(--serif); }
+  .volume-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .volume-checks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .volume-check { display: flex; align-items: center; gap: 9px; min-height: 43px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); color: var(--ink); font-size: 14px; }
+  .volume-check input { width: 17px; height: 17px; accent-color: var(--accent); }
+  .volume-help { margin: 7px 0 0; color: var(--faint); font-size: 12.5px; line-height: 1.45; }
+  .volume-build { min-height: 48px; border: 0; border-radius: 10px; background: var(--accent); color: var(--onaccent); font: 700 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+  .volume-build:disabled { opacity: .55; cursor: wait; }
+  .volume-status { min-height: 19px; color: var(--muted); font: 11px var(--mono); text-align: center; }
+  @media (max-width: 480px) { .volume-checks { grid-template-columns: 1fr; } }
   .note-card { background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 9px; padding: 12px 14px; margin-bottom: 9px; box-shadow: var(--cardshadow); cursor: pointer; }
   .note-card p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .note-card .note-date { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 7px; display: flex; align-items: center; }
@@ -1070,6 +1086,7 @@
       </div>
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
+      <button id="volumeBtn">Create a volume</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
       <input type="file" id="importFile" accept=".json" style="display:none" />
@@ -1086,6 +1103,45 @@
       <div id="browseSubnav"></div>
       <div class="notes-index" style="margin-top:10px">
         <div id="browseList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-overlay" id="volumeOverlay" aria-hidden="true">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>Create a volume</h2>
+        <button class="notes-close" id="volumeClose" type="button">done</button>
+      </div>
+      <p class="volume-lede">Turn the notebook into a searchable 6 × 9 book, with page-numbered indexes for finding your way back.</p>
+      <div class="volume-form">
+        <div class="volume-field">
+          <label for="volumeTitle">Title</label>
+          <input id="volumeTitle" type="text" value="The Good Plates" autocomplete="off" />
+        </div>
+        <div class="volume-dates">
+          <div class="volume-field"><label for="volumeFrom">From</label><input id="volumeFrom" type="date" /></div>
+          <div class="volume-field"><label for="volumeTo">Through</label><input id="volumeTo" type="date" /></div>
+        </div>
+        <div>
+          <span class="volume-legend">Include</span>
+          <div class="volume-checks">
+            <label class="volume-check"><input id="volumeEntries" type="checkbox" checked /> Notebook entries</label>
+            <label class="volume-check"><input id="volumeJournal" type="checkbox" checked /> Journal entries</label>
+            <label class="volume-check"><input id="volumeWork" type="checkbox" /> Working notes</label>
+            <label class="volume-check"><input id="volumeGratitude" type="checkbox" /> Gratitude only</label>
+          </div>
+        </div>
+        <div>
+          <span class="volume-legend">Indexes</span>
+          <div class="volume-checks">
+            <label class="volume-check"><input id="volumeSpeakerIndex" type="checkbox" checked /> Speakers</label>
+            <label class="volume-check"><input id="volumeReferenceIndex" type="checkbox" checked /> References</label>
+            <label class="volume-check"><input id="volumeTopicIndex" type="checkbox" checked /> Topics</label>
+          </div>
+          <p class="volume-help">Indexes use only the speakers, references, and tags you attached. Good Plates won’t guess at subjects from your writing.</p>
+        </div>
+        <button class="volume-build" id="volumeBuild" type="button">Build searchable PDF</button>
+        <div class="volume-status" id="volumeStatus" role="status"></div>
       </div>
     </div>
   </div>
@@ -1349,7 +1405,7 @@
       <div class="post-options-label">Include</div>
       <div class="post-options">
         <label class="post-opt"><input id="postOptDate" type="checkbox" checked><span>Date</span></label>
-        <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>Cross references</span></label>
+        <label class="post-opt"><input id="postOptRefs" type="checkbox" checked><span>References</span></label>
         <label class="post-opt"><input id="postOptVoices" type="checkbox" checked><span>Speakers</span></label>
         <label class="post-opt"><input id="postOptNotes" type="checkbox" checked><span>Notes</span></label>
         <label class="post-opt" id="postOptGratitudeWrap"><input id="postOptGratitude" type="checkbox" checked><span>Gratitude</span></label>
@@ -1424,7 +1480,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.11.2";
+  var APP_VERSION = "v1.12.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -2392,7 +2448,7 @@
     var m=document.createElement("canvas").getContext("2d"), maxW=820, lines=[];
     lines.push({k:"gap",h:28,role:"crossref-gap"});
     var labelFont=postFont(15,POST_SANS,'600',false);
-    lines.push({k:"text",text:"Cross references",font:labelFont,color:"muted",h:22,size:15,role:"crossref-label"});
+    lines.push({k:"text",text:"References",font:labelFont,color:"muted",h:22,size:15,role:"crossref-label"});
     lines.push({k:"gap",h:8,role:"crossref-label-gap"});
     var f=postFont(27,POST_SERIF,'500',false);
     postWrap(m,refs.join("  ·  "),f,maxW).forEach(function(t){
@@ -2569,7 +2625,7 @@
       } else {
         // No Notes slide exists: keep the reference optional, but make it a
         // supporting page instead of forcing it into the quote headline zone.
-        pages.push(postCarouselBlock(scriptureRefs.join("  ·  "),"Cross references","",32));
+        pages.push(postCarouselBlock(scriptureRefs.join("  ·  "),"References","",32));
       }
     }
     var canvases=pages.map(function(pg,i){
@@ -3608,6 +3664,216 @@
     body.appendChild(buildCalendar("good", state.habitLabels.good || "good habit", false));
     body.appendChild(buildCalendar("bad", state.habitLabels.bad || "bad habit", true));
   }
+
+  // ——— collected volume export ———
+  // Layout first, index second. Each entry records the PDF page where it begins;
+  // index rows display the printed page number and link to the underlying PDF page.
+  function volumeDayValue(ms) {
+    if (!ms) return "";
+    var d = new Date(ms), y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+  function volumeDateValue(value, endOfDay) {
+    if (!value) return endOfDay ? Infinity : -Infinity;
+    var t = new Date(value + "T00:00:00").getTime();
+    return endOfDay ? t + DAY - 1 : t;
+  }
+  function volumeSourceDates() {
+    var dates = [];
+    (state.truths || []).forEach(function (e) { var d = entryDate(e); if (d) dates.push(d); });
+    (state.notes || []).forEach(function (n) { if (n.updated) dates.push(n.updated); });
+    dates.sort(function (a, b) { return a - b; });
+    return dates;
+  }
+  function openVolumeExport() {
+    var dates = volumeSourceDates(), now = Date.now();
+    document.getElementById("volumeFrom").value = volumeDayValue(dates[0] || now);
+    document.getElementById("volumeTo").value = volumeDayValue(dates[dates.length - 1] || now);
+    var first = new Date(dates[0] || now), last = new Date(dates[dates.length - 1] || now);
+    var years = first.getFullYear() === last.getFullYear() ? String(first.getFullYear()) : first.getFullYear() + "–" + last.getFullYear();
+    document.getElementById("volumeTitle").value = "The Good Plates — " + years;
+    document.getElementById("volumeStatus").textContent = "";
+    document.getElementById("utilMenu").style.display = "none";
+    var overlay = document.getElementById("volumeOverlay");
+    overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false");
+  }
+  function closeVolumeExport() {
+    var overlay = document.getElementById("volumeOverlay");
+    overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true");
+  }
+  function volumeOptions() {
+    function checked(id) { return document.getElementById(id).checked; }
+    return {
+      title: document.getElementById("volumeTitle").value.trim() || "The Good Plates",
+      from: volumeDateValue(document.getElementById("volumeFrom").value, false),
+      to: volumeDateValue(document.getElementById("volumeTo").value, true),
+      entries: checked("volumeEntries"), journal: checked("volumeJournal"), work: checked("volumeWork"), gratitude: checked("volumeGratitude"),
+      speakers: checked("volumeSpeakerIndex"), references: checked("volumeReferenceIndex"), topics: checked("volumeTopicIndex")
+    };
+  }
+  function volumeItems(opts) {
+    var out = [];
+    if (opts.entries) (state.truths || []).forEach(function (e) {
+      var d = entryDate(e); if (!d || d < opts.from || d > opts.to || (opts.gratitude && !e.grateful)) return;
+      out.push({ kind:"entry", date:d, entry:e, text:e.text || "" });
+    });
+    if (opts.journal && !opts.gratitude) (state.notes || []).forEach(function (n) {
+      var d = n.updated || 0; if (!d || d < opts.from || d > opts.to) return;
+      out.push({ kind:"journal", date:d, entry:n, text:n.text || "" });
+    });
+    out.sort(function (a, b) { return a.date - b.date || (a.entry.id || "").localeCompare(b.entry.id || ""); });
+    return out;
+  }
+  function volumeDateLabel(ms) { return new Date(ms).toLocaleDateString("en-US", { month:"long", day:"numeric", year:"numeric" }); }
+  function volumeMonthKey(ms) { var d = new Date(ms); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+  function volumeMonthLabel(ms) { return new Date(ms).toLocaleDateString("en-US", { month:"long", year:"numeric" }); }
+  function uniquePagePush(map, key, page) {
+    if (!map[key]) map[key] = [];
+    if (map[key].indexOf(page) === -1) map[key].push(page);
+  }
+  function volumeSlug(s) { return String(s || "volume").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 52) || "good-plates-volume"; }
+
+  function buildVolumePDF() {
+    var status = document.getElementById("volumeStatus"), build = document.getElementById("volumeBuild");
+    try {
+      var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+      if (!jsPDFLib) { alert("PDF export isn't available right now — check your connection and try again."); return; }
+      var opts = volumeOptions(), items = volumeItems(opts);
+      if (!opts.entries && !opts.journal) { status.textContent = "Choose notebook entries, journal entries, or both."; return; }
+      if (!items.length) { status.textContent = "Nothing falls inside that date range."; return; }
+      build.disabled = true; status.textContent = "Laying out " + items.length + (items.length === 1 ? " entry…" : " entries…");
+
+      var doc = new jsPDFLib({ unit:"pt", format:[432,648], orientation:"portrait", putOnlyUsedFonts:true, compress:true });
+      var W = 432, H = 648, LEFT = 48, RIGHT = 384, TOP = 48, BOTTOM = 602, y = TOP;
+      var indexes = { speakers:{}, references:{}, topics:{} }, refObjects = {};
+      function pageNo() { return doc.internal.getNumberOfPages(); }
+      function addPage() { doc.addPage([W,H], "portrait"); y = TOP; }
+      function setText(font, style, size, color) {
+        doc.setFont(font || "times", style || "normal"); doc.setFontSize(size || 12); doc.setTextColor(color == null ? 38 : color);
+      }
+      function ensure(space) { if (y + space > BOTTOM) addPage(); }
+      function wrappedLines(text, width) {
+        var out = [], paras = String(text || "").replace(/\r/g, "").split("\n");
+        paras.forEach(function (p, idx) {
+          if (!p) out.push(""); else out = out.concat(doc.splitTextToSize(p, width));
+          if (idx < paras.length - 1 && p) out.push("");
+        });
+        return out;
+      }
+      function writeLines(lines, x, width, lineHeight, onNewPage) {
+        lines.forEach(function (line) {
+          if (y + lineHeight > BOTTOM) { addPage(); if (onNewPage) onNewPage(); }
+          if (line) doc.text(line, x, y); y += lineHeight;
+        });
+      }
+      function smallLabel(label, value) {
+        if (!value) return;
+        ensure(28); setText("helvetica", "bold", 7.5, 125); doc.text(label.toUpperCase(), LEFT, y);
+        setText("helvetica", "normal", 8.8, 92);
+        var lines = doc.splitTextToSize(value, RIGHT - LEFT - 70); doc.text(lines, LEFT + 70, y, { lineHeightFactor:1.35 });
+        y += Math.max(13, lines.length * 12);
+      }
+
+      // Cover
+      setText("helvetica", "normal", 8, 125); doc.text("A COLLECTED NOTEBOOK", W / 2, 112, { align:"center" });
+      doc.setDrawColor(168, 151, 118); doc.setLineWidth(.7); doc.line(116, 132, 316, 132);
+      setText("times", "bold", 26, 34); var titleLines = doc.splitTextToSize(opts.title, 300); doc.text(titleLines, W / 2, 190, { align:"center", lineHeightFactor:1.15 });
+      var firstDate = items[0].date, lastDate = items[items.length - 1].date;
+      setText("times", "italic", 11, 110); doc.text(volumeDateLabel(firstDate) + " — " + volumeDateLabel(lastDate), W / 2, 278, { align:"center" });
+      setText("helvetica", "normal", 8, 140); doc.text(items.length + (items.length === 1 ? " ENTRY" : " ENTRIES"), W / 2, 310, { align:"center" });
+      setText("times", "italic", 10, 132); doc.text("The Good Plates", W / 2, 556, { align:"center" });
+
+      addPage();
+      var month = "";
+      items.forEach(function (item) {
+        var mk = volumeMonthKey(item.date);
+        if (mk !== month) {
+          if (month) addPage();
+          month = mk;
+          setText("helvetica", "normal", 8, 128); doc.text("CHAPTER", LEFT, y); y += 22;
+          setText("times", "bold", 22, 34); doc.text(volumeMonthLabel(item.date), LEFT, y); y += 30;
+          doc.setDrawColor(188, 174, 145); doc.setLineWidth(.6); doc.line(LEFT, y, RIGHT, y); y += 24;
+        }
+        ensure(80);
+        var startPage = pageNo(), e = item.entry;
+        setText("helvetica", "normal", 7.8, 125);
+        var kicker = volumeDateLabel(item.date).toUpperCase();
+        if (item.kind === "journal") kicker += "  ·  JOURNAL";
+        else if (entryContext(e)) kicker += "  ·  " + entryContext(e).toUpperCase();
+        if (e.grateful) kicker += "  ·  GRATITUDE";
+        doc.text(kicker, LEFT, y); y += 21;
+        setText("times", "normal", 12.5, 34);
+        writeLines(wrappedLines(item.text, RIGHT - LEFT), LEFT, RIGHT - LEFT, 18, function () {
+          setText("helvetica", "normal", 7.5, 140); doc.text(volumeDateLabel(item.date).toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 18;
+          setText("times", "normal", 12.5, 34);
+        });
+
+        if (item.kind === "entry") {
+          var refs = entryRefs(e).slice().sort(refSort), voices = entryVoices(e).slice(), tags = (e.tags || []).slice();
+          if (refs.length || voices.length || tags.length || (opts.work && e.workshop)) { y += 10; doc.setDrawColor(205, 196, 176); doc.line(LEFT, y, RIGHT, y); y += 16; }
+          smallLabel("References", refs.map(refLabel).join(" · "));
+          smallLabel("Speakers", voices.join(" · "));
+          smallLabel("Topics", tags.join(" · "));
+          if (opts.work && e.workshop) {
+            ensure(35); setText("helvetica", "bold", 7.5, 125); doc.text("WORKING NOTES", LEFT, y); y += 14;
+            setText("times", "italic", 10.3, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT), LEFT, RIGHT - LEFT, 14, function () { setText("times", "italic", 10.3, 92); });
+          }
+          if (opts.speakers) voices.forEach(function (v) { uniquePagePush(indexes.speakers, v, startPage); });
+          if (opts.references) refs.forEach(function (r) { var k = refKey(r); refObjects[k] = r; uniquePagePush(indexes.references, k, startPage); });
+          if (opts.topics) tags.forEach(function (tag) { var clean = String(tag).trim(); if (clean) uniquePagePush(indexes.topics, clean, startPage); });
+        }
+        y += 21;
+      });
+
+      function addIndex(title, keys, labelFor) {
+        if (!keys.length) return;
+        addPage(); setText("helvetica", "normal", 8, 128); doc.text("FIND YOUR WAY BACK", LEFT, y); y += 22;
+        setText("times", "bold", 22, 34); doc.text(title, LEFT, y); y += 32;
+        doc.setDrawColor(188, 174, 145); doc.line(LEFT, y, RIGHT, y); y += 20;
+        keys.forEach(function (key) {
+          var pages = title === "Speaker index" ? indexes.speakers[key] : title === "Reference index" ? indexes.references[key] : indexes.topics[key];
+          setText("times", "normal", 10.5, 42);
+          var termLines = doc.splitTextToSize(labelFor(key), 218), pageRows = Math.max(1, Math.ceil(pages.length / 7)), rowH = Math.max(termLines.length * 13, pageRows * 13);
+          if (y + rowH + 7 > BOTTOM) { addPage(); setText("helvetica", "normal", 7.5, 140); doc.text(title.toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 22; }
+          setText("times", "normal", 10.5, 42); doc.text(termLines, LEFT, y, { lineHeightFactor:1.25 });
+          var px = 294, py = y;
+          pages.forEach(function (target, idx) {
+            var shown = String(target - 1), suffix = idx < pages.length - 1 ? "," : "";
+            setText("helvetica", "normal", 8.8, 102);
+            var token = shown + suffix, tw = doc.getTextWidth(token + " ");
+            if (px + tw > RIGHT) { px = 294; py += 13; }
+            doc.text(token, px, py); doc.link(px - 1, py - 9, Math.max(10, doc.getTextWidth(shown) + 2), 12, { pageNumber:target }); px += tw;
+          });
+          y += rowH + 7; doc.setDrawColor(225, 218, 203); doc.line(LEFT, y - 3, RIGHT, y - 3);
+        });
+      }
+      var speakerKeys = Object.keys(indexes.speakers).sort(function (a, b) { return lastName(a).localeCompare(lastName(b)) || a.localeCompare(b); });
+      var referenceKeys = Object.keys(indexes.references).sort(function (a, b) { return refSort(refObjects[a], refObjects[b]); });
+      var topicKeys = Object.keys(indexes.topics).sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity:"base" }); });
+      addIndex("Speaker index", speakerKeys, function (k) { return k; });
+      addIndex("Reference index", referenceKeys, function (k) { return refLabel(refObjects[k]); });
+      addIndex("Topic index", topicKeys, function (k) { return k; });
+
+      var total = doc.internal.getNumberOfPages();
+      for (var p = 2; p <= total; p++) {
+        doc.setPage(p); setText("helvetica", "normal", 7.5, 145); doc.text(String(p - 1), W / 2, 626, { align:"center" });
+      }
+      doc.setProperties({ title:opts.title, subject:"Collected entries from The Good Plates", creator:"The Good Plates" });
+      var blob = doc.output("blob"), filename = volumeSlug(opts.title) + ".pdf", file = new File([blob], filename, { type:"application/pdf" });
+      status.textContent = total + " pages built.";
+      if (navigator.canShare && navigator.canShare({ files:[file] })) navigator.share({ files:[file], title:opts.title }).catch(function () {});
+      else {
+        var url = URL.createObjectURL(blob), a = document.createElement("a"); a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      }
+    } catch (err) {
+      status.textContent = "Couldn't build the volume.";
+      alert("Couldn't build the volume: " + (err && err.message ? err.message : err));
+    } finally { build.disabled = false; }
+  }
+  document.getElementById("volumeBtn").onclick = openVolumeExport;
+  document.getElementById("volumeClose").onclick = closeVolumeExport;
+  document.getElementById("volumeBuild").onclick = buildVolumePDF;
 
   // backup
   document.getElementById("exportBtn").onclick = function () {
