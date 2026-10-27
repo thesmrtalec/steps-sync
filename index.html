@@ -1492,7 +1492,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.13.2";
+  var APP_VERSION = "v1.14.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -3802,13 +3802,16 @@
       }
       function smallLabel(label, value, onNewPage) {
         if (!value) return;
-        setText("helvetica", "normal", 8.8, 92);
-        var lines = doc.splitTextToSize(value, RIGHT - LEFT - 90), height = Math.max(13, lines.length * 12);
+        setText("helvetica", "normal", 7.7, 92);
+        var lines = doc.splitTextToSize(value, RIGHT - LEFT - 82), height = Math.max(11, lines.length * 10.5);
         if (y + height > BOTTOM) { addPage(); if (onNewPage) onNewPage(); }
-        setText("helvetica", "bold", 7.5, 125); doc.text(label.toUpperCase(), LEFT + 12, y);
-        setText("helvetica", "normal", 8.8, 92);
-        doc.text(lines, LEFT + 90, y, { lineHeightFactor:1.35 });
+        setText("helvetica", "bold", 6.7, 125); doc.text(label.toUpperCase(), LEFT + 10, y);
+        setText("helvetica", "normal", 7.7, 92);
+        doc.text(lines, LEFT + 82, y, { lineHeightFactor:1.3 });
         y += height;
+      }
+      function pdfSafeText(value) {
+        return String(value || "").normalize ? String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "") : String(value || "");
       }
 
       // Cover
@@ -3827,47 +3830,47 @@
         if (mk !== month) {
           if (month) addPage();
           month = mk;
-          setText("helvetica", "normal", 8, 128); doc.text("CHAPTER", LEFT, y); y += 22;
-          setText("times", "bold", 22, 34); doc.text(volumeMonthLabel(item.date), LEFT, y); y += 30;
-          doc.setDrawColor(188, 174, 145); doc.setLineWidth(.6); doc.line(LEFT, y, RIGHT, y); y += 24;
+          setText("helvetica", "normal", 7, 128); doc.text("CHAPTER", LEFT, y); y += 18;
+          setText("times", "bold", 18, 34); doc.text(volumeMonthLabel(item.date), LEFT, y); y += 24;
+          doc.setDrawColor(188, 174, 145); doc.setLineWidth(.6); doc.line(LEFT, y, RIGHT, y); y += 18;
         }
-        ensure(80);
+        ensure(64);
         var startPage = pageNo(), e = item.entry;
-        setText("helvetica", "normal", 7.8, 125);
+        setText("helvetica", "normal", 7, 125);
         var kicker = volumeDateLabel(item.date).toUpperCase();
         if (item.kind === "journal") kicker += "  ·  JOURNAL";
         else if (entryContext(e)) kicker += "  ·  " + entryContext(e).toUpperCase();
         if (e.grateful) kicker += "  ·  GRATITUDE";
-        doc.text(kicker, LEFT, y); y += 21;
-        setText("times", "normal", 12.5, 34);
-        writeLines(wrappedLines(item.text, RIGHT - LEFT), LEFT, RIGHT - LEFT, 18, function () {
-          setText("helvetica", "normal", 7.5, 140); doc.text(volumeDateLabel(item.date).toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 18;
-          setText("times", "normal", 12.5, 34);
+        doc.text(kicker, LEFT, y); y += 16;
+        setText("times", "normal", 10.5, 34);
+        writeLines(wrappedLines(item.text, RIGHT - LEFT), LEFT, RIGHT - LEFT, 14.5, function () {
+          setText("helvetica", "normal", 6.8, 140); doc.text(volumeDateLabel(item.date).toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 15;
+          setText("times", "normal", 10.5, 34);
         });
 
         if (item.kind === "entry") {
           var refs = entryRefs(e).slice().sort(refSort), voices = entryVoices(e).slice(), tags = (e.tags || []).slice();
           var refText = refs.map(refLabel).join(" · "), voiceText = voices.join(" · "), tagText = tags.join(" · ");
           var metaValues = [refText, voiceText, tagText].filter(Boolean), metaHeight = 0;
-          setText("helvetica", "normal", 8.8, 92);
-          metaValues.forEach(function (value) { metaHeight += Math.max(13, doc.splitTextToSize(value, RIGHT - LEFT - 90).length * 12); });
+          setText("helvetica", "normal", 7.7, 92);
+          metaValues.forEach(function (value) { metaHeight += Math.max(11, doc.splitTextToSize(value, RIGHT - LEFT - 82).length * 10.5); });
           function detailsContinuation() {
-            setText("helvetica", "normal", 7.5, 140); doc.text("DETAILS FOR " + volumeDateLabel(item.date).toUpperCase(), LEFT, y); y += 20;
+            setText("helvetica", "normal", 6.8, 140); doc.text("DETAILS FOR " + volumeDateLabel(item.date).toUpperCase(), LEFT, y); y += 16;
           }
           if (metaValues.length) {
-            y += 13;
+            y += 9;
             if (y + metaHeight > BOTTOM) { addPage(); detailsContinuation(); }
             var metaTop = y - 4;
             smallLabel("References", refText, detailsContinuation);
             smallLabel("Speakers", voiceText, detailsContinuation);
             smallLabel("Topics", tagText, detailsContinuation);
-            doc.setDrawColor(181, 166, 136); doc.setLineWidth(1.2); doc.line(LEFT, metaTop, LEFT, y - 4);
+            doc.setDrawColor(181, 166, 136); doc.setLineWidth(1); doc.line(LEFT, metaTop, LEFT, y - 3);
           }
           if (opts.work && e.workshop) {
-            y += 10;
-            if (y + 35 > BOTTOM) { addPage(); detailsContinuation(); }
-            setText("helvetica", "bold", 7.5, 125); doc.text("WORKING NOTES", LEFT + 12, y); y += 14;
-            setText("times", "italic", 10.3, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT - 12), LEFT + 12, RIGHT - LEFT - 12, 14, function () { detailsContinuation(); setText("times", "italic", 10.3, 92); });
+            y += 7;
+            if (y + 28 > BOTTOM) { addPage(); detailsContinuation(); }
+            setText("helvetica", "bold", 6.7, 125); doc.text("WORKING NOTES", LEFT + 10, y); y += 11;
+            setText("times", "italic", 9, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT - 10), LEFT + 10, RIGHT - LEFT - 10, 12, function () { detailsContinuation(); setText("times", "italic", 9, 92); });
           }
           if (opts.speakers) voices.forEach(function (v) { uniquePagePush(indexes.speakers, v, startPage); });
           if (opts.references) refs.forEach(function (r) { var k = refKey(r); refObjects[k] = r; uniquePagePush(indexes.references, k, startPage); });
@@ -3875,8 +3878,8 @@
         }
         // The divider closes the entry. Metadata above it can only belong to
         // the entry that just ended; the next date always starts below it.
-        if (y + 38 <= BOTTOM) {
-          y += 15; doc.setDrawColor(188, 174, 145); doc.setLineWidth(.75); doc.line(LEFT, y, RIGHT, y); y += 23;
+        if (y + 25 <= BOTTOM) {
+          y += 10; doc.setDrawColor(198, 186, 161); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 15;
         } else {
           y = BOTTOM;
         }
@@ -3884,24 +3887,42 @@
 
       function addIndex(title, keys, labelFor) {
         if (!keys.length) return;
-        addPage(); setText("helvetica", "normal", 8, 128); doc.text("FIND YOUR WAY BACK", LEFT, y); y += 22;
-        setText("times", "bold", 22, 34); doc.text(title, LEFT, y); y += 32;
-        doc.setDrawColor(188, 174, 145); doc.line(LEFT, y, RIGHT, y); y += 20;
+        addPage(); setText("helvetica", "normal", 7, 128); doc.text("INDEX", LEFT, y); y += 17;
+        setText("times", "bold", 17, 34); doc.text(title, LEFT, y); y += 24;
+        doc.setDrawColor(198, 186, 161); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 17;
+        var COL_GAP = 24, COL_W = (RIGHT - LEFT - COL_GAP) / 2, col = 0, colTop = y;
+        function continueIndex() {
+          addPage(); setText("helvetica", "normal", 6.7, 140); doc.text(title.toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 18; col = 0; colTop = y;
+        }
+        function pageRows(pages) {
+          setText("helvetica", "normal", 7.2, 105);
+          var rows = 1, px = 0;
+          pages.forEach(function (target, idx) {
+            var token = String(target - 1) + (idx < pages.length - 1 ? "," : ""), tw = doc.getTextWidth(token + " ");
+            if (px && px + tw > COL_W) { rows++; px = 0; }
+            px += tw;
+          });
+          return rows;
+        }
         keys.forEach(function (key) {
           var pages = title === "Speaker index" ? indexes.speakers[key] : title === "Reference index" ? indexes.references[key] : indexes.topics[key];
-          setText("times", "normal", 10.5, 42);
-          var termLines = doc.splitTextToSize(labelFor(key), 218), pageRows = Math.max(1, Math.ceil(pages.length / 7)), rowH = Math.max(termLines.length * 13, pageRows * 13);
-          if (y + rowH + 7 > BOTTOM) { addPage(); setText("helvetica", "normal", 7.5, 140); doc.text(title.toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 22; }
-          setText("times", "normal", 10.5, 42); doc.text(termLines, LEFT, y, { lineHeightFactor:1.25 });
-          var px = 294, py = y;
+          setText("times", "normal", 9.2, 42);
+          var termLines = doc.splitTextToSize(pdfSafeText(labelFor(key)), COL_W), labelH = termLines.length * 10.5, pagesH = pageRows(pages) * 8.5, rowH = labelH + pagesH + 6;
+          if (y + rowH > BOTTOM) {
+            if (col === 0) { col = 1; y = colTop; }
+            else continueIndex();
+          }
+          var x = LEFT + col * (COL_W + COL_GAP);
+          setText("times", "normal", 9.2, 42); doc.text(termLines, x, y, { lineHeightFactor:1.15 });
+          var px = x, py = y + labelH;
           pages.forEach(function (target, idx) {
             var shown = String(target - 1), suffix = idx < pages.length - 1 ? "," : "";
-            setText("helvetica", "normal", 8.8, 102);
+            setText("helvetica", "normal", 7.2, 105);
             var token = shown + suffix, tw = doc.getTextWidth(token + " ");
-            if (px + tw > RIGHT) { px = 294; py += 13; }
-            doc.text(token, px, py); doc.link(px - 1, py - 9, Math.max(10, doc.getTextWidth(shown) + 2), 12, { pageNumber:target }); px += tw;
+            if (px > x && px + tw > x + COL_W) { px = x; py += 8.5; }
+            doc.text(token, px, py); doc.link(px - 1, py - 7, Math.max(9, doc.getTextWidth(shown) + 2), 9, { pageNumber:target }); px += tw;
           });
-          y += rowH + 7; doc.setDrawColor(225, 218, 203); doc.line(LEFT, y - 3, RIGHT, y - 3);
+          y += rowH;
         });
       }
       var speakerKeys = Object.keys(indexes.speakers).sort(function (a, b) { return lastName(a).localeCompare(lastName(b)) || a.localeCompare(b); });
