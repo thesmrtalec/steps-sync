@@ -1492,7 +1492,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.13.0";
+  var APP_VERSION = "v1.13.1";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -3800,12 +3800,15 @@
           if (line) doc.text(line, x, y); y += lineHeight;
         });
       }
-      function smallLabel(label, value) {
+      function smallLabel(label, value, onNewPage) {
         if (!value) return;
-        ensure(28); setText("helvetica", "bold", 7.5, 125); doc.text(label.toUpperCase(), LEFT, y);
         setText("helvetica", "normal", 8.8, 92);
-        var lines = doc.splitTextToSize(value, RIGHT - LEFT - 70); doc.text(lines, LEFT + 70, y, { lineHeightFactor:1.35 });
-        y += Math.max(13, lines.length * 12);
+        var lines = doc.splitTextToSize(value, RIGHT - LEFT - 90), height = Math.max(13, lines.length * 12);
+        if (y + height > BOTTOM) { addPage(); if (onNewPage) onNewPage(); }
+        setText("helvetica", "bold", 7.5, 125); doc.text(label.toUpperCase(), LEFT + 12, y);
+        setText("helvetica", "normal", 8.8, 92);
+        doc.text(lines, LEFT + 90, y, { lineHeightFactor:1.35 });
+        y += height;
       }
 
       // Cover
@@ -3844,19 +3847,39 @@
 
         if (item.kind === "entry") {
           var refs = entryRefs(e).slice().sort(refSort), voices = entryVoices(e).slice(), tags = (e.tags || []).slice();
-          if (refs.length || voices.length || tags.length || (opts.work && e.workshop)) { y += 10; doc.setDrawColor(205, 196, 176); doc.line(LEFT, y, RIGHT, y); y += 16; }
-          smallLabel("References", refs.map(refLabel).join(" · "));
-          smallLabel("Speakers", voices.join(" · "));
-          smallLabel("Topics", tags.join(" · "));
+          var refText = refs.map(refLabel).join(" · "), voiceText = voices.join(" · "), tagText = tags.join(" · ");
+          var metaValues = [refText, voiceText, tagText].filter(Boolean), metaHeight = 0;
+          setText("helvetica", "normal", 8.8, 92);
+          metaValues.forEach(function (value) { metaHeight += Math.max(13, doc.splitTextToSize(value, RIGHT - LEFT - 90).length * 12); });
+          function detailsContinuation() {
+            setText("helvetica", "normal", 7.5, 140); doc.text("DETAILS FOR " + volumeDateLabel(item.date).toUpperCase(), LEFT, y); y += 20;
+          }
+          if (metaValues.length) {
+            y += 13;
+            if (y + metaHeight > BOTTOM) { addPage(); detailsContinuation(); }
+            var metaTop = y - 4;
+            smallLabel("References", refText, detailsContinuation);
+            smallLabel("Speakers", voiceText, detailsContinuation);
+            smallLabel("Topics", tagText, detailsContinuation);
+            doc.setDrawColor(181, 166, 136); doc.setLineWidth(1.2); doc.line(LEFT, metaTop, LEFT, y - 4);
+          }
           if (opts.work && e.workshop) {
-            ensure(35); setText("helvetica", "bold", 7.5, 125); doc.text("WORKING NOTES", LEFT, y); y += 14;
-            setText("times", "italic", 10.3, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT), LEFT, RIGHT - LEFT, 14, function () { setText("times", "italic", 10.3, 92); });
+            y += 10;
+            if (y + 35 > BOTTOM) { addPage(); detailsContinuation(); }
+            setText("helvetica", "bold", 7.5, 125); doc.text("WORKING NOTES", LEFT + 12, y); y += 14;
+            setText("times", "italic", 10.3, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT - 12), LEFT + 12, RIGHT - LEFT - 12, 14, function () { detailsContinuation(); setText("times", "italic", 10.3, 92); });
           }
           if (opts.speakers) voices.forEach(function (v) { uniquePagePush(indexes.speakers, v, startPage); });
           if (opts.references) refs.forEach(function (r) { var k = refKey(r); refObjects[k] = r; uniquePagePush(indexes.references, k, startPage); });
           if (opts.topics) tags.forEach(function (tag) { var clean = String(tag).trim(); if (clean) uniquePagePush(indexes.topics, clean, startPage); });
         }
-        y += 21;
+        // The divider closes the entry. Metadata above it can only belong to
+        // the entry that just ended; the next date always starts below it.
+        if (y + 38 <= BOTTOM) {
+          y += 15; doc.setDrawColor(188, 174, 145); doc.setLineWidth(.75); doc.line(LEFT, y, RIGHT, y); y += 23;
+        } else {
+          y = BOTTOM;
+        }
       });
 
       function addIndex(title, keys, labelFor) {
