@@ -1138,7 +1138,7 @@
           <div class="volume-checks">
             <label class="volume-check"><input id="volumeEntries" type="checkbox" checked /> Main notebook entries</label>
             <label class="volume-check" id="volumeJournalLabel"><input id="volumeJournal" type="checkbox" checked /> Long-form journal pages</label>
-            <label class="volume-check"><input id="volumeWork" type="checkbox" /> Working notes</label>
+            <label class="volume-check"><input id="volumeWork" type="checkbox" /> Notes</label>
             <label class="volume-check"><input id="volumeGratitude" type="checkbox" /> Gratitude only</label>
           </div>
           <p class="volume-help">Journal pages are the separate dated writing from Journal mode. They’re available only when the collection is set to Everything.</p>
@@ -1292,12 +1292,12 @@
           <div class="tourc-shot">
             <div class="mock">
               <div class="mock-card"><p><b>The entry</b><br>A short thought from conference.</p></div>
-              <div class="mock-card"><p><b>Working notes</b><br>Connections, implications, questions, possible applications…</p></div>
+              <div class="mock-card"><p><b>Notes</b><br>Connections, implications, questions, possible applications…</p></div>
               <div class="mock-attach"><span class="mock-chip">tag</span><span class="mock-chip">scripture</span><span class="mock-chip">speaker</span></div>
             </div>
           </div>
           <h2 class="tourc-h">3 · Workbench</h2>
-          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add working notes and details as the idea grows; <b>Share</b> pulls the whole entry together for copy/paste, a clean screenshot, or a 9:16 post/carousel without rewriting your words.</p>
+          <p class="tourc-p">Open an entry in <b>Write Now</b> to develop it without losing the clean original. Add notes and details as the idea grows; <b>Share</b> pulls the whole entry together for copy/paste, a clean screenshot, or a 9:16 post/carousel without rewriting your words.</p>
         </div>
 
         <div class="tourc-card">
@@ -1377,7 +1377,7 @@
       <div class="wb-writing">
       <label for="wbBit" class="wb-label">The entry</label>
       <textarea class="notes-canvas wb-bit" id="wbBit" placeholder="the entry as it stands…"></textarea>
-      <label for="wbPad" class="wb-label">Working notes</label>
+      <label for="wbPad" class="wb-label">Notes</label>
       <textarea class="notes-canvas wb-pad" id="wbPad" placeholder="scriptures, thoughts, where it leads…"></textarea>
       </div>
       <details class="wb-details"><summary>Entry details <span>Context · Tags · Scriptures · Speakers</span></summary><div class="wb-attached" id="wbAttached"></div></details>
@@ -1492,7 +1492,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.14.0";
+  var APP_VERSION = "v1.15.0";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -3828,24 +3828,24 @@
       items.forEach(function (item) {
         var mk = volumeMonthKey(item.date);
         if (mk !== month) {
-          if (month) addPage();
+          if (month) ensure(72);
           month = mk;
-          setText("helvetica", "normal", 7, 128); doc.text("CHAPTER", LEFT, y); y += 18;
-          setText("times", "bold", 18, 34); doc.text(volumeMonthLabel(item.date), LEFT, y); y += 24;
-          doc.setDrawColor(188, 174, 145); doc.setLineWidth(.6); doc.line(LEFT, y, RIGHT, y); y += 18;
+          setText("helvetica", "normal", 6.5, 128); doc.text("CHAPTER", LEFT, y); y += 14;
+          setText("times", "bold", 15, 34); doc.text(volumeMonthLabel(item.date), LEFT, y); y += 19;
+          doc.setDrawColor(188, 174, 145); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 13;
         }
-        ensure(64);
+        ensure(52);
         var startPage = pageNo(), e = item.entry;
         setText("helvetica", "normal", 7, 125);
         var kicker = volumeDateLabel(item.date).toUpperCase();
         if (item.kind === "journal") kicker += "  ·  JOURNAL";
         else if (entryContext(e)) kicker += "  ·  " + entryContext(e).toUpperCase();
         if (e.grateful) kicker += "  ·  GRATITUDE";
-        doc.text(kicker, LEFT, y); y += 16;
-        setText("times", "normal", 10.5, 34);
-        writeLines(wrappedLines(item.text, RIGHT - LEFT), LEFT, RIGHT - LEFT, 14.5, function () {
-          setText("helvetica", "normal", 6.8, 140); doc.text(volumeDateLabel(item.date).toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 15;
-          setText("times", "normal", 10.5, 34);
+        doc.text(kicker, LEFT, y); y += 13;
+        setText("times", "normal", 9.6, 34);
+        writeLines(wrappedLines(item.text, RIGHT - LEFT), LEFT, RIGHT - LEFT, 12.8, function () {
+          setText("helvetica", "normal", 6.5, 140); doc.text(volumeDateLabel(item.date).toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 13;
+          setText("times", "normal", 9.6, 34);
         });
 
         if (item.kind === "entry") {
@@ -3858,7 +3858,7 @@
             setText("helvetica", "normal", 6.8, 140); doc.text("DETAILS FOR " + volumeDateLabel(item.date).toUpperCase(), LEFT, y); y += 16;
           }
           if (metaValues.length) {
-            y += 9;
+            y += 6;
             if (y + metaHeight > BOTTOM) { addPage(); detailsContinuation(); }
             var metaTop = y - 4;
             smallLabel("References", refText, detailsContinuation);
@@ -3867,10 +3867,10 @@
             doc.setDrawColor(181, 166, 136); doc.setLineWidth(1); doc.line(LEFT, metaTop, LEFT, y - 3);
           }
           if (opts.work && e.workshop) {
-            y += 7;
+            y += 5;
             if (y + 28 > BOTTOM) { addPage(); detailsContinuation(); }
-            setText("helvetica", "bold", 6.7, 125); doc.text("WORKING NOTES", LEFT + 10, y); y += 11;
-            setText("times", "italic", 9, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT - 10), LEFT + 10, RIGHT - LEFT - 10, 12, function () { detailsContinuation(); setText("times", "italic", 9, 92); });
+            setText("helvetica", "bold", 6.7, 125); doc.text("NOTES", LEFT + 10, y); y += 10;
+            setText("times", "italic", 8.6, 92); writeLines(wrappedLines(e.workshop, RIGHT - LEFT - 10), LEFT + 10, RIGHT - LEFT - 10, 11.2, function () { detailsContinuation(); setText("times", "italic", 8.6, 92); });
           }
           if (opts.speakers) voices.forEach(function (v) { uniquePagePush(indexes.speakers, v, startPage); });
           if (opts.references) refs.forEach(function (r) { var k = refKey(r); refObjects[k] = r; uniquePagePush(indexes.references, k, startPage); });
@@ -3878,27 +3878,27 @@
         }
         // The divider closes the entry. Metadata above it can only belong to
         // the entry that just ended; the next date always starts below it.
-        if (y + 25 <= BOTTOM) {
-          y += 10; doc.setDrawColor(198, 186, 161); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 15;
+        if (y + 18 <= BOTTOM) {
+          y += 7; doc.setDrawColor(198, 186, 161); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 11;
         } else {
           y = BOTTOM;
         }
       });
 
-      function addIndex(title, keys, labelFor) {
+      function addIndex(title, keys, labelFor, pageOffset, nextIndexPage) {
         if (!keys.length) return;
-        addPage(); setText("helvetica", "normal", 7, 128); doc.text("INDEX", LEFT, y); y += 17;
+        nextIndexPage(); setText("helvetica", "normal", 7, 128); doc.text("INDEX", LEFT, y); y += 17;
         setText("times", "bold", 17, 34); doc.text(title, LEFT, y); y += 24;
         doc.setDrawColor(198, 186, 161); doc.setLineWidth(.55); doc.line(LEFT, y, RIGHT, y); y += 17;
         var COL_GAP = 24, COL_W = (RIGHT - LEFT - COL_GAP) / 2, col = 0, colTop = y;
         function continueIndex() {
-          addPage(); setText("helvetica", "normal", 6.7, 140); doc.text(title.toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 18; col = 0; colTop = y;
+          nextIndexPage(); setText("helvetica", "normal", 6.7, 140); doc.text(title.toUpperCase() + "  ·  CONTINUED", LEFT, y); y += 18; col = 0; colTop = y;
         }
         function pageRows(pages) {
           setText("helvetica", "normal", 7.2, 105);
           var rows = 1, px = 0;
           pages.forEach(function (target, idx) {
-            var token = String(target - 1) + (idx < pages.length - 1 ? "," : ""), tw = doc.getTextWidth(token + " ");
+            var token = String(target + pageOffset - 1) + (idx < pages.length - 1 ? "," : ""), tw = doc.getTextWidth(token + " ");
             if (px && px + tw > COL_W) { rows++; px = 0; }
             px += tw;
           });
@@ -3916,11 +3916,11 @@
           setText("times", "normal", 9.2, 42); doc.text(termLines, x, y, { lineHeightFactor:1.15 });
           var px = x, py = y + labelH;
           pages.forEach(function (target, idx) {
-            var shown = String(target - 1), suffix = idx < pages.length - 1 ? "," : "";
+            var shown = String(target + pageOffset - 1), suffix = idx < pages.length - 1 ? "," : "";
             setText("helvetica", "normal", 7.2, 105);
             var token = shown + suffix, tw = doc.getTextWidth(token + " ");
             if (px > x && px + tw > x + COL_W) { px = x; py += 8.5; }
-            doc.text(token, px, py); doc.link(px - 1, py - 7, Math.max(9, doc.getTextWidth(shown) + 2), 9, { pageNumber:target }); px += tw;
+            doc.text(token, px, py); doc.link(px - 1, py - 7, Math.max(9, doc.getTextWidth(shown) + 2), 9, { pageNumber:target + pageOffset }); px += tw;
           });
           y += rowH;
         });
@@ -3928,9 +3928,27 @@
       var speakerKeys = Object.keys(indexes.speakers).sort(function (a, b) { return lastName(a).localeCompare(lastName(b)) || a.localeCompare(b); });
       var referenceKeys = Object.keys(indexes.references).sort(function (a, b) { return refSort(refObjects[a], refObjects[b]); });
       var topicKeys = Object.keys(indexes.topics).sort(function (a, b) { return a.localeCompare(b, undefined, { sensitivity:"base" }); });
-      addIndex("Speaker index", speakerKeys, function (k) { return k; });
-      addIndex("Reference index", referenceKeys, function (k) { return refLabel(refObjects[k]); });
-      addIndex("Topic index", topicKeys, function (k) { return k; });
+
+      // Lay out the indexes once to learn exactly how many pages they need,
+      // then place that many pages directly after the cover. The second pass
+      // writes the final page numbers and links with the content-page offset.
+      var contentPages = pageNo(), indexPages = 0;
+      function measurePage() { addPage(); }
+      for (var measurePass = 0; measurePass < 4; measurePass++) {
+        addIndex("Speaker index", speakerKeys, function (k) { return k; }, indexPages, measurePage);
+        addIndex("Reference index", referenceKeys, function (k) { return refLabel(refObjects[k]); }, indexPages, measurePage);
+        addIndex("Topic index", topicKeys, function (k) { return k; }, indexPages, measurePage);
+        var measuredPages = pageNo() - contentPages;
+        while (pageNo() > contentPages) doc.deletePage(pageNo());
+        if (measuredPages === indexPages) break;
+        indexPages = measuredPages;
+      }
+      for (var ip = 0; ip < indexPages; ip++) doc.insertPage(2);
+      var indexPage = 1;
+      function reservedIndexPage() { indexPage += 1; doc.setPage(indexPage); y = TOP; }
+      addIndex("Speaker index", speakerKeys, function (k) { return k; }, indexPages, reservedIndexPage);
+      addIndex("Reference index", referenceKeys, function (k) { return refLabel(refObjects[k]); }, indexPages, reservedIndexPage);
+      addIndex("Topic index", topicKeys, function (k) { return k; }, indexPages, reservedIndexPage);
 
       var total = doc.internal.getNumberOfPages();
       for (var p = 2; p <= total; p++) {
@@ -4130,7 +4148,7 @@
     if (workbenchKind === "truth") {
       m.textContent = b.mined ? "used ×" + b.mined : "";
     } else {
-      m.textContent = b.workshop ? "" : "Working notes live here — separate from the entry itself.";
+      m.textContent = b.workshop ? "" : "Notes live here — separate from the entry itself.";
     }
     renderBrowseNav();
     document.getElementById("workbenchOverlay").classList.add("open");
