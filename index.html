@@ -1492,7 +1492,7 @@
     "What's on your mind to pray about?"
   ];
 
-  var APP_VERSION = "v1.13.1";
+  var APP_VERSION = "v1.13.2";
   var state = { bits: [], notes: [], buried: [], truths: [], sets: [], weekNotes: {}, autoRefs: false, theme: "midnight", appearance: "auto", habits: { pray: [], good: [], bad: [] }, habitLabels: { good: "good habit", bad: "bad habit" } };
 
   // Notebook scheme and viewing appearance are separate choices. Each notebook
@@ -5147,10 +5147,10 @@
     }
     var results = [];
     (state.truths || []).forEach(function (t) {
-      if (hits(t)) results.push({ text: t.text, label: entryContext(t) || "entry", open: function () { openWorkbench(t.id, "truth"); } });
+      if (hits(t)) results.push({ entry:t, kind:"truth", text:t.text, label:entryContext(t) || "entry", open:function () { openWorkbench(t.id, "truth"); } });
     });
     state.bits.forEach(function (b) {
-      if (hits(b)) results.push({ text: b.text, label: "question", open: function () { openWorkbench(b.id, "bit"); } });
+      if (hits(b)) results.push({ entry:b, kind:"bit", text:b.text, label:"question", open:function () { openWorkbench(b.id, "bit"); } });
     });
     (state.sets || []).forEach(function (s) {
       if ((s.name || "").toLowerCase().indexOf(q) !== -1) {
@@ -5171,15 +5171,44 @@
       return;
     }
     results.slice(0, 40).forEach(function (r) {
-      var card = el("div", "bone-card search-hit");
+      var card = el("div", "bone-card search-hit" + (r.entry ? " swipe-face" : ""));
       var p = el("p", null, r.text);
       if (r.ghost) p.style.opacity = ".45";
-      if (r.open) { p.style.cursor = "pointer"; p.onclick = r.open; }
+      if (r.open) {
+        p.style.cursor = "pointer";
+        p.onclick = function () {
+          if (swipeOpenCard === card) { closeSwipe(); return; }
+          r.open();
+        };
+      }
+      if (r.entry) attachLongPressCopy(p, function () { return clipboardEntryText(r.entry); });
       card.appendChild(p);
       var actions = el("div", "bone-actions");
       actions.appendChild(el("span", "i-mined", r.label));
       card.appendChild(actions);
-      out.appendChild(card);
+      if (!r.entry) { out.appendChild(card); return; }
+
+      var shell = el("div", "swipe-shell");
+      var develop = el("button", "swipe-act swipe-promote", "develop");
+      develop.title = "Open this entry in Workbench";
+      develop.onclick = function (e) { e.stopPropagation(); closeSwipe(); openWorkbench(r.entry.id, r.kind); };
+      var bury = el("button", "swipe-act swipe-kill", "🪦");
+      bury.title = "Bury it — recoverable from the vault";
+      bury.onclick = function (e) {
+        e.stopPropagation();
+        if (!state.buried) state.buried = [];
+        r.entry.buriedAt = Date.now();
+        if (r.kind === "truth") {
+          r.entry.from = "stuff";
+          state.truths = (state.truths || []).filter(function (x) { return x.id !== r.entry.id; });
+        } else {
+          state.bits = (state.bits || []).filter(function (x) { return x.id !== r.entry.id; });
+        }
+        state.buried.unshift(r.entry);
+        closeSwipe(); save(); render(); renderSearch();
+      };
+      shell.appendChild(develop); shell.appendChild(bury); shell.appendChild(card);
+      attachSwipe(shell, card); out.appendChild(shell);
     });
   }
   var searchBoxEl = document.getElementById("searchBox");
