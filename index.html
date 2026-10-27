@@ -1096,6 +1096,7 @@
         <button class="notes-close" id="weekClose">done</button>
       </div>
       <p class="week-range" id="weekRange"></p>
+      <nav class="browse-context-tabs" id="weekViews" aria-label="Weekly collection"></nav>
       <div id="weekList"></div>
       <div class="week-note-wrap">
         <label class="week-note-label" for="weekNote">Week note</label>
@@ -3838,7 +3839,9 @@
     syncRefs(b);
     editableList("Scriptures",function(){return entryRefs(b);},refLabel,
       function(r){dropRef(b,r);},function(v){return addRefFromInput(b,v);},"Alma 32:21");
-    section("Speakers").appendChild(buildVoiceLine(b));
+    editableList("Speakers",function(){return entryVoices(b);},function(v){return v;},
+      function(v){b.voices=entryVoices(b).filter(function(name){return name!==v;});},
+      function(v){addVoiceFromInput(b,v);return true;},"Speaker name");
     var gratitude=el("button","wb-gratitude");
     function paintGratitude(){gratitude.textContent=b.grateful ? "✓ Gratitude" : "Gratitude";gratitude.setAttribute("aria-pressed",String(!!b.grateful));}
     gratitude.onclick=function(){if(b.grateful)delete b.grateful;else b.grateful=true;changed();paintGratitude();};
@@ -4021,7 +4024,7 @@
   // ——— week recap ———
   // A chronological reread of what was created this week. No scoring, ranking,
   // promotion, or generated summary — the journal is the recap.
-  var weekReturn = false, weekNoteTimer = null;
+  var weekReturn = false, weekNoteTimer = null, weekView = "scriptures";
   function weekBounds() {
     var start = startOfWeek();
     return { start:start, end:start + 7 * DAY };
@@ -4040,6 +4043,14 @@
     var bounds=weekBounds(), key=localDateKey(bounds.start), list=document.getElementById("weekList"), note=document.getElementById("weekNote");
     document.getElementById("weekRange").textContent=weekRangeLabel(bounds.start,bounds.end);
     list.innerHTML="";
+    var views=document.getElementById("weekViews"); views.innerHTML="";
+    [["scriptures","Scriptures this week"],["quotes","Quotes this week"],["journal","Journal this week"],["all","Everything"]].forEach(function(view){
+      var button=el("button",weekView===view[0]?"on":"",view[1]);
+      button.type="button"; button.setAttribute("aria-pressed",String(weekView===view[0]));
+      button.onclick=function(){clearTimeout(weekNoteTimer);saveWeekNoteNow();weekView=view[0];openWeekRecap();};
+      views.appendChild(button);
+    });
+    document.querySelector("#weekOverlay .week-note-wrap").hidden=weekView!=="journal"&&weekView!=="all";
     var entries=allEntries().filter(function(e){var at=entryDate(e);return at>=bounds.start&&at<bounds.end;}).sort(function(a,b){return entryDate(a)-entryDate(b);});
     function openEntry(e) {
       saveWeekNoteNow(); weekReturn=true; document.getElementById("weekOverlay").classList.remove("open");
@@ -4058,17 +4069,22 @@
       card.onkeydown=function(event){if(event.key==="Enter"||event.key===" "){event.preventDefault();openEntry(e);}};
       return card;
     }
-    list.appendChild(el("h3","week-section-title","Scriptures"));
+    if(weekView==="scriptures"||weekView==="all"){
+    list.appendChild(el("h3","week-section-title","Scriptures this week"));
     var scriptureEntries=entries.filter(function(e){return syncRefs(e).length>0;});
     if(!scriptureEntries.length)list.appendChild(el("p","week-empty","No scriptures attached to this week’s entries."));
     scriptureEntries.forEach(function(e){
       list.appendChild(entryCard(e,syncRefs(e).slice().sort(refSort).map(refLabel).join(" · ")));
     });
-    list.appendChild(el("h3","week-section-title","Quotes"));
+    }
+    if(weekView==="quotes"||weekView==="all"){
+    list.appendChild(el("h3","week-section-title","Quotes this week"));
     var quoteEntries=entries.filter(function(e){return entryVoices(e).length>0;});
     if(!quoteEntries.length)list.appendChild(el("p","week-empty","No speakers attached to this week’s entries."));
     quoteEntries.forEach(function(e){list.appendChild(entryCard(e,entryVoices(e).join(" · ")));});
-    list.appendChild(el("h3","week-section-title","Journal"));
+    }
+    if(weekView==="journal"||weekView==="all"){
+    list.appendChild(el("h3","week-section-title","Journal this week"));
     if(!entries.length)list.appendChild(el("p","week-empty","Nothing captured here yet this week."));
     var dayKey="";
     entries.forEach(function(e){
@@ -4077,6 +4093,7 @@
       var sources=syncRefs(e).slice().sort(refSort).map(refLabel).concat(entryVoices(e));
       list.appendChild(entryCard(e,sources.join(" · ")));
     });
+    }
     note.value=(state.weekNotes&&state.weekNotes[key])||"";
     note.dataset.weekKey=key;
     document.getElementById("weekNoteStatus").textContent="";
