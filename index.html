@@ -501,10 +501,15 @@
   .quick-entry-text { white-space: pre-wrap; overflow-wrap: anywhere; font: 15px/1.38 var(--serif); color: var(--ink); }
   .quick-entry-meta { margin-top: 6px; font: 11px/1.45 var(--mono); color: var(--faint); overflow-wrap: anywhere; }
   .quick-empty { padding: 20px 4px; font: 15px var(--serif); color: var(--muted); }
-  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; position: sticky; bottom: -24px; background: var(--page); padding: 12px 0 12px; border-top: 1px solid var(--rule); margin-top: auto; }
-  .quick-actions button { min-height: 48px; padding: 10px; border-radius: 10px; font: 700 12px var(--mono); letter-spacing: .04em; }
-  .quick-actions .copy { border: 1px solid var(--rule); background: var(--card); color: var(--ink); }
-  .quick-actions .pdf { border: 1px solid var(--accent); background: var(--accent); color: var(--onaccent); }
+  .quick-preview-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); padding: 13px 0 10px; }
+  .quick-preview-head strong { font: 600 14px var(--serif); color: var(--ink); }
+  .quick-preview-head span { font: 10.5px var(--mono); color: var(--faint); text-align: right; }
+  .quick-preview { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 2px 2px 15px; min-height: 32px; }
+  .quick-preview canvas { width: min(72vw, 295px); height: auto; flex: 0 0 auto; scroll-snap-align: center; border-radius: 5px; box-shadow: 0 5px 17px rgba(0,0,0,.15); }
+  .quick-actions { display: grid; grid-template-columns: .9fr 1.25fr .9fr; gap: 7px; position: sticky; bottom: -24px; background: var(--page); padding: 12px 0 12px; border-top: 1px solid var(--rule); margin-top: auto; }
+  .quick-actions button { min-height: 48px; padding: 8px 5px; border-radius: 10px; font: 700 11.5px var(--mono); letter-spacing: .01em; }
+  .quick-actions .copy, .quick-actions .save { border: 1px solid var(--rule); background: var(--card); color: var(--ink); }
+  .quick-actions .share { border: 1px solid var(--accent); background: var(--accent); color: var(--onaccent); }
   .quick-actions button:disabled { opacity: .42; cursor: default; }
   .quick-status { min-height: 18px; font: 11px var(--mono); color: var(--muted); text-align: center; }
   @media (max-width: 480px) { .quick-fields { grid-template-columns: 1fr; gap: 12px; } .quick-date-links { margin-top: 9px; } }
@@ -1194,7 +1199,7 @@
         <h2>Export a day</h2>
         <button class="notes-close" id="quickExportClose" type="button">done</button>
       </div>
-      <p class="quick-lede">All the notes you captured on one day, as a clean PDF or copyable text. Uncheck anything you don't want to include.</p>
+      <p class="quick-lede">A compact, shareable collection of one day's notes. Pick your entries, preview the cards, and share them as images — not a print document.</p>
       <div class="quick-fields">
         <div><label for="quickDate">Date</label><input id="quickDate" type="date" /></div>
         <div><label for="quickTitle">Title</label><input id="quickTitle" type="text" autocomplete="off" placeholder="e.g. Stake Conference" /></div>
@@ -1205,9 +1210,12 @@
         <button id="quickToggleAll" type="button">Deselect all</button>
       </div>
       <div id="quickItems" class="quick-items" aria-label="Entries to export"></div>
+      <div class="quick-preview-head"><strong>Shareable preview</strong><span id="quickPreviewCount">Select entries to preview</span></div>
+      <div id="quickPreview" class="quick-preview" aria-label="Shareable day cards"></div>
       <div class="quick-actions">
         <button id="quickCopy" class="copy" type="button">Copy text</button>
-        <button id="quickPDF" class="pdf" type="button">Export PDF</button>
+        <button id="quickShare" class="share" type="button">Share images</button>
+        <button id="quickSave" class="save" type="button">Save PNGs</button>
       </div>
       <div class="quick-status" id="quickStatus" role="status"></div>
     </div>
@@ -1873,9 +1881,9 @@
   }
 
   // ——— speakers ———
-  // No canon here, so this roster is only a spelling table: it collapses
-  // "Elder Holland" and "Jeffrey R. Holland" onto one person. Anyone not on
-  // it — C.S. Lewis, someone in the ward — is kept exactly as you typed it.
+  // Names are user-authored attributions, not identities for us to correct.
+  // The list below is ONLY for optional tap-to-use suggestions. Never strip a
+  // title, expand a surname, change capitalization, or replace what was typed.
   var SPEAKERS = [
     "Russell M. Nelson","Dallin H. Oaks","Henry B. Eyring","Jeffrey R. Holland","Dieter F. Uchtdorf",
     "David A. Bednar","Quentin L. Cook","D. Todd Christofferson","Neil L. Andersen","Ronald A. Rasband",
@@ -1888,48 +1896,13 @@
     "Camille N. Johnson","Emily Belle Freeman","Susan H. Porter","Amy A. Wright","Tracy Y. Browning",
     "Michelle D. Craig","Kristen M. Yee","Reyna I. Aburto","Joy D. Jones","Becky Craven","Lisa L. Harkness"
   ];
-  var HONORIFICS = /^(elder|president|pres|prest|sister|sis|brother|bro|br|bishop|dr|doctor|rev|reverend|apostle|prophet)\.?\s+/i;
-
-  function stripHonorific(s) {
-    var out = (s || "").trim();
-    // "President Russell M. Nelson" and "Pres. Nelson" both shed the title
-    while (HONORIFICS.test(out)) out = out.replace(HONORIFICS, "").trim();
-    return out;
-  }
   function lastName(full) {
     var w = full.trim().split(/\s+/);
     return w[w.length - 1].toLowerCase();
   }
-  function firstName(full) {
-    return full.trim().split(/\s+/)[0].toLowerCase();
-  }
-  function titleCaseLoose(s) {
-    // Only touch it if they typed all-lowercase — "C.S. Lewis" stays put.
-    if (/[A-Z]/.test(s)) return s;
-    return s.replace(/\b([a-z])/g, function (m0, c) { return c.toUpperCase(); });
-  }
   function normalizeSpeaker(raw) {
-    var s = stripHonorific(raw).replace(/\s+/g, " ").trim();
-    if (!s) return null;
-    var low = s.toLowerCase();
-    // exact full name
-    for (var i = 0; i < SPEAKERS.length; i++) {
-      if (SPEAKERS[i].toLowerCase() === low) return SPEAKERS[i];
-    }
-    // surname alone — only when it points at exactly one person, so "Smith"
-    // stays as typed rather than guessing between four of them
-    var bySur = SPEAKERS.filter(function (n) { return lastName(n) === low; });
-    if (bySur.length === 1) return bySur[0];
-    // first + last, skipping middle initials: "Jeffrey Holland"
-    var w = s.split(" ");
-    if (w.length === 2) {
-      var f = w[0].toLowerCase().replace(/\./g, ""), l = w[1].toLowerCase();
-      var byFL = SPEAKERS.filter(function (n) {
-        return lastName(n) === l && firstName(n).replace(/\./g, "") === f;
-      });
-      if (byFL.length === 1) return byFL[0];
-    }
-    return titleCaseLoose(s);
+    // Trim only the input boundary; the actual attribution belongs to the user.
+    return String(raw == null ? "" : raw).trim() || null;
   }
   function entryVoices(x) { return (x && x.voices) ? x.voices : []; }
   function addVoiceFromInput(x, raw) {
@@ -3736,7 +3709,7 @@
   // ——— quick export: a day's notes, not a curated book ———
   // Distinct from the indexed volume. Includes all captured notebook entries,
   // questions, and long-form journal pages for the chosen local calendar day.
-  var quickItems = [], quickSelected = {}, quickPdfBusy = false;
+  var quickItems = [], quickSelected = {}, quickCards = [], quickRenderTimer = null, quickShareBusy = false;
   function quickDayItems(day) {
     var from = volumeDateValue(day, false), through = volumeDateValue(day, true), out = [], seen = {};
     function append(source, entry, date, kind) {
@@ -3753,7 +3726,7 @@
     out.sort(function (a,b) { return a.date - b.date || a.key.localeCompare(b.key); });
     return out;
   }
-  function quickDateTitle(day) { return "Notes — " + volumeDateLabel(volumeDateValue(day, false)); }
+  function quickDateTitle(day) { return "Notes"; }
   function quickMeta(item) {
     if (item.kind === "journal") return "Journal";
     var e = item.entry, parts = [], ctx = entryContext(e);
@@ -3768,7 +3741,8 @@
     var count = quickCheckedItems().length, total = quickItems.length;
     document.getElementById("quickCount").textContent = count + " of " + total + (total === 1 ? " entry selected" : " entries selected");
     document.getElementById("quickCopy").disabled = !count;
-    document.getElementById("quickPDF").disabled = !count || quickPdfBusy;
+    document.getElementById("quickShare").disabled = !count || quickShareBusy;
+    document.getElementById("quickSave").disabled = !count || quickShareBusy;
     document.getElementById("quickToggleAll").textContent = total && count === total ? "Deselect all" : "Select all";
     document.getElementById("quickToggleAll").disabled = !total;
   }
@@ -3785,7 +3759,7 @@
       check.onchange = function () {
         quickSelected[item.key] = check.checked;
         row.classList.toggle("selected", check.checked);
-        quickUpdateCount();
+        quickUpdateCount(); quickSchedulePreview();
       };
       row.appendChild(check);
       var main = el("div", "quick-entry-main");
@@ -3808,7 +3782,7 @@
     quickItems = quickDayItems(day); quickSelected = {};
     quickItems.forEach(function (item) { quickSelected[item.key] = true; });
     document.getElementById("quickStatus").textContent = "";
-    quickRenderItems();
+    quickRenderItems(); quickSchedulePreview();
   }
   function openQuickExport(day) {
     var date = day || volumeDayValue(Date.now());
@@ -3838,90 +3812,207 @@
     });
     return parts.join("\n\n---\n\n");
   }
-  function buildQuickPDF() {
-    if (quickPdfBusy) return;
-    var selected = quickCheckedItems(), status = document.getElementById("quickStatus");
-    if (!selected.length) { status.textContent = "Choose at least one entry."; return; }
-    var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
-    if (!jsPDFLib) { status.textContent = "PDF library unavailable. Use Copy text, or reconnect and try again."; return; }
-    quickPdfBusy = true; quickUpdateCount();
-    try {
-      var title = quickExportTitle(), day = document.getElementById("quickDate").value;
-      var doc = new jsPDFLib({ unit:"pt", format:"letter", putOnlyUsedFonts:true, compress:true });
-      var W = 612, M = 60, RIGHT = W - M, TOP = 60, BOTTOM = 734, y = TOP;
-      function font(f, style, size, shade) { doc.setFont(f || "times", style || "normal"); doc.setFontSize(size || 11); doc.setTextColor(shade == null ? 35 : shade); }
-      function newPage() { doc.addPage("letter", "portrait"); y = TOP; }
-      function ensure(height) { if (y + height > BOTTOM) newPage(); }
-      function writeBody(value, x, width, lineHeight) {
-        String(value || "").replace(/\r/g, "").split("\n").forEach(function (paragraph) {
-          var lines = paragraph ? doc.splitTextToSize(paragraph, width) : [""];
-          lines.forEach(function (line) { ensure(lineHeight); if (line) doc.text(line, x, y); y += lineHeight; });
-        });
-      }
-      function writeDetail(label, val) {
-        if (!val) return;
-        ensure(16); font("helvetica", "bold", 7, 112); doc.text(label.toUpperCase(), M+9, y);
-        font("helvetica", "normal", 8.2, 85); writeBody(val, M+82, RIGHT-M-91, 11); y += 3;
-      }
-      // Continuous, paginated reading layout: no cover page or indexes.
-      font("times", "bold", 22, 36);
-      var titleLines = doc.splitTextToSize(title, RIGHT - M);
-      titleLines.forEach(function (line) { ensure(27); doc.text(line, M, y); y += 27; });
-      y += 4; font("helvetica", "normal", 9, 110);
-      doc.text(volumeDateLabel(volumeDateValue(day, false)) + "  |  " + selected.length + (selected.length === 1 ? " entry" : " entries"), M, y); y += 19;
-      doc.setDrawColor(185, 174, 155); doc.setLineWidth(.7); doc.line(M, y, RIGHT, y); y += 26;
-      selected.forEach(function (item, idx) {
-        ensure(62);
-        font("helvetica", "normal", 8, 117);
-        var when = new Date(item.date).toLocaleTimeString("en-US", {hour:"numeric",minute:"2-digit"});
-        doc.text(String(idx + 1).padStart(2, "0") + "  |  " + when + "  |  " + (item.kind === "journal" ? "JOURNAL" : (entryContext(item.entry) || "NOTE").toUpperCase()), M, y); y += 17;
-        font("times", "normal", 11, 38);
-        writeBody(item.text, M, RIGHT - M, 16);
-        if (item.kind === "entry") {
-          var e = item.entry, voices = entryVoices(e), refs = entryRefs(e).slice().sort(refSort), tags = (e.tags || []).filter(Boolean);
-          var hasDetails = voices.length || refs.length || tags.length || (e.workshop && String(e.workshop).trim()) || e.grateful;
-          if (hasDetails) y += 7;
-          writeDetail("Speakers", voices.join(" · "));
-          writeDetail("References", refs.map(refLabel).join(" · "));
-          writeDetail("Topics", tags.join(" · "));
-          if (e.grateful) writeDetail("Marked", "Gratitude");
-          if (e.workshop && String(e.workshop).trim()) {
-            ensure(24); y += 5; font("helvetica", "bold", 7, 112); doc.text("NOTES", M+9, y); y += 14;
-            font("times", "italic", 9.5, 75); writeBody(e.workshop, M+9, RIGHT-M-9, 13);
-          }
+  // Day sharing uses the same theme/canvas idiom as Make Post, but packs
+  // multiple unedited entries onto each 4:5 card for reading in messages/feeds.
+  var QUICK_W = 1080, QUICK_H = 1350;
+  function quickWrapped(ctx, str, font, width) {
+    ctx.font = font;
+    var lines = [];
+    String(str || "").replace(/\r/g, "").split("\n").forEach(function (para) {
+      if (!para.trim()) { lines.push(""); return; }
+      var line = "";
+      para.trim().split(/\s+/).forEach(function(word) {
+        // Very long unbroken strings still need to remain inside the image.
+        while (ctx.measureText(word).width > width) {
+          var n = 1;
+          while (n < word.length && ctx.measureText(word.slice(0,n+1)).width <= width) n++;
+          if (line) { lines.push(line); line = ""; }
+          lines.push(word.slice(0,n)); word = word.slice(n);
         }
-        ensure(20); y += 12; doc.setDrawColor(215, 207, 191); doc.setLineWidth(.5); doc.line(M, y, RIGHT, y); y += 21;
+        var joined = line ? line + " " + word : word;
+        if (line && ctx.measureText(joined).width > width) { lines.push(line); line = word; }
+        else line = joined;
       });
-      var pages = doc.internal.getNumberOfPages();
-      for (var i = 1; i <= pages; i++) {
-        doc.setPage(i); font("helvetica", "normal", 8, 137);
-        doc.text("THE GOOD PLATES", M, 762);
-        doc.text(i + " / " + pages, RIGHT, 762, {align:"right"});
+      if (line) lines.push(line);
+    });
+    return lines;
+  }
+  function quickPageHeader(ctx, title, day) {
+    var size = 43, lines = quickWrapped(ctx,title,postFont(size,POST_SERIF,"600"),850);
+    // Shrink only the heading if a custom title is long; never shorten its words.
+    while (lines.length > 3 && size > 25) {
+      size -= 2;
+      lines = quickWrapped(ctx,title,postFont(size,POST_SERIF,"600"),850);
+    }
+    return { lines:lines, size:size, day:volumeDateLabel(volumeDateValue(day,false)) };
+  }
+  function quickEntryLines(ctx,item) {
+    var e=item.entry, out=[], bodyFont=postFont(32,POST_SERIF,"400"), metaFont=postFont(23,POST_SANS,"500");
+    function gap(h){out.push({kind:"gap",h:h});}
+    function lines(text,font,paint,lineHeight) {
+      quickWrapped(ctx,text,font,860).forEach(function(t){
+        out.push(t==="" ? {kind:"gap",h:lineHeight*.5} : {kind:"text",text:t,font:font,color:paint,h:lineHeight});
+      });
+    }
+    var when=new Date(item.date).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+    var voices=item.kind==="entry"?entryVoices(e):[];
+    var kind=item.kind==="journal" ? "Journal" : (entryContext(e) || "Notebook");
+    lines(kind+"  ·  "+when,postFont(21,POST_MONO,"500"),"muted",30);
+    if(voices.length){gap(5);lines("Speaker: "+voices.join(" · "),postFont(25,POST_SERIF,"600"),"accent2",34);}
+    gap(12);
+    var hasBody=!!item.text.trim();
+    if(hasBody) lines(item.text.trim(),bodyFont,"ink",44);
+    if(item.kind==="entry") {
+      var refs=entryRefs(e).slice().sort(refSort).map(refLabel);
+      var tags=(e.tags||[]).filter(Boolean), workshop=String(e.workshop||"").trim();
+      if(refs.length){gap(12);lines("References: "+refs.join(" · "),metaFont,"accent2",32);}
+      if(tags.length){gap(5);lines("Topics: "+tags.join(" · "),metaFont,"muted",32);}
+      if(e.grateful){gap(5);lines("Gratitude",metaFont,"muted",32);}
+      if(workshop){gap(12);lines("NOTES",postFont(19,POST_MONO,"600"),"muted",27);gap(3);lines(workshop,postFont(29,POST_SERIF,"400",true),"ink",40);}
+    }
+    return out;
+  }
+  function quickLayoutCards(items, title, day) {
+    var temp=document.createElement("canvas"), ctx=temp.getContext("2d");
+    var h=quickPageHeader(ctx,title,day);
+    var top=190 + h.lines.length*(h.size+10) + 16; // header, title and date
+    var capacity=Math.max(150,1209-top), pages=[{parts:[],used:0}];
+    function page(){return pages[pages.length-1];}
+    function next(){pages.push({parts:[],used:0});}
+    items.forEach(function(item) {
+      var segments=quickEntryLines(ctx,item);
+      var whole=segments.reduce(function(sum,line){return sum+line.h;},0);
+      var p=page();
+      var pre=p.used ? 35 : 0;
+      // Don't start an entry at the bottom when it would fit on the next card.
+      if(p.used && ((whole+pre<=capacity && whole+pre>capacity-p.used) || capacity-p.used<180)) {
+        next(); p=page(); pre=0;
       }
-      doc.setProperties({title:title, subject:"Notes collected on " + volumeDateLabel(volumeDateValue(day,false)), creator:"The Good Plates"});
-      doc.save(volumeSlug(title) + ".pdf");
-      status.textContent = "Exported " + selected.length + (selected.length === 1 ? " entry" : " entries") + ".";
-    } catch (err) {
-      status.textContent = "Couldn't export the PDF.";
-      alert("Couldn't export the PDF: " + (err && err.message ? err.message : err));
-    } finally { quickPdfBusy = false; quickUpdateCount(); }
+      var pos=0;
+      while(pos<segments.length){
+        p=page();
+        if(p.used===0 && pos>0) {
+          var voices=item.kind==="entry"?entryVoices(item.entry):[];
+          var continuation="CONTINUED"+(voices.length ? "  ·  "+voices.join(" · ") : "");
+          p.parts.push({kind:"continued",text:continuation,h:33});p.used+=33;
+        } else if(p.used>0 && pos===0) {
+          p.parts.push({kind:"rule",h:35});p.used+=35;
+        }
+        var start=pos;
+        while(pos<segments.length && p.used+segments[pos].h<=capacity) {
+          p.parts.push(segments[pos]);p.used+=segments[pos].h;pos++;
+        }
+        if(pos<segments.length){
+          if(pos===start && p.used===0) { // extreme title or unusual metadata
+            p.parts.push(segments[pos]);p.used+=segments[pos].h;pos++;
+          }
+          next();
+        }
+      }
+    });
+    return {pages:pages.filter(function(p){return p.parts.length;}), header:h,top:top};
+  }
+  function quickDrawCard(layout,index,total) {
+    var t=postTheme(), c=document.createElement("canvas");c.width=QUICK_W;c.height=QUICK_H;
+    var x=c.getContext("2d");
+    x.fillStyle=t.page;x.fillRect(0,0,QUICK_W,QUICK_H);
+    roundedRect(x,42,40,996,1270,7);x.fillStyle=t.card;x.fill();x.strokeStyle=t.rule;x.lineWidth=2;x.stroke();
+    var left=105,right=975;
+    x.textBaseline="top";
+    x.font=postFont(18,POST_MONO,"600");x.fillStyle=t.accent2;
+    x.fillText("THE GOOD PLATES  /  DAY NOTES",left,87);
+    var y=132;
+    x.font=postFont(layout.header.size,POST_SERIF,"600");x.fillStyle=t.ink;
+    layout.header.lines.forEach(function(line){x.fillText(line,left,y);y+=layout.header.size+10;});
+    x.font=postFont(20,POST_SANS,"400");x.fillStyle=t.muted;
+    x.fillText(layout.header.day,left,y+7);
+    x.strokeStyle=t.rule;x.lineWidth=2;x.beginPath();x.moveTo(left,layout.top-16);x.lineTo(right,layout.top-16);x.stroke();
+    y=layout.top+4;
+    (layout.pages[index].parts||[]).forEach(function(line){
+      if(line.kind==="gap"){y+=line.h;return;}
+      if(line.kind==="rule"){
+        x.strokeStyle=t.rule;x.lineWidth=1.5;x.beginPath();x.moveTo(left,y+17);x.lineTo(right,y+17);x.stroke();y+=line.h;return;
+      }
+      if(line.kind==="continued"){
+        x.font=postFont(17,POST_MONO,"600");x.fillStyle=t.faint;
+        quickWrapped(x,line.text,x.font,860).forEach(function(part){x.fillText(part,left,y+3);y+=26;});
+        y+=7;return;
+      }
+      x.font=line.font;x.fillStyle=postResolveColor(t,line.color);
+      x.fillText(line.text,left,y);y+=line.h;
+    });
+    x.strokeStyle=t.rule;x.lineWidth=1;x.beginPath();x.moveTo(left,1250);x.lineTo(right,1250);x.stroke();
+    x.font=postFont(16,POST_MONO,"500");x.fillStyle=t.faint;
+    x.fillText("COLLECTED NOTES",left,1267);x.textAlign="right";
+    x.fillText((index+1)+" / "+total,right,1267);x.textAlign="left";
+    return c;
+  }
+  function quickRenderPreview() {
+    quickRenderTimer=null;
+    var host=document.getElementById("quickPreview"), count=document.getElementById("quickPreviewCount");
+    host.innerHTML="";quickCards=[];
+    var selected=quickCheckedItems();
+    if(!selected.length){count.textContent="Nothing selected";return;}
+    try {
+      var layout=quickLayoutCards(selected,quickExportTitle(),document.getElementById("quickDate").value);
+      quickCards=layout.pages.map(function(_,i){return quickDrawCard(layout,i,layout.pages.length);});
+      quickCards.forEach(function(canvas){host.appendChild(canvas);});
+      count.textContent=quickCards.length+(quickCards.length===1?" image":" images")+(quickCards.length>1?"  ·  swipe to browse":"");
+      document.getElementById("quickStatus").textContent="";
+    } catch(err){count.textContent="Preview unavailable";document.getElementById("quickStatus").textContent="Could not render shareable images.";}
+  }
+  function quickSchedulePreview(){
+    clearTimeout(quickRenderTimer);
+    quickRenderTimer=setTimeout(quickRenderPreview,140);
+  }
+  function quickFilename(i,total){
+    return volumeSlug(quickExportTitle())+"-"+document.getElementById("quickDate").value+(total>1?"-"+String(i+1).padStart(2,"0"):"")+".png";
+  }
+  async function quickImageFiles(){
+    if(quickRenderTimer){clearTimeout(quickRenderTimer);quickRenderPreview();}
+    var blobs=await Promise.all(quickCards.map(postCanvasBlob));
+    return blobs.map(function(blob,i){
+      if(!blob) throw new Error("Could not create image " +(i+1));
+      return new File([blob],quickFilename(i,blobs.length),{type:"image/png"});
+    });
+  }
+  async function quickDeliver(share) {
+    if(quickShareBusy || !quickCheckedItems().length)return;
+    quickShareBusy=true;quickUpdateCount();
+    var status=document.getElementById("quickStatus");status.textContent="";
+    try {
+      var files=await quickImageFiles();
+      if(!files.length)throw new Error("There are no images to share.");
+      if(share && navigator.share) {
+        var canShare=true;
+        try{if(navigator.canShare)canShare=navigator.canShare({files:files});}catch(e){canShare=false;}
+        if(canShare){
+          try{await navigator.share({files:files,title:quickExportTitle()});status.textContent="Shared " + files.length + " image" + (files.length===1?"":"s")+".";return;}
+          catch(e){if(e&&e.name==="AbortError")return;}
+        }
+      }
+      downloadPostFiles(files);
+      status.textContent=share?"Image sharing unavailable here — saved PNG"+(files.length===1?"":"s")+" instead.":"Saved " +files.length+" PNG"+(files.length===1?"":"s")+".";
+    }catch(err){status.textContent="Could not create images: "+(err&&err.message?err.message:"unknown error");}
+    finally{quickShareBusy=false;quickUpdateCount();}
   }
   document.getElementById("quickExportBtn").onclick = function () { openQuickExport(); };
   document.getElementById("quickExportMoreBtn").onclick = function () { openQuickExport(); };
   document.getElementById("quickExportClose").onclick = closeQuickExport;
   document.getElementById("quickDate").onchange = function () { if (this.value) quickSetDay(this.value); };
-  document.getElementById("quickTitle").oninput = function () { this.dataset.auto = "false"; };
+  document.getElementById("quickTitle").oninput = function () { this.dataset.auto = "false"; quickSchedulePreview(); };
   document.getElementById("quickToday").onclick = function () { quickSetDay(volumeDayValue(Date.now())); };
   document.getElementById("quickYesterday").onclick = function () { var d = new Date(); d.setDate(d.getDate() - 1); quickSetDay(volumeDayValue(d.getTime())); };
   document.getElementById("quickToggleAll").onclick = function () {
     var all = quickCheckedItems().length === quickItems.length;
     quickItems.forEach(function (item) { quickSelected[item.key] = !all; });
-    quickRenderItems();
+    quickRenderItems(); quickSchedulePreview();
   };
   document.getElementById("quickCopy").onclick = function () {
     if (quickCheckedItems().length) copyText(quickPlainText());
   };
-  document.getElementById("quickPDF").onclick = buildQuickPDF;
+  document.getElementById("quickShare").onclick = function(){quickDeliver(true);};
+  document.getElementById("quickSave").onclick = function(){quickDeliver(false);};
 
   // ——— collected volume export ———
   // Layout first, index second. Each entry records the PDF page where it begins;
