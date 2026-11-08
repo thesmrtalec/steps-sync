@@ -480,6 +480,35 @@
   .notes-index { margin-top: 22px; overflow-y: auto; min-height: 0;
     -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   .notes-index-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+  /* ——— one-day, selective quick export (kept separate from book-making) ——— */
+  #quickExportOverlay { z-index: 185; }
+  #quickExportOverlay .notes-inner { max-width: 700px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding-bottom: 24px; }
+  .quick-lede { margin: -2px 0 18px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .quick-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px; }
+  .quick-fields label { display: block; margin-bottom: 6px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+  .quick-fields input { display: block; width: 100%; min-height: 46px; padding: 10px 11px; border-radius: 9px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 16px var(--serif); }
+  .quick-date-links { display: flex; gap: 12px; margin: 7px 0 18px; }
+  .quick-date-links button, .quick-selection-head button { border: 0; background: transparent; color: var(--accent); font: 12px var(--mono); padding: 4px 0; }
+  .quick-selection-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); padding: 14px 0 9px; }
+  .quick-selection-head strong { color: var(--ink); font: 600 13px var(--mono); }
+  .quick-items { display: grid; gap: 7px; padding-bottom: 12px; }
+  .quick-entry { display: grid; grid-template-columns: 22px minmax(0,1fr); align-items: start; gap: 11px; padding: 11px 13px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); cursor: pointer; }
+  .quick-entry:not(.selected) { opacity: .55; }
+  .quick-entry input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+  .quick-entry-main { min-width: 0; }
+  .quick-entry-kicker { font: 10px var(--mono); color: var(--muted); letter-spacing: .04em; margin-bottom: 5px; }
+  .quick-entry-text { white-space: pre-wrap; overflow-wrap: anywhere; font: 15px/1.38 var(--serif); color: var(--ink); }
+  .quick-entry-meta { margin-top: 6px; font: 11px/1.45 var(--mono); color: var(--faint); overflow-wrap: anywhere; }
+  .quick-empty { padding: 20px 4px; font: 15px var(--serif); color: var(--muted); }
+  .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; position: sticky; bottom: -24px; background: var(--page); padding: 12px 0 12px; border-top: 1px solid var(--rule); margin-top: auto; }
+  .quick-actions button { min-height: 48px; padding: 10px; border-radius: 10px; font: 700 12px var(--mono); letter-spacing: .04em; }
+  .quick-actions .copy { border: 1px solid var(--rule); background: var(--card); color: var(--ink); }
+  .quick-actions .pdf { border: 1px solid var(--accent); background: var(--accent); color: var(--onaccent); }
+  .quick-actions button:disabled { opacity: .42; cursor: default; }
+  .quick-status { min-height: 18px; font: 11px var(--mono); color: var(--muted); text-align: center; }
+  @media (max-width: 480px) { .quick-fields { grid-template-columns: 1fr; gap: 12px; } .quick-date-links { margin-top: 9px; } }
+
   /* ——— collected volume export ——— */
   #volumeOverlay { z-index: 180; overflow-y: auto; }
   #volumeOverlay .notes-inner { max-width: 680px; overflow-y: auto; }
@@ -1022,7 +1051,7 @@
 
   <nav class="main-modes" aria-label="Workspace"><button data-mode="capture">Capture</button><button data-mode="write">Write Now</button><button data-mode="notebook">Notebook</button></nav>
   <div class="notebook-rail"><div class="section-row" id="sectionRow"></div>
-  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="contextBtn">Insights &amp; Questions</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab" id="weekRecapBtn">Week Recap</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
+  <div id="notebookTools" class="notebook-tools" aria-label="Notebook collections"><button class="notes-tab bone-key" id="voicesBtn" aria-label="speakers" title="Speakers — everyone you’ve quoted">Speakers</button><button class="notes-tab bone-key" id="refsBtn" aria-label="scriptures" title="Scriptures — everything you’ve marked">Scriptures</button><button class="notes-tab bone-key" id="gratBtn" aria-label="gratitude" title="Hand of God — every gratitude moment">Gratitude</button><button class="notes-tab" id="contextBtn">Insights &amp; Questions</button><button class="notes-tab" id="journalShortcut">Journal</button><button class="notes-tab" id="weekRecapBtn">Week Recap</button><button class="notes-tab" id="quickExportBtn">Export Day</button><button class="notes-tab bone-key" id="schedOpen" aria-label="daily habits" title="Daily">Habits</button><button class="notes-tab bone-key" id="anchorBtn" aria-label="light and truth" title="Light &amp; Truth — things of ultimate value">Light & Truth</button><button class="notes-tab bone-key" id="prepBtn" aria-label="take stock" title="Take stock — his hand, who I am, where I’m going">Take stock</button><button class="notes-tab bone-key" id="boneOpen" aria-label="open the vault" title="The vault">Vault</button></div></div>
   <div class="search-row" id="searchRow">
     <input type="search" id="searchBox" placeholder="search entries, context, talks / lessons…" autocomplete="off" />
   </div>
@@ -1087,6 +1116,7 @@
       </div>
       <button id="tourReplay">Replay tutorial</button>
       <button id="autoRefsToggle">Auto-detect scriptures: off</button>
+      <button id="quickExportMoreBtn">Quick export a day</button>
       <button id="volumeBtn">Create a volume</button>
       <button id="exportBtn">Export backup</button>
       <button id="importBtn">Import</button>
@@ -1155,6 +1185,31 @@
         <button class="volume-build" id="volumeBuild" type="button">Build searchable PDF</button>
         <div class="volume-status" id="volumeStatus" role="status"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="notes-overlay" id="quickExportOverlay" aria-hidden="true">
+    <div class="notes-inner">
+      <div class="notes-head">
+        <h2>Export a day</h2>
+        <button class="notes-close" id="quickExportClose" type="button">done</button>
+      </div>
+      <p class="quick-lede">All the notes you captured on one day, as a clean PDF or copyable text. Uncheck anything you don't want to include.</p>
+      <div class="quick-fields">
+        <div><label for="quickDate">Date</label><input id="quickDate" type="date" /></div>
+        <div><label for="quickTitle">Title</label><input id="quickTitle" type="text" autocomplete="off" placeholder="e.g. Stake Conference" /></div>
+      </div>
+      <div class="quick-date-links"><button id="quickToday" type="button">Today</button><button id="quickYesterday" type="button">Yesterday</button></div>
+      <div class="quick-selection-head">
+        <strong id="quickCount">0 entries</strong>
+        <button id="quickToggleAll" type="button">Deselect all</button>
+      </div>
+      <div id="quickItems" class="quick-items" aria-label="Entries to export"></div>
+      <div class="quick-actions">
+        <button id="quickCopy" class="copy" type="button">Copy text</button>
+        <button id="quickPDF" class="pdf" type="button">Export PDF</button>
+      </div>
+      <div class="quick-status" id="quickStatus" role="status"></div>
     </div>
   </div>
   <div class="notes-overlay" id="weekOverlay">
@@ -3676,6 +3731,197 @@
     body.appendChild(buildCalendar("good", state.habitLabels.good || "good habit", false));
     body.appendChild(buildCalendar("bad", state.habitLabels.bad || "bad habit", true));
   }
+
+
+  // ——— quick export: a day's notes, not a curated book ———
+  // Distinct from the indexed volume. Includes all captured notebook entries,
+  // questions, and long-form journal pages for the chosen local calendar day.
+  var quickItems = [], quickSelected = {}, quickPdfBusy = false;
+  function quickDayItems(day) {
+    var from = volumeDateValue(day, false), through = volumeDateValue(day, true), out = [], seen = {};
+    function append(source, entry, date, kind) {
+      if (!date || date < from || date > through) return;
+      var key = source + ":" + String(entry.id || date + ":" + out.length);
+      if (seen[key]) return;
+      seen[key] = true;
+      if (!(entry.text || entry.workshop || "").trim()) return;
+      out.push({ key:key, entry:entry, date:date, kind:kind, source:source, text:String(entry.text || "") });
+    }
+    (state.truths || []).forEach(function (e) { append("truth", e, entryDate(e), "entry"); });
+    (state.bits || []).forEach(function (e) { append("question", e, entryDate(e), "entry"); });
+    (state.notes || []).forEach(function (n) { append("journal", n, n.updated || 0, "journal"); });
+    out.sort(function (a,b) { return a.date - b.date || a.key.localeCompare(b.key); });
+    return out;
+  }
+  function quickDateTitle(day) { return "Notes — " + volumeDateLabel(volumeDateValue(day, false)); }
+  function quickMeta(item) {
+    if (item.kind === "journal") return "Journal";
+    var e = item.entry, parts = [], ctx = entryContext(e);
+    if (ctx) parts.push(ctx.charAt(0).toUpperCase() + ctx.slice(1));
+    if (e.grateful) parts.push("Gratitude");
+    var voices = entryVoices(e); if (voices.length) parts.push("Speaker: " + voices.join(", "));
+    var refs = entryRefs(e).slice().sort(refSort); if (refs.length) parts.push("Scripture: " + refs.map(refLabel).join(", "));
+    return parts.join(" · ") || "Notebook";
+  }
+  function quickCheckedItems() { return quickItems.filter(function (item) { return !!quickSelected[item.key]; }); }
+  function quickUpdateCount() {
+    var count = quickCheckedItems().length, total = quickItems.length;
+    document.getElementById("quickCount").textContent = count + " of " + total + (total === 1 ? " entry selected" : " entries selected");
+    document.getElementById("quickCopy").disabled = !count;
+    document.getElementById("quickPDF").disabled = !count || quickPdfBusy;
+    document.getElementById("quickToggleAll").textContent = total && count === total ? "Deselect all" : "Select all";
+    document.getElementById("quickToggleAll").disabled = !total;
+  }
+  function quickRenderItems() {
+    var list = document.getElementById("quickItems"); list.innerHTML = "";
+    if (!quickItems.length) {
+      list.appendChild(el("p", "quick-empty", "No saved notebook or journal entries on this date."));
+      quickUpdateCount(); return;
+    }
+    quickItems.forEach(function (item, index) {
+      var row = el("label", "quick-entry" + (quickSelected[item.key] ? " selected" : ""));
+      var check = document.createElement("input"); check.type = "checkbox"; check.checked = !!quickSelected[item.key];
+      check.setAttribute("aria-label", "Include entry " + (index + 1));
+      check.onchange = function () {
+        quickSelected[item.key] = check.checked;
+        row.classList.toggle("selected", check.checked);
+        quickUpdateCount();
+      };
+      row.appendChild(check);
+      var main = el("div", "quick-entry-main");
+      var at = new Date(item.date).toLocaleTimeString("en-US", {hour:"numeric",minute:"2-digit"});
+      main.appendChild(el("div", "quick-entry-kicker", at + "  ·  " + quickMeta(item)));
+      var summary = item.text.trim() || String(item.entry.workshop || "").trim();
+      main.appendChild(el("div", "quick-entry-text", summary.length > 200 ? summary.slice(0, 200).trimEnd() + "…" : summary));
+      if (item.kind === "entry") {
+        var tags = (item.entry.tags || []).filter(Boolean);
+        if (tags.length) main.appendChild(el("div", "quick-entry-meta", "Topics: " + tags.join(" · ")));
+      }
+      row.appendChild(main); list.appendChild(row);
+    });
+    quickUpdateCount();
+  }
+  function quickSetDay(day) {
+    var date = document.getElementById("quickDate"); date.value = day;
+    var title = document.getElementById("quickTitle");
+    if (title.dataset.auto !== "false") { title.value = quickDateTitle(day); title.dataset.auto = "true"; }
+    quickItems = quickDayItems(day); quickSelected = {};
+    quickItems.forEach(function (item) { quickSelected[item.key] = true; });
+    document.getElementById("quickStatus").textContent = "";
+    quickRenderItems();
+  }
+  function openQuickExport(day) {
+    var date = day || volumeDayValue(Date.now());
+    document.getElementById("quickTitle").dataset.auto = "true";
+    quickSetDay(date);
+    document.getElementById("utilMenu").style.display = "none";
+    var overlay = document.getElementById("quickExportOverlay");
+    overlay.classList.add("open"); overlay.setAttribute("aria-hidden", "false");
+  }
+  function closeQuickExport() {
+    var overlay = document.getElementById("quickExportOverlay");
+    overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true");
+  }
+  function quickExportTitle() { return document.getElementById("quickTitle").value.trim() || quickDateTitle(document.getElementById("quickDate").value); }
+  function quickPlainText() {
+    var parts = [quickExportTitle(), volumeDateLabel(volumeDateValue(document.getElementById("quickDate").value, false))];
+    quickCheckedItems().forEach(function (item) {
+      var e = item.entry, notes = [item.text.trim()];
+      if (item.kind === "entry") {
+        var voices = entryVoices(e), refs = entryRefs(e).slice().sort(refSort), tags = (e.tags || []).filter(Boolean);
+        if (voices.length) notes.push("Speakers: " + voices.join(" · "));
+        if (refs.length) notes.push("References: " + refs.map(refLabel).join(" · "));
+        if (tags.length) notes.push("Topics: " + tags.join(" · "));
+        if (e.workshop && String(e.workshop).trim()) notes.push("Notes: " + String(e.workshop).trim());
+      }
+      parts.push(notes.filter(Boolean).join("\n"));
+    });
+    return parts.join("\n\n---\n\n");
+  }
+  function buildQuickPDF() {
+    if (quickPdfBusy) return;
+    var selected = quickCheckedItems(), status = document.getElementById("quickStatus");
+    if (!selected.length) { status.textContent = "Choose at least one entry."; return; }
+    var jsPDFLib = window.jspdf && window.jspdf.jsPDF;
+    if (!jsPDFLib) { status.textContent = "PDF library unavailable. Use Copy text, or reconnect and try again."; return; }
+    quickPdfBusy = true; quickUpdateCount();
+    try {
+      var title = quickExportTitle(), day = document.getElementById("quickDate").value;
+      var doc = new jsPDFLib({ unit:"pt", format:"letter", putOnlyUsedFonts:true, compress:true });
+      var W = 612, M = 60, RIGHT = W - M, TOP = 60, BOTTOM = 734, y = TOP;
+      function font(f, style, size, shade) { doc.setFont(f || "times", style || "normal"); doc.setFontSize(size || 11); doc.setTextColor(shade == null ? 35 : shade); }
+      function newPage() { doc.addPage("letter", "portrait"); y = TOP; }
+      function ensure(height) { if (y + height > BOTTOM) newPage(); }
+      function writeBody(value, x, width, lineHeight) {
+        String(value || "").replace(/\r/g, "").split("\n").forEach(function (paragraph) {
+          var lines = paragraph ? doc.splitTextToSize(paragraph, width) : [""];
+          lines.forEach(function (line) { ensure(lineHeight); if (line) doc.text(line, x, y); y += lineHeight; });
+        });
+      }
+      function writeDetail(label, val) {
+        if (!val) return;
+        ensure(16); font("helvetica", "bold", 7, 112); doc.text(label.toUpperCase(), M+9, y);
+        font("helvetica", "normal", 8.2, 85); writeBody(val, M+82, RIGHT-M-91, 11); y += 3;
+      }
+      // Continuous, paginated reading layout: no cover page or indexes.
+      font("times", "bold", 22, 36);
+      var titleLines = doc.splitTextToSize(title, RIGHT - M);
+      titleLines.forEach(function (line) { ensure(27); doc.text(line, M, y); y += 27; });
+      y += 4; font("helvetica", "normal", 9, 110);
+      doc.text(volumeDateLabel(volumeDateValue(day, false)) + "  |  " + selected.length + (selected.length === 1 ? " entry" : " entries"), M, y); y += 19;
+      doc.setDrawColor(185, 174, 155); doc.setLineWidth(.7); doc.line(M, y, RIGHT, y); y += 26;
+      selected.forEach(function (item, idx) {
+        ensure(62);
+        font("helvetica", "normal", 8, 117);
+        var when = new Date(item.date).toLocaleTimeString("en-US", {hour:"numeric",minute:"2-digit"});
+        doc.text(String(idx + 1).padStart(2, "0") + "  |  " + when + "  |  " + (item.kind === "journal" ? "JOURNAL" : (entryContext(item.entry) || "NOTE").toUpperCase()), M, y); y += 17;
+        font("times", "normal", 11, 38);
+        writeBody(item.text, M, RIGHT - M, 16);
+        if (item.kind === "entry") {
+          var e = item.entry, voices = entryVoices(e), refs = entryRefs(e).slice().sort(refSort), tags = (e.tags || []).filter(Boolean);
+          var hasDetails = voices.length || refs.length || tags.length || (e.workshop && String(e.workshop).trim()) || e.grateful;
+          if (hasDetails) y += 7;
+          writeDetail("Speakers", voices.join(" · "));
+          writeDetail("References", refs.map(refLabel).join(" · "));
+          writeDetail("Topics", tags.join(" · "));
+          if (e.grateful) writeDetail("Marked", "Gratitude");
+          if (e.workshop && String(e.workshop).trim()) {
+            ensure(24); y += 5; font("helvetica", "bold", 7, 112); doc.text("NOTES", M+9, y); y += 14;
+            font("times", "italic", 9.5, 75); writeBody(e.workshop, M+9, RIGHT-M-9, 13);
+          }
+        }
+        ensure(20); y += 12; doc.setDrawColor(215, 207, 191); doc.setLineWidth(.5); doc.line(M, y, RIGHT, y); y += 21;
+      });
+      var pages = doc.internal.getNumberOfPages();
+      for (var i = 1; i <= pages; i++) {
+        doc.setPage(i); font("helvetica", "normal", 8, 137);
+        doc.text("THE GOOD PLATES", M, 762);
+        doc.text(i + " / " + pages, RIGHT, 762, {align:"right"});
+      }
+      doc.setProperties({title:title, subject:"Notes collected on " + volumeDateLabel(volumeDateValue(day,false)), creator:"The Good Plates"});
+      doc.save(volumeSlug(title) + ".pdf");
+      status.textContent = "Exported " + selected.length + (selected.length === 1 ? " entry" : " entries") + ".";
+    } catch (err) {
+      status.textContent = "Couldn't export the PDF.";
+      alert("Couldn't export the PDF: " + (err && err.message ? err.message : err));
+    } finally { quickPdfBusy = false; quickUpdateCount(); }
+  }
+  document.getElementById("quickExportBtn").onclick = function () { openQuickExport(); };
+  document.getElementById("quickExportMoreBtn").onclick = function () { openQuickExport(); };
+  document.getElementById("quickExportClose").onclick = closeQuickExport;
+  document.getElementById("quickDate").onchange = function () { if (this.value) quickSetDay(this.value); };
+  document.getElementById("quickTitle").oninput = function () { this.dataset.auto = "false"; };
+  document.getElementById("quickToday").onclick = function () { quickSetDay(volumeDayValue(Date.now())); };
+  document.getElementById("quickYesterday").onclick = function () { var d = new Date(); d.setDate(d.getDate() - 1); quickSetDay(volumeDayValue(d.getTime())); };
+  document.getElementById("quickToggleAll").onclick = function () {
+    var all = quickCheckedItems().length === quickItems.length;
+    quickItems.forEach(function (item) { quickSelected[item.key] = !all; });
+    quickRenderItems();
+  };
+  document.getElementById("quickCopy").onclick = function () {
+    if (quickCheckedItems().length) copyText(quickPlainText());
+  };
+  document.getElementById("quickPDF").onclick = buildQuickPDF;
 
   // ——— collected volume export ———
   // Layout first, index second. Each entry records the PDF page where it begins;
