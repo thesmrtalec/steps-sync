@@ -504,8 +504,11 @@
   .quick-preview-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); padding: 13px 0 10px; }
   .quick-preview-head strong { font: 600 14px var(--serif); color: var(--ink); }
   .quick-preview-head span { font: 10.5px var(--mono); color: var(--faint); text-align: right; }
-  .quick-preview { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 2px 2px 15px; min-height: 32px; }
-  .quick-preview canvas { width: min(72vw, 295px); height: auto; flex: 0 0 auto; scroll-snap-align: center; border-radius: 5px; box-shadow: 0 5px 17px rgba(0,0,0,.15); }
+  /* The export panel is a vertically scrolling flex column. Without flex-shrink:0,
+     a long day of notes squeezes this entire gallery down to its min-height
+     (32px on iOS), making the cards appear as unreadable horizontal slivers. */
+  .quick-preview { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 2px 2px 15px; min-height: 0; }
+  .quick-preview canvas { display: block; flex: 0 0 auto; width: min(72vw, 295px); height: auto; aspect-ratio: 4 / 5; scroll-snap-align: center; border-radius: 5px; box-shadow: 0 5px 17px rgba(0,0,0,.15); }
   .quick-actions { display: grid; grid-template-columns: .9fr 1.25fr .9fr; gap: 7px; position: sticky; bottom: -24px; background: var(--page); padding: 12px 0 12px; border-top: 1px solid var(--rule); margin-top: auto; }
   .quick-actions button { min-height: 48px; padding: 8px 5px; border-radius: 10px; font: 700 11.5px var(--mono); letter-spacing: .01em; }
   .quick-actions .copy, .quick-actions .save { border: 1px solid var(--rule); background: var(--card); color: var(--ink); }
